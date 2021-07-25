@@ -3,8 +3,10 @@ module.exports = {
       "<rootDir>/src"
     ],
     "testMatch": [
-      "**/test/**/*.+(ts|tsx|js)",
-      "**/?(*.)+(spec|test).+(ts|tsx|js)"
+        // "**/test/**/*.+(ts|tsx|js)",
+
+        "**/test/dao/ConceptTypeDao.test.ts",
+        "**/test/dao/RelationTypeDao.test.ts",
     ],
     "transform": {
       "^.+\\.(ts|tsx)$": "ts-jest"

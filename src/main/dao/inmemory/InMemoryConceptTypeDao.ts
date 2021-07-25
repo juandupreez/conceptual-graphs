@@ -1,4 +1,4 @@
-import { ConceptType } from "../../ConceptType";
+import { ConceptType } from "../../domain/ConceptType";
 import { IdGenerator } from "../../util/IdGenerator";
 import { ConceptTypeDao } from "../ConceptTypeDao";
 
@@ -18,6 +18,15 @@ export class InMemoryConceptTypeDao implements ConceptTypeDao {
             return (singleConceptType.id === idToFind);
         })
         return foundConceptType;
+    }
+
+    insertConceptTypeAsSubtype(parentConceptType: ConceptType, subConceptType: ConceptType): string {
+        const generatedId = IdGenerator.getInstance().getNextUniqueConceptTypeId(); 
+        subConceptType.id = generatedId;
+        this.conceptTypes.push(subConceptType);
+        parentConceptType.subConceptTypeIds.push(subConceptType.id);
+        subConceptType.parentConceptTypeIds.push(parentConceptType.id)
+        return generatedId;      
     }
 
 }
