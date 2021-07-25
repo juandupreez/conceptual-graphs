@@ -7,6 +7,9 @@ module.exports = {
 
         "**/test/dao/ConceptTypeDao.test.ts",
         "**/test/dao/RelationTypeDao.test.ts",
+
+        // "**/test/Thinker.test.ts",
+        
     ],
     "transform": {
       "^.+\\.(ts|tsx)$": "ts-jest"

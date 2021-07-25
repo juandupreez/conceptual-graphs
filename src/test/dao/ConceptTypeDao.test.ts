@@ -1,12 +1,12 @@
 import { ConceptType } from "../../main/domain/ConceptType";
-import { ConceptTypeDao } from "../../main/dao/ConceptTypeDao";
+import { ConceptTypeDao, SimpleConceptType } from "../../main/dao/ConceptTypeDao";
 import { InMemoryConceptTypeDao } from "../../main/dao/inmemory/InMemoryConceptTypeDao";
 
-const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
 
 describe('ConceptTypeDao basic tests', () => {
 
     it('insert then get concept type', () => {
+        const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
 
         const conceptType: ConceptType = new ConceptType();
         conceptType.description = "Entity";
@@ -21,6 +21,7 @@ describe('ConceptTypeDao basic tests', () => {
     })
 
     it('insert concept type as child of parent', () => {
+        const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
 
         const parentConceptType: ConceptType = new ConceptType();
         parentConceptType.description = "Entity";
@@ -41,6 +42,54 @@ describe('ConceptTypeDao basic tests', () => {
             ...subConceptType,
             parentConceptTypeIds: [parentGeneratedId]
         });
+
+    })
+
+    it('Generate concept type hierarchy from JSON structure', () => {   
+        const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
+        const hierarchyToGenerate: SimpleConceptType[] = [
+            {
+                description: "Entity",
+                subConceptTypes: [
+                    {
+                        description: "Human",
+                        subConceptTypes: [
+                            {
+                                description: "Adult",
+                                subConceptTypes: [
+                                    { description: "Woman" },
+                                    { description: "Man" }
+                                ]
+                            }, {
+                                description: "Female",
+                                subConceptTypes: [
+                                    { description: "Woman" },
+                                    { description: "Girl" }
+                                ]
+                            }, {
+                                description: "Child",
+                                subConceptTypes: [
+                                    { description: "Girl" },
+                                    { description: "Boy" }
+                                ]
+                            }, {
+                                description: "Male",
+                                subConceptTypes: [
+                                    { description: "Man" },
+                                    { description: "Boy" }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        ];
+
+        conceptTypeDao.generateHierarchyFromObject(hierarchyToGenerate);
+        const rootConceptTypes: ConceptType[] = conceptTypeDao.getRootConceptTypes();
+        expect(rootConceptTypes.length).toBe(1);
+        expect(rootConceptTypes[0].description).toBe("Entity");
+       
 
     })
 
