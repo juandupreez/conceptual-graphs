@@ -89,7 +89,38 @@ describe('ConceptTypeDao basic tests', () => {
         const rootConceptTypes: ConceptType[] = conceptTypeDao.getRootConceptTypes();
         expect(rootConceptTypes.length).toBe(1);
         expect(rootConceptTypes[0].description).toBe("Entity");
-       
+
+        const humanConceptType: ConceptType = conceptTypeDao.getConceptTypeByDescription("Human");
+        const adultConceptType: ConceptType = conceptTypeDao.getConceptTypeByDescription("Adult");
+        const femaleConceptType: ConceptType = conceptTypeDao.getConceptTypeByDescription("Female");
+        const childConceptType: ConceptType = conceptTypeDao.getConceptTypeByDescription("Child");
+        const maleConceptType: ConceptType = conceptTypeDao.getConceptTypeByDescription("Male");
+        const womanConceptType: ConceptType = conceptTypeDao.getConceptTypeByDescription("Woman");
+        const manConceptType: ConceptType = conceptTypeDao.getConceptTypeByDescription("Man");
+        const girlConceptType: ConceptType = conceptTypeDao.getConceptTypeByDescription("Girl");
+        const boyConceptType: ConceptType = conceptTypeDao.getConceptTypeByDescription("Boy");
+
+        // Assert parent ids
+        expect(humanConceptType.parentConceptTypeIds[0]).toBe(rootConceptTypes[0].id);
+        expect(adultConceptType.parentConceptTypeIds[0]).toBe(humanConceptType.id);
+        expect(femaleConceptType.parentConceptTypeIds[0]).toBe(humanConceptType.id);
+        expect(childConceptType.parentConceptTypeIds[0]).toBe(humanConceptType.id);
+        expect(maleConceptType.parentConceptTypeIds[0]).toBe(humanConceptType.id);
+
+        expect(womanConceptType.parentConceptTypeIds).toEqual([adultConceptType.id, femaleConceptType.id]);
+        expect(manConceptType.parentConceptTypeIds).toEqual([adultConceptType.id, maleConceptType.id]);
+        expect(girlConceptType.parentConceptTypeIds).toEqual([femaleConceptType.id, childConceptType.id]);
+        expect(boyConceptType.parentConceptTypeIds).toEqual([childConceptType.id, maleConceptType.id]);
+
+        // Assert sub ids
+        expect(rootConceptTypes[0].subConceptTypeIds[0]).toBe(humanConceptType.id);
+        expect(humanConceptType.subConceptTypeIds).toEqual([
+            adultConceptType.id, femaleConceptType.id, childConceptType.id, maleConceptType.id
+        ]);
+        expect(adultConceptType.subConceptTypeIds).toEqual([womanConceptType.id, manConceptType.id]);
+        expect(femaleConceptType.subConceptTypeIds).toEqual([womanConceptType.id, girlConceptType.id]);
+        expect(childConceptType.subConceptTypeIds).toEqual([girlConceptType.id, boyConceptType.id]);
+        expect(maleConceptType.subConceptTypeIds).toEqual([manConceptType.id, boyConceptType.id]);
 
     })
 

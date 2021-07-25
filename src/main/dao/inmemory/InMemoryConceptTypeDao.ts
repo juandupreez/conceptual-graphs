@@ -53,20 +53,28 @@ export class InMemoryConceptTypeDao implements ConceptTypeDao {
 
             // insert child nodes recursively
             this.recursiveInsertSimpleConceptTypes(rootConceptType, singleNewConceptType.subConceptTypes);
-        })
-        
+        })        
     }
 
     recursiveInsertSimpleConceptTypes(parentConceptType: ConceptType, subSimpleConceptTypes: SimpleConceptType[]) {
         if (parentConceptType && subSimpleConceptTypes) {
             subSimpleConceptTypes.forEach((singleNewSimpleConceptType) => {
-                // Insert current node
-                const newConceptType: ConceptType = new ConceptType;
-                newConceptType.description = singleNewSimpleConceptType.description;
-                this.insertConceptTypeAsSubtype(parentConceptType, newConceptType);
+                // See if current description exists
+                const existingConceptType: ConceptType = this.getConceptTypeByDescription(singleNewSimpleConceptType.description);
+                if (existingConceptType) {
+                    parentConceptType.subConceptTypeIds.push(existingConceptType.id);
+                    existingConceptType.parentConceptTypeIds.push(parentConceptType.id);
+                    this.recursiveInsertSimpleConceptTypes(existingConceptType, singleNewSimpleConceptType.subConceptTypes);    
+                } else {                
+                    // Insert current node
+                    const newConceptType: ConceptType = new ConceptType;
+                    newConceptType.description = singleNewSimpleConceptType.description;
+                    this.insertConceptTypeAsSubtype(parentConceptType, newConceptType);
+    
+                    // Insert child nodes recursively
+                    this.recursiveInsertSimpleConceptTypes(newConceptType, singleNewSimpleConceptType.subConceptTypes);
 
-                // Insert child nodes recursively
-                this.recursiveInsertSimpleConceptTypes(newConceptType, singleNewSimpleConceptType.subConceptTypes);
+                }
             })
         }
     }
