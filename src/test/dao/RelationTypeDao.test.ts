@@ -20,4 +20,29 @@ describe('RelationTypeDao basic tests', () => {
 
     })
 
+    it('insert relation type as child of parent', () => {
+        const relationTypeDao: RelationTypeDao = new InMemoryRelationTypeDao();
+
+        const parentRelationType: RelationType = new RelationType();
+        parentRelationType.description = "Link";
+        const parentGeneratedId: string = relationTypeDao.insertRelationTypeAtRoot(parentRelationType);
+
+        const subRelationType: RelationType = new RelationType();
+        subRelationType.description = "Sub-link";
+        const childGeneratedId: string = relationTypeDao.insertRelationTypeAsSubtype(parentRelationType, subRelationType);
+
+        const savedParentRelationType: RelationType = relationTypeDao.getRelationTypeById(parentGeneratedId);
+        expect(savedParentRelationType).toEqual({
+            ...parentRelationType,
+            subRelationTypeIds: [childGeneratedId]
+        });
+
+        const savedSubRelationType: RelationType = relationTypeDao.getRelationTypeById(childGeneratedId);
+        expect(savedSubRelationType).toEqual({
+            ...subRelationType,
+            parentRelationTypeIds: [parentGeneratedId]
+        });
+
+    })
+
 })

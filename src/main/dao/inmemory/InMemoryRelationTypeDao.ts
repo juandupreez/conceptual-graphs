@@ -5,11 +5,13 @@ import { RelationTypeDao } from "../RelationTypeDao";
 export class InMemoryRelationTypeDao implements RelationTypeDao {
 
     relationTypes: RelationType[] = [];
+    rootRelationTypeIds: string[] = [];
 
     insertRelationTypeAtRoot(relationType: RelationType): string {
         const generatedId = IdGenerator.getInstance().getNextUniqueRelationTypeId();
         relationType.id = generatedId;
         this.relationTypes.push(relationType);
+        this.rootRelationTypeIds.push(generatedId);
         return generatedId;
     }
     
@@ -18,6 +20,15 @@ export class InMemoryRelationTypeDao implements RelationTypeDao {
             return (singleRelationType.id === idToFind);
         })
         return foundRelationType;
+    }
+    
+    insertRelationTypeAsSubtype(parentRelationType: RelationType, subRelationType: RelationType): string {
+        const generatedId = IdGenerator.getInstance().getNextUniqueRelationTypeId(); 
+        subRelationType.id = generatedId;
+        this.relationTypes.push(subRelationType);
+        parentRelationType.subRelationTypeIds.push(subRelationType.id);
+        subRelationType.parentRelationTypeIds.push(parentRelationType.id)
+        return generatedId; 
     }
 
 }

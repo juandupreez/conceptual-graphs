@@ -1,5 +1,7 @@
 export class RelationType {
-    id: any;
+    id: string;
     description: string;
+    subRelationTypeIds: string[] = [];
+    parentRelationTypeIds: string[] = [];
 
 }
