@@ -3,5 +3,6 @@ export class RelationType {
     description: string;
     subRelationTypeIds: string[] = [];
     parentRelationTypeIds: string[] = [];
+    signature: string[];
 
 }
