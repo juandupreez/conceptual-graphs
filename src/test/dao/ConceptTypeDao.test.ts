@@ -45,7 +45,7 @@ describe('ConceptTypeDao basic tests', () => {
 
     })
 
-    it('Generate concept type hierarchy from JSON structure', () => {   
+    it('Generate concept type hierarchy from JSON structure', () => {
         const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
         const hierarchyToGenerate: SimpleConceptType[] = [
             {
@@ -122,6 +122,32 @@ describe('ConceptTypeDao basic tests', () => {
         expect(childConceptType.subConceptTypeIds).toEqual([girlConceptType.id, boyConceptType.id]);
         expect(maleConceptType.subConceptTypeIds).toEqual([manConceptType.id, boyConceptType.id]);
 
+    })
+
+    it('Create Concept type at root', () => {
+        const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
+        const conceptType: ConceptType = conceptTypeDao.createConceptType("RootConceptType");
+        expect(conceptType.id).not.toBeNull();
+        expect(conceptType).toEqual({
+            id: conceptType.id,
+            label: "RootConceptType",
+            parentConceptTypeIds: [],
+            subConceptTypeIds: []
+        });
+    })
+
+    it('Create Concept type as child', () => {
+        const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
+        const rootConceptType: ConceptType = conceptTypeDao.createConceptType("RootConceptType");
+        const subConceptType: ConceptType = conceptTypeDao.createConceptType("SubConceptType", ["RootConceptType"]);
+        expect(rootConceptType.subConceptTypeIds).toEqual([subConceptType.id]);
+        expect(subConceptType.id).not.toBeNull();
+        expect(subConceptType).toEqual({
+            id: subConceptType.id,
+            label: "SubConceptType",
+            parentConceptTypeIds: [rootConceptType.id],
+            subConceptTypeIds: []
+        });
     })
 
 })

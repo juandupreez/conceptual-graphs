@@ -5,7 +5,8 @@ export interface SimpleConceptType {
     subConceptTypes?: SimpleConceptType[]
 }
 export interface ConceptTypeDao {
-    getConceptTypeByLabel(arg0: string);
+    createConceptType(newLabel: string, parentLabels?: string[]): ConceptType;
+    getConceptTypeByLabel(label: string);
     getRootConceptTypes(): any;
     generateHierarchyFromObject(hierarchyToGenerate: SimpleConceptType[]);
     insertConceptTypeAsSubtype(parentConceptType: ConceptType, subConceptType: ConceptType): string;

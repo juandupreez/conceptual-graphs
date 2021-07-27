@@ -14,7 +14,7 @@ export class InMemoryConceptTypeDao implements ConceptTypeDao {
         this.rootConceptTypeIds.push(generatedId);
         return generatedId;
     }
-    
+
     getConceptTypeById(idToFind: string): ConceptType {
         const foundConceptType: ConceptType = this.conceptTypes.find((singleConceptType) => {
             return (singleConceptType.id === idToFind);
@@ -29,21 +29,21 @@ export class InMemoryConceptTypeDao implements ConceptTypeDao {
         return foundConceptType;
     }
 
-    getRootConceptTypes(): ConceptType[] {        
+    getRootConceptTypes(): ConceptType[] {
         return this.rootConceptTypeIds.map((singleRootConceptTypeId) => {
             return this.getConceptTypeById(singleRootConceptTypeId);
         })
     }
 
     insertConceptTypeAsSubtype(parentConceptType: ConceptType, subConceptType: ConceptType): string {
-        const generatedId = IdGenerator.getInstance().getNextUniqueConceptTypeId(); 
+        const generatedId = IdGenerator.getInstance().getNextUniqueConceptTypeId();
         subConceptType.id = generatedId;
         this.conceptTypes.push(subConceptType);
         parentConceptType.subConceptTypeIds.push(subConceptType.id);
         subConceptType.parentConceptTypeIds.push(parentConceptType.id)
-        return generatedId;      
+        return generatedId;
     }
-    
+
     generateHierarchyFromObject(hierarchyToGenerate: SimpleConceptType[]) {
         hierarchyToGenerate.forEach((singleNewConceptType) => {
             // Insert current root node
@@ -53,7 +53,7 @@ export class InMemoryConceptTypeDao implements ConceptTypeDao {
 
             // insert child nodes recursively
             this.recursiveInsertSimpleConceptTypes(rootConceptType, singleNewConceptType.subConceptTypes);
-        })        
+        })
     }
 
     recursiveInsertSimpleConceptTypes(parentConceptType: ConceptType, subSimpleConceptTypes: SimpleConceptType[]) {
@@ -64,19 +64,38 @@ export class InMemoryConceptTypeDao implements ConceptTypeDao {
                 if (existingConceptType) {
                     parentConceptType.subConceptTypeIds.push(existingConceptType.id);
                     existingConceptType.parentConceptTypeIds.push(parentConceptType.id);
-                    this.recursiveInsertSimpleConceptTypes(existingConceptType, singleNewSimpleConceptType.subConceptTypes);    
-                } else {                
+                    this.recursiveInsertSimpleConceptTypes(existingConceptType, singleNewSimpleConceptType.subConceptTypes);
+                } else {
                     // Insert current node
                     const newConceptType: ConceptType = new ConceptType;
                     newConceptType.label = singleNewSimpleConceptType.label;
                     this.insertConceptTypeAsSubtype(parentConceptType, newConceptType);
-    
+
                     // Insert child nodes recursively
                     this.recursiveInsertSimpleConceptTypes(newConceptType, singleNewSimpleConceptType.subConceptTypes);
 
                 }
             })
         }
+    }
+
+    createConceptType(newConceptTypeLabel: string, parentLabels?: string[]): ConceptType {
+        const newConceptType: ConceptType = new ConceptType();
+        newConceptType.label = newConceptTypeLabel;
+        const generatedId = IdGenerator.getInstance().getNextUniqueConceptTypeId();
+        newConceptType.id = generatedId;
+        this.conceptTypes.push(newConceptType);
+
+        if (parentLabels) {
+            parentLabels.forEach((singleParentLabel) => {
+                const parentConceptType = this.getConceptTypeByLabel(singleParentLabel);
+                parentConceptType.subConceptTypeIds.push(newConceptType.id);
+                newConceptType.parentConceptTypeIds.push(parentConceptType.id);
+            });
+        } else {
+            this.rootConceptTypeIds.push(generatedId);
+        }
+        return newConceptType;
     }
 
 }
