@@ -1,11 +1,12 @@
 import { RelationType } from "../../domain/RelationType";
 import { IdGenerator } from "../../util/IdGenerator";
 import { RelationTypeDao, SimpleRelationType } from "../RelationTypeDao";
+import { Store } from "./store/Store";
 
 export class InMemoryRelationTypeDao implements RelationTypeDao {
 
-    relationTypes: RelationType[] = [];
-    rootRelationTypeIds: string[] = [];
+    relationTypes: RelationType[] = Store.getInstance().state.relationTypes;
+    rootRelationTypeIds: string[] = Store.getInstance().state.rootRelationTypeIds;
 
     insertRelationTypeAtRoot(relationType: RelationType): string {
         const generatedId = IdGenerator.getInstance().getNextUniqueRelationTypeId();

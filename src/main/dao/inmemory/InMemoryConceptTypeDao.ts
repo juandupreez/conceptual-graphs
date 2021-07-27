@@ -1,11 +1,12 @@
 import { ConceptType } from "../../domain/ConceptType";
 import { IdGenerator } from "../../util/IdGenerator";
 import { ConceptTypeDao, SimpleConceptType } from "../ConceptTypeDao";
+import { Store } from "./store/Store";
 
 export class InMemoryConceptTypeDao implements ConceptTypeDao {
 
-    conceptTypes: ConceptType[] = [];
-    rootConceptTypeIds: string[] = [];
+    conceptTypes: ConceptType[] = Store.getInstance().state.conceptTypes;
+    rootConceptTypeIds: string[] = Store.getInstance().state.rootConceptTypeIds;
 
     insertConceptTypeAtRoot(conceptType: ConceptType): string {
         const generatedId = IdGenerator.getInstance().getNextUniqueConceptTypeId();

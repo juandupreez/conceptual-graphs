@@ -9,7 +9,7 @@ describe('RelationTypeDao basic tests', () => {
     it('insert then get relation type', () => {
 
         const relationType: RelationType = new RelationType();
-        relationType.label = "Link";
+        relationType.label = "Link1";
         const generatedId: string = relationTypeDao.insertRelationTypeAtRoot(relationType);
 
         const savedRelationType: RelationType = relationTypeDao.getRelationTypeById(generatedId);
@@ -24,7 +24,7 @@ describe('RelationTypeDao basic tests', () => {
         const relationTypeDao: RelationTypeDao = new InMemoryRelationTypeDao();
 
         const parentRelationType: RelationType = new RelationType();
-        parentRelationType.label = "Link";
+        parentRelationType.label = "Link2";
         const parentGeneratedId: string = relationTypeDao.insertRelationTypeAtRoot(parentRelationType);
 
         const subRelationType: RelationType = new RelationType();
@@ -49,7 +49,7 @@ describe('RelationTypeDao basic tests', () => {
         const relationTypeDao: RelationTypeDao = new InMemoryRelationTypeDao();
         const hierarchyToGenerate: SimpleRelationType[] = [
             {
-                label: "Link",
+                label: "Link3",
                 subRelationTypes: [
                     {
                         label: "RelatedWith",
@@ -90,8 +90,8 @@ describe('RelationTypeDao basic tests', () => {
 
         relationTypeDao.generateHierarchyFromObject(hierarchyToGenerate);
         const rootRelationTypes: RelationType[] = relationTypeDao.getRootRelationTypes();
-        expect(rootRelationTypes.length).toBe(1);
-        expect(rootRelationTypes[0].label).toBe("Link");
+        const linkWithRelationType: RelationType = relationTypeDao.getRelationTypeByLabel("Link3");
+        expect(rootRelationTypes).toContain(linkWithRelationType);
 
         const relatedWithRelationType: RelationType = relationTypeDao.getRelationTypeByLabel("RelatedWith");
         const dislikeRelationType: RelationType = relationTypeDao.getRelationTypeByLabel("Dislike");
@@ -107,9 +107,9 @@ describe('RelationTypeDao basic tests', () => {
         const marriedToRelationType: RelationType = relationTypeDao.getRelationTypeByLabel("MarriedTo");
 
         // Assert parent ids
-        expect(relatedWithRelationType.parentRelationTypeIds[0]).toBe(rootRelationTypes[0].id);
-        expect(dislikeRelationType.parentRelationTypeIds[0]).toBe(rootRelationTypes[0].id);
-        expect(likeRelationType.parentRelationTypeIds[0]).toBe(rootRelationTypes[0].id);
+        expect(relatedWithRelationType.parentRelationTypeIds[0]).toBe(linkWithRelationType.id);
+        expect(dislikeRelationType.parentRelationTypeIds[0]).toBe(linkWithRelationType.id);
+        expect(likeRelationType.parentRelationTypeIds[0]).toBe(linkWithRelationType.id);
 
         expect(siblingOfRelationType.parentRelationTypeIds[0]).toBe(relatedWithRelationType.id);
         expect(ancesterOfRelationType.parentRelationTypeIds[0]).toBe(relatedWithRelationType.id);
@@ -123,7 +123,7 @@ describe('RelationTypeDao basic tests', () => {
         expect(fatherOfRelationType.parentRelationTypeIds[0]).toBe(parentOfRelationType.id);
         
         // Assert sub ids
-        expect(rootRelationTypes[0].subRelationTypeIds).toEqual([
+        expect(linkWithRelationType.subRelationTypeIds).toEqual([
             relatedWithRelationType.id, dislikeRelationType.id, likeRelationType.id
         ]);
         expect(relatedWithRelationType.subRelationTypeIds).toEqual([

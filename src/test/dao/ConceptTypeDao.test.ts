@@ -9,7 +9,7 @@ describe('ConceptTypeDao basic tests', () => {
         const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
 
         const conceptType: ConceptType = new ConceptType();
-        conceptType.label = "Entity";
+        conceptType.label = "Entity1";
         const generatedId: string = conceptTypeDao.insertConceptTypeAtRoot(conceptType);
 
         const savedConceptType: ConceptType = conceptTypeDao.getConceptTypeById(generatedId);
@@ -24,7 +24,7 @@ describe('ConceptTypeDao basic tests', () => {
         const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
 
         const parentConceptType: ConceptType = new ConceptType();
-        parentConceptType.label = "Entity";
+        parentConceptType.label = "Entity2";
         const parentGeneratedId: string = conceptTypeDao.insertConceptTypeAtRoot(parentConceptType);
 
         const subConceptType: ConceptType = new ConceptType();
@@ -87,8 +87,8 @@ describe('ConceptTypeDao basic tests', () => {
 
         conceptTypeDao.generateHierarchyFromObject(hierarchyToGenerate);
         const rootConceptTypes: ConceptType[] = conceptTypeDao.getRootConceptTypes();
-        expect(rootConceptTypes.length).toBe(1);
-        expect(rootConceptTypes[0].label).toBe("Entity");
+        const entityConceptType: ConceptType = conceptTypeDao.getConceptTypeByLabel("Entity");
+        expect(rootConceptTypes).toContain(entityConceptType);
 
         const humanConceptType: ConceptType = conceptTypeDao.getConceptTypeByLabel("Human");
         const adultConceptType: ConceptType = conceptTypeDao.getConceptTypeByLabel("Adult");
@@ -101,7 +101,7 @@ describe('ConceptTypeDao basic tests', () => {
         const boyConceptType: ConceptType = conceptTypeDao.getConceptTypeByLabel("Boy");
 
         // Assert parent ids
-        expect(humanConceptType.parentConceptTypeIds[0]).toBe(rootConceptTypes[0].id);
+        expect(humanConceptType.parentConceptTypeIds[0]).toBe(entityConceptType.id);
         expect(adultConceptType.parentConceptTypeIds[0]).toBe(humanConceptType.id);
         expect(femaleConceptType.parentConceptTypeIds[0]).toBe(humanConceptType.id);
         expect(childConceptType.parentConceptTypeIds[0]).toBe(humanConceptType.id);
@@ -113,7 +113,7 @@ describe('ConceptTypeDao basic tests', () => {
         expect(boyConceptType.parentConceptTypeIds).toEqual([childConceptType.id, maleConceptType.id]);
 
         // Assert sub ids
-        expect(rootConceptTypes[0].subConceptTypeIds[0]).toBe(humanConceptType.id);
+        expect(entityConceptType.subConceptTypeIds[0]).toBe(humanConceptType.id);
         expect(humanConceptType.subConceptTypeIds).toEqual([
             adultConceptType.id, femaleConceptType.id, childConceptType.id, maleConceptType.id
         ]);
@@ -138,8 +138,9 @@ describe('ConceptTypeDao basic tests', () => {
 
     it('Create Concept type as child', () => {
         const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
-        const rootConceptType: ConceptType = conceptTypeDao.createConceptType("RootConceptType");
+        let rootConceptType: ConceptType = conceptTypeDao.createConceptType("RootConceptType");
         const subConceptType: ConceptType = conceptTypeDao.createConceptType("SubConceptType", ["RootConceptType"]);
+        rootConceptType = conceptTypeDao.getConceptTypeByLabel("RootConceptType");
         expect(rootConceptType.subConceptTypeIds).toEqual([subConceptType.id]);
         expect(subConceptType.id).not.toBeNull();
         expect(subConceptType).toEqual({
