@@ -9,10 +9,17 @@ const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
 
 describe('ConceptDao basic tests', () => {
 
-    xit('create a concept', () => {
-        const conceptDao: ConceptDao = new InMemoryConceptDao();
+    it('create a concept', () => {
+        const conceptDao: ConceptDao = new InMemoryConceptDao(new InMemoryConceptTypeDao);
         const conceptType: ConceptType = conceptTypeDao.createConceptType("RootConceptType");
         const concept: Concept = conceptDao.createConcept("NewConcept", "RootConceptType", "TextReferent");
+        expect(concept.id).not.toBeNull();
+        expect(concept).toEqual({
+            id: concept.id,
+            label: "NewConcept",
+            conceptTypeLabels: ["RootConceptType"],
+            referent: "TextReferent"
+        });
     })
 
 })

@@ -2,6 +2,7 @@ import { ConceptType } from "./ConceptType";
 
 export class Concept {
     id: string;
-    conceptType: ConceptType
+    conceptTypeLabels: string[] = [];
+    label: string;
     referent: string;
 }
