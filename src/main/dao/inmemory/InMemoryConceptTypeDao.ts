@@ -22,9 +22,9 @@ export class InMemoryConceptTypeDao implements ConceptTypeDao {
         return foundConceptType;
     }
 
-    getConceptTypeByDescription(descriptionOfConceptTypeToFind: string): ConceptType {
+    getConceptTypeByLabel(labelOfConceptTypeToFind: string): ConceptType {
         const foundConceptType: ConceptType = this.conceptTypes.find((singleConceptType) => {
-            return (singleConceptType.description === descriptionOfConceptTypeToFind);
+            return (singleConceptType.label === labelOfConceptTypeToFind);
         })
         return foundConceptType;
     }
@@ -48,7 +48,7 @@ export class InMemoryConceptTypeDao implements ConceptTypeDao {
         hierarchyToGenerate.forEach((singleNewConceptType) => {
             // Insert current root node
             const rootConceptType: ConceptType = new ConceptType;
-            rootConceptType.description = singleNewConceptType.description;
+            rootConceptType.label = singleNewConceptType.label;
             this.insertConceptTypeAtRoot(rootConceptType);
 
             // insert child nodes recursively
@@ -59,8 +59,8 @@ export class InMemoryConceptTypeDao implements ConceptTypeDao {
     recursiveInsertSimpleConceptTypes(parentConceptType: ConceptType, subSimpleConceptTypes: SimpleConceptType[]) {
         if (parentConceptType && subSimpleConceptTypes) {
             subSimpleConceptTypes.forEach((singleNewSimpleConceptType) => {
-                // See if current description exists
-                const existingConceptType: ConceptType = this.getConceptTypeByDescription(singleNewSimpleConceptType.description);
+                // See if current label exists
+                const existingConceptType: ConceptType = this.getConceptTypeByLabel(singleNewSimpleConceptType.label);
                 if (existingConceptType) {
                     parentConceptType.subConceptTypeIds.push(existingConceptType.id);
                     existingConceptType.parentConceptTypeIds.push(parentConceptType.id);
@@ -68,7 +68,7 @@ export class InMemoryConceptTypeDao implements ConceptTypeDao {
                 } else {                
                     // Insert current node
                     const newConceptType: ConceptType = new ConceptType;
-                    newConceptType.description = singleNewSimpleConceptType.description;
+                    newConceptType.label = singleNewSimpleConceptType.label;
                     this.insertConceptTypeAsSubtype(parentConceptType, newConceptType);
     
                     // Insert child nodes recursively

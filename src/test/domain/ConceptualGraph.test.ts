@@ -22,13 +22,13 @@ describe('ConceptualGraph', () => {
         singleConcept.id = "C1";
         singleConcept.conceptType = new ConceptType();
         singleConcept.conceptType.id = "1";
-        singleConcept.conceptType.description = "Entity";
+        singleConcept.conceptType.label = "Entity";
         singleConcept.referent = "SingleConcept";
 
         const singleRelation: Relation = new Relation();
         singleRelation.id = "R1";
         singleRelation.relationType = new RelationType();
-        singleRelation.relationType.description = "Link";
+        singleRelation.relationType.label = "Link";
         singleRelation.relationType.signature = ["1"];
 
         conceptualGraph.addConcept(singleConcept);

@@ -9,7 +9,7 @@ describe('ConceptTypeDao basic tests', () => {
         const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
 
         const conceptType: ConceptType = new ConceptType();
-        conceptType.description = "Entity";
+        conceptType.label = "Entity";
         const generatedId: string = conceptTypeDao.insertConceptTypeAtRoot(conceptType);
 
         const savedConceptType: ConceptType = conceptTypeDao.getConceptTypeById(generatedId);
@@ -24,11 +24,11 @@ describe('ConceptTypeDao basic tests', () => {
         const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
 
         const parentConceptType: ConceptType = new ConceptType();
-        parentConceptType.description = "Entity";
+        parentConceptType.label = "Entity";
         const parentGeneratedId: string = conceptTypeDao.insertConceptTypeAtRoot(parentConceptType);
 
         const subConceptType: ConceptType = new ConceptType();
-        subConceptType.description = "Sub-entity";
+        subConceptType.label = "Sub-entity";
         const childGeneratedId: string = conceptTypeDao.insertConceptTypeAsSubtype(parentConceptType, subConceptType);
 
         const savedParentConceptType: ConceptType = conceptTypeDao.getConceptTypeById(parentGeneratedId);
@@ -49,34 +49,34 @@ describe('ConceptTypeDao basic tests', () => {
         const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
         const hierarchyToGenerate: SimpleConceptType[] = [
             {
-                description: "Entity",
+                label: "Entity",
                 subConceptTypes: [
                     {
-                        description: "Human",
+                        label: "Human",
                         subConceptTypes: [
                             {
-                                description: "Adult",
+                                label: "Adult",
                                 subConceptTypes: [
-                                    { description: "Woman" },
-                                    { description: "Man" }
+                                    { label: "Woman" },
+                                    { label: "Man" }
                                 ]
                             }, {
-                                description: "Female",
+                                label: "Female",
                                 subConceptTypes: [
-                                    { description: "Woman" },
-                                    { description: "Girl" }
+                                    { label: "Woman" },
+                                    { label: "Girl" }
                                 ]
                             }, {
-                                description: "Child",
+                                label: "Child",
                                 subConceptTypes: [
-                                    { description: "Girl" },
-                                    { description: "Boy" }
+                                    { label: "Girl" },
+                                    { label: "Boy" }
                                 ]
                             }, {
-                                description: "Male",
+                                label: "Male",
                                 subConceptTypes: [
-                                    { description: "Man" },
-                                    { description: "Boy" }
+                                    { label: "Man" },
+                                    { label: "Boy" }
                                 ]
                             }
                         ]
@@ -88,17 +88,17 @@ describe('ConceptTypeDao basic tests', () => {
         conceptTypeDao.generateHierarchyFromObject(hierarchyToGenerate);
         const rootConceptTypes: ConceptType[] = conceptTypeDao.getRootConceptTypes();
         expect(rootConceptTypes.length).toBe(1);
-        expect(rootConceptTypes[0].description).toBe("Entity");
+        expect(rootConceptTypes[0].label).toBe("Entity");
 
-        const humanConceptType: ConceptType = conceptTypeDao.getConceptTypeByDescription("Human");
-        const adultConceptType: ConceptType = conceptTypeDao.getConceptTypeByDescription("Adult");
-        const femaleConceptType: ConceptType = conceptTypeDao.getConceptTypeByDescription("Female");
-        const childConceptType: ConceptType = conceptTypeDao.getConceptTypeByDescription("Child");
-        const maleConceptType: ConceptType = conceptTypeDao.getConceptTypeByDescription("Male");
-        const womanConceptType: ConceptType = conceptTypeDao.getConceptTypeByDescription("Woman");
-        const manConceptType: ConceptType = conceptTypeDao.getConceptTypeByDescription("Man");
-        const girlConceptType: ConceptType = conceptTypeDao.getConceptTypeByDescription("Girl");
-        const boyConceptType: ConceptType = conceptTypeDao.getConceptTypeByDescription("Boy");
+        const humanConceptType: ConceptType = conceptTypeDao.getConceptTypeByLabel("Human");
+        const adultConceptType: ConceptType = conceptTypeDao.getConceptTypeByLabel("Adult");
+        const femaleConceptType: ConceptType = conceptTypeDao.getConceptTypeByLabel("Female");
+        const childConceptType: ConceptType = conceptTypeDao.getConceptTypeByLabel("Child");
+        const maleConceptType: ConceptType = conceptTypeDao.getConceptTypeByLabel("Male");
+        const womanConceptType: ConceptType = conceptTypeDao.getConceptTypeByLabel("Woman");
+        const manConceptType: ConceptType = conceptTypeDao.getConceptTypeByLabel("Man");
+        const girlConceptType: ConceptType = conceptTypeDao.getConceptTypeByLabel("Girl");
+        const boyConceptType: ConceptType = conceptTypeDao.getConceptTypeByLabel("Boy");
 
         // Assert parent ids
         expect(humanConceptType.parentConceptTypeIds[0]).toBe(rootConceptTypes[0].id);

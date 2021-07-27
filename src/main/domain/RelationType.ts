@@ -1,6 +1,6 @@
 export class RelationType {
     id: string;
-    description: string;
+    label: string;
     subRelationTypeIds: string[] = [];
     parentRelationTypeIds: string[] = [];
     signature: string[];

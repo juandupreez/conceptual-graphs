@@ -1,6 +1,6 @@
 export class ConceptType {
     id: string;
-    description: string;
+    label: string;
     parentConceptTypeIds: string[] = [];
     subConceptTypeIds: string[] = [];
 }

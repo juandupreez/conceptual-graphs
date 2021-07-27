@@ -1,11 +1,11 @@
 import { RelationType } from "../domain/RelationType";
 
 export interface SimpleRelationType {
-    description: string;
+    label: string;
     subRelationTypes?: SimpleRelationType[]
 }
 export interface RelationTypeDao {
-    getRelationTypeByDescription(arg0: string): RelationType;
+    getRelationTypeByLabel(arg0: string): RelationType;
     getRootRelationTypes(): RelationType[];
     generateHierarchyFromObject(hierarchyToGenerate: SimpleRelationType[]);
     insertRelationTypeAsSubtype(parentRelationType: RelationType, subRelationType: RelationType): string;

@@ -31,9 +31,9 @@ export class InMemoryRelationTypeDao implements RelationTypeDao {
         return generatedId; 
     }
     
-    getRelationTypeByDescription(descriptionOfRelationTypeToFind: string): RelationType {
+    getRelationTypeByLabel(labelOfRelationTypeToFind: string): RelationType {
         const foundRelationType: RelationType = this.relationTypes.find((singleRelationType) => {
-            return (singleRelationType.description === descriptionOfRelationTypeToFind);
+            return (singleRelationType.label === labelOfRelationTypeToFind);
         })
         return foundRelationType;
     }
@@ -48,7 +48,7 @@ export class InMemoryRelationTypeDao implements RelationTypeDao {
         hierarchyToGenerate.forEach((singleNewRelationType) => {
             // Insert current root node
             const rootRelationType: RelationType = new RelationType;
-            rootRelationType.description = singleNewRelationType.description;
+            rootRelationType.label = singleNewRelationType.label;
             this.insertRelationTypeAtRoot(rootRelationType);
 
             // insert child nodes recursively
@@ -59,8 +59,8 @@ export class InMemoryRelationTypeDao implements RelationTypeDao {
     recursiveInsertSimpleRelationTypes(parentRelationType: RelationType, subSimpleRelationTypes: SimpleRelationType[]) {
         if (parentRelationType && subSimpleRelationTypes) {
             subSimpleRelationTypes.forEach((singleNewSimpleRelationType) => {
-                // See if current description exists
-                const existingRelationType: RelationType = this.getRelationTypeByDescription(singleNewSimpleRelationType.description);
+                // See if current label exists
+                const existingRelationType: RelationType = this.getRelationTypeByLabel(singleNewSimpleRelationType.label);
                 if (existingRelationType) {
                     parentRelationType.subRelationTypeIds.push(existingRelationType.id);
                     existingRelationType.parentRelationTypeIds.push(parentRelationType.id);
@@ -68,7 +68,7 @@ export class InMemoryRelationTypeDao implements RelationTypeDao {
                 } else {                
                     // Insert current node
                     const newRelationType: RelationType = new RelationType;
-                    newRelationType.description = singleNewSimpleRelationType.description;
+                    newRelationType.label = singleNewSimpleRelationType.label;
                     this.insertRelationTypeAsSubtype(parentRelationType, newRelationType);
     
                     // Insert child nodes recursively
