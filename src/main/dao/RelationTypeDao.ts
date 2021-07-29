@@ -11,4 +11,5 @@ export interface RelationTypeDao {
     insertRelationTypeAsSubtype(parentRelationType: RelationType, subRelationType: RelationType): string;
     getRelationTypeById(generatedId: string): RelationType;
     insertRelationTypeAtRoot(relationType: RelationType): string;
+    createRelationType(newRelationTypeLabel: string, conceptTypeLabelsInSignature: string[], parentLabels?: string[]): RelationType;
 }

@@ -1,8 +1,11 @@
 import { RelationType } from "../../main/domain/RelationType";
 import { RelationTypeDao, SimpleRelationType } from "../../main/dao/RelationTypeDao";
 import { InMemoryRelationTypeDao } from "../../main/dao/inmemory/InMemoryRelationTypeDao";
+import { ConceptTypeDao } from "../../main/dao/ConceptTypeDao";
+import { InMemoryConceptTypeDao } from "../../main/dao/inmemory/InMemoryConceptTypeDao";
 
-const relationTypeDao: RelationTypeDao = new InMemoryRelationTypeDao();
+const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
+const relationTypeDao: RelationTypeDao = new InMemoryRelationTypeDao(conceptTypeDao);
 
 describe('RelationTypeDao basic tests', () => {
 
@@ -21,7 +24,7 @@ describe('RelationTypeDao basic tests', () => {
     })
 
     it('insert relation type as child of parent', () => {
-        const relationTypeDao: RelationTypeDao = new InMemoryRelationTypeDao();
+        const relationTypeDao: RelationTypeDao = new InMemoryRelationTypeDao(conceptTypeDao);
 
         const parentRelationType: RelationType = new RelationType();
         parentRelationType.label = "Link2";
@@ -46,7 +49,7 @@ describe('RelationTypeDao basic tests', () => {
     })
 
     it('Generate concept type hierarchy from JSON structure', () => {   
-        const relationTypeDao: RelationTypeDao = new InMemoryRelationTypeDao();
+        const relationTypeDao: RelationTypeDao = new InMemoryRelationTypeDao(conceptTypeDao);
         const hierarchyToGenerate: SimpleRelationType[] = [
             {
                 label: "Link3",

@@ -4,6 +4,7 @@ export class IdGenerator {
     curConceptTypeId: number = 1;
     curRelationTypeId: number = 1;
     curConceptId: number = 1;
+    curRelationId: number = 1;
 
     static getInstance(): IdGenerator {
         if (!this.instance) {
@@ -25,6 +26,11 @@ export class IdGenerator {
     getNextUniqueConceptId() {
         const curConceptId: number = this.curConceptId++;
         return curConceptId.toString();
+    }
+
+    getNextUniqueRelationId() {
+        const curRelationId: number = this.curRelationId++;
+        return curRelationId.toString();
     }
 
 }

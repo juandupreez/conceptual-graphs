@@ -1,5 +1,6 @@
 import { RelationType } from "../../domain/RelationType";
 import { IdGenerator } from "../../util/IdGenerator";
+import { ConceptTypeDao } from "../ConceptTypeDao";
 import { RelationTypeDao, SimpleRelationType } from "../RelationTypeDao";
 import { Store } from "./store/Store";
 
@@ -7,6 +8,10 @@ export class InMemoryRelationTypeDao implements RelationTypeDao {
 
     relationTypes: RelationType[] = Store.getInstance().state.relationTypes;
     rootRelationTypeIds: string[] = Store.getInstance().state.rootRelationTypeIds;
+
+    constructor(relationTypeDao: ConceptTypeDao) {
+
+    }
 
     insertRelationTypeAtRoot(relationType: RelationType): string {
         const generatedId = IdGenerator.getInstance().getNextUniqueRelationTypeId();
@@ -78,6 +83,27 @@ export class InMemoryRelationTypeDao implements RelationTypeDao {
                 }
             })
         }
+    }
+
+    createRelationType(newRelationTypeLabel: string, conceptTypeLabelsInSignature: string[], 
+        parentLabels?: string[]): RelationType {
+        const newRelationType: RelationType = new RelationType();
+        newRelationType.label = newRelationTypeLabel;
+        const generatedId = IdGenerator.getInstance().getNextUniqueRelationTypeId();
+        newRelationType.id = generatedId;
+        newRelationType.signature = conceptTypeLabelsInSignature;
+        this.relationTypes.push(newRelationType);
+
+        if (parentLabels) {
+            parentLabels.forEach((singleParentLabel) => {
+                const parentRelationType = this.getRelationTypeByLabel(singleParentLabel);
+                parentRelationType.subRelationTypeIds.push(newRelationType.id);
+                newRelationType.parentRelationTypeIds.push(parentRelationType.id);
+            });
+        } else {
+            this.rootRelationTypeIds.push(generatedId);
+        }
+        return newRelationType;
     }
 
 }
