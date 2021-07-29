@@ -1,5 +1,9 @@
 export class ConceptRelationEdge {
-    conceptId: string;
-    relationId: string;
+    id: {
+        edgeId: string;
+        conceptualGraphId: string
+    }
+    conceptLabel: string;
+    relationLabel: string;
     isFromConceptToRelation: boolean;
 }
