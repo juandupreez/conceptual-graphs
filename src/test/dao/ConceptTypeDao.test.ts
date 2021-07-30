@@ -1,52 +1,124 @@
 import { ConceptType } from "../../main/domain/ConceptType";
 import { ConceptTypeDao, SimpleConceptType } from "../../main/dao/ConceptTypeDao";
 import { InMemoryConceptTypeDao } from "../../main/dao/inmemory/InMemoryConceptTypeDao";
+import { Concept } from "../../main/domain/Concept";
 
+const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
 
 describe('ConceptTypeDao basic tests', () => {
 
-    it('insert then get concept type', () => {
-        const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
+    it('Create Concept type at root', () => {
+        const conceptType: ConceptType = conceptTypeDao.createConceptType("RootConceptType1");
+        expect(conceptType.id).not.toBeNull();
+        expect(conceptType).toEqual({
+            id: conceptType.id,
+            label: "RootConceptType1",
+            parentConceptTypeIds: [],
+            subConceptTypeIds: []
+        });
+    })
 
+    it('Create Concept type as child', () => {
+        let rootConceptType: ConceptType = conceptTypeDao.createConceptType("RootConceptType2");
+        const subConceptType: ConceptType = conceptTypeDao.createConceptType("SubConceptType1", ["RootConceptType2"]);
+        rootConceptType = conceptTypeDao.getConceptTypeByLabel("RootConceptType2");
+        expect(rootConceptType.subConceptTypeIds).toEqual([subConceptType.id]);
+        expect(subConceptType.id).not.toBeNull();
+        expect(subConceptType).toEqual({
+            id: subConceptType.id,
+            label: "SubConceptType1",
+            parentConceptTypeIds: [rootConceptType.id],
+            subConceptTypeIds: []
+        });
+    })
+
+    it('Error: Create Concept type with non-existent parent should throw error', () => {
+        expect(() => conceptTypeDao.createConceptType("SubConceptType2", ["RootConceptType3"]))
+            .toThrow("Could not create concept 'SubConceptType2'. No parent concept type with label: 'RootConceptType3'.");
+    })
+
+    it('Error: Create Duplicate Concept type should throw error', () => {
+        let rootConceptType: ConceptType = conceptTypeDao.createConceptType("RootConceptType4");
+        const subConceptType: ConceptType = conceptTypeDao.createConceptType("SubConceptType3", ["RootConceptType4"]);
+        expect(() => conceptTypeDao.createConceptType("SubConceptType3", ["RootConceptType4"]))
+            .toThrow("Could not create concept 'SubConceptType3'. A concept with that label already exists.");
+    })
+
+    it('Insert concept type at root then get by id', () => {
         const conceptType: ConceptType = new ConceptType();
         conceptType.label = "Entity1";
-        const generatedId: string = conceptTypeDao.insertConceptTypeAtRoot(conceptType);
+        const savedConceptType: ConceptType = conceptTypeDao.insertConceptTypeAtRoot(conceptType);
 
-        const savedConceptType: ConceptType = conceptTypeDao.getConceptTypeById(generatedId);
-        expect(savedConceptType).toEqual({
-            ...conceptType,
-            id: generatedId
-        });
+        const gottenConceptType: ConceptType = conceptTypeDao.getConceptTypeById(savedConceptType.id);
+        expect(savedConceptType).toEqual(gottenConceptType);
+    })
 
+    it('Error: insert concept type at root with given id should throw error', () => {
+        const conceptType: ConceptType = new ConceptType();
+        conceptType.id = "cutom_made_id";
+        conceptType.label = "Entity2";
+        expect(() => conceptTypeDao.insertConceptTypeAtRoot(conceptType))
+            .toThrow("Cannot create concept. Expected id to be null but instead it was: 'cutom_made_id'");
+    })
+
+    it('Error: insert duplicate concept type should throw error', () => {
+        const conceptType: ConceptType = new ConceptType();
+        conceptType.label = "Entity3";
+        const conceptTypeDuplicate: ConceptType = { ...conceptType };
+        const savedConceptType: ConceptType = conceptTypeDao.insertConceptTypeAtRoot(conceptType);
+        expect(() => conceptTypeDao.insertConceptTypeAtRoot(conceptTypeDuplicate))
+            .toThrow("Could not create concept 'Entity3'. A concept with that label already exists.");
     })
 
     it('insert concept type as child of parent', () => {
-        const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
-
         const parentConceptType: ConceptType = new ConceptType();
-        parentConceptType.label = "Entity2";
-        const parentGeneratedId: string = conceptTypeDao.insertConceptTypeAtRoot(parentConceptType);
+        parentConceptType.label = "Entity4";
+        const savedConceptType1: ConceptType = conceptTypeDao.insertConceptTypeAtRoot(parentConceptType);
 
         const subConceptType: ConceptType = new ConceptType();
-        subConceptType.label = "Sub-entity";
-        const childGeneratedId: string = conceptTypeDao.insertConceptTypeAsSubtype(parentConceptType, subConceptType);
+        subConceptType.label = "Sub-entity4";
+        const savedConceptType2: ConceptType = conceptTypeDao.insertConceptTypeAsSubtype(subConceptType, parentConceptType);
 
-        const savedParentConceptType: ConceptType = conceptTypeDao.getConceptTypeById(parentGeneratedId);
+        const savedParentConceptType: ConceptType = conceptTypeDao.getConceptTypeById(savedConceptType1.id);
         expect(savedParentConceptType).toEqual({
             ...parentConceptType,
-            subConceptTypeIds: [childGeneratedId]
+            subConceptTypeIds: [savedConceptType2.id]
         });
 
-        const savedSubConceptType: ConceptType = conceptTypeDao.getConceptTypeById(childGeneratedId);
+        const savedSubConceptType: ConceptType = conceptTypeDao.getConceptTypeById(savedConceptType2.id);
         expect(savedSubConceptType).toEqual({
             ...subConceptType,
-            parentConceptTypeIds: [parentGeneratedId]
+            parentConceptTypeIds: [savedConceptType1.id]
         });
 
     })
 
+    it('Error: insert concept type as subtype with given id should throw error', () => {
+        const parentConceptType: ConceptType = new ConceptType();
+        parentConceptType.label = "Entity5";
+        const savedParentConceptType: ConceptType = conceptTypeDao.insertConceptTypeAtRoot(parentConceptType);
+
+        const conceptType: ConceptType = new ConceptType();
+        conceptType.id = "cutom_made_id";
+        conceptType.label = "SubEntity5";
+        expect(() => conceptTypeDao.insertConceptTypeAsSubtype(conceptType, savedParentConceptType))
+            .toThrow("Cannot create concept. Expected id to be null but instead it was: 'cutom_made_id'");
+    })
+
+    it('Error: insert duplicate concept type as subtype should throw error', () => {
+        const parentConceptType: ConceptType = new ConceptType();
+        parentConceptType.label = "Entity6";
+        const savedParentConceptType: ConceptType = conceptTypeDao.insertConceptTypeAtRoot(parentConceptType);
+
+        const conceptType: ConceptType = new ConceptType();
+        conceptType.label = "SubEntity6";
+        const conceptTypeDuplicate: ConceptType = { ...conceptType };
+        const savedConceptType: ConceptType = conceptTypeDao.insertConceptTypeAsSubtype(conceptType, savedParentConceptType);
+        expect(() => conceptTypeDao.insertConceptTypeAtRoot(conceptTypeDuplicate))
+            .toThrow("Could not create concept 'SubEntity6'. A concept with that label already exists.");
+    })
+
     it('Generate concept type hierarchy from JSON structure', () => {
-        const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
         const hierarchyToGenerate: SimpleConceptType[] = [
             {
                 label: "Entity",
@@ -122,33 +194,6 @@ describe('ConceptTypeDao basic tests', () => {
         expect(childConceptType.subConceptTypeIds).toEqual([girlConceptType.id, boyConceptType.id]);
         expect(maleConceptType.subConceptTypeIds).toEqual([manConceptType.id, boyConceptType.id]);
 
-    })
-
-    it('Create Concept type at root', () => {
-        const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
-        const conceptType: ConceptType = conceptTypeDao.createConceptType("RootConceptType");
-        expect(conceptType.id).not.toBeNull();
-        expect(conceptType).toEqual({
-            id: conceptType.id,
-            label: "RootConceptType",
-            parentConceptTypeIds: [],
-            subConceptTypeIds: []
-        });
-    })
-
-    it('Create Concept type as child', () => {
-        const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
-        let rootConceptType: ConceptType = conceptTypeDao.createConceptType("RootConceptType");
-        const subConceptType: ConceptType = conceptTypeDao.createConceptType("SubConceptType", ["RootConceptType"]);
-        rootConceptType = conceptTypeDao.getConceptTypeByLabel("RootConceptType");
-        expect(rootConceptType.subConceptTypeIds).toEqual([subConceptType.id]);
-        expect(subConceptType.id).not.toBeNull();
-        expect(subConceptType).toEqual({
-            id: subConceptType.id,
-            label: "SubConceptType",
-            parentConceptTypeIds: [rootConceptType.id],
-            subConceptTypeIds: []
-        });
     })
 
 })

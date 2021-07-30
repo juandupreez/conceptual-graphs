@@ -6,10 +6,27 @@ export interface SimpleConceptType {
 }
 export interface ConceptTypeDao {
     createConceptType(newLabel: string, parentLabels?: string[]): ConceptType;
-    getConceptTypeByLabel(label: string);
-    getRootConceptTypes(): any;
-    generateHierarchyFromObject(hierarchyToGenerate: SimpleConceptType[]);
-    insertConceptTypeAsSubtype(parentConceptType: ConceptType, subConceptType: ConceptType): string;
-    getConceptTypeById(generatedId: string): ConceptType;
-    insertConceptTypeAtRoot(conceptType: ConceptType): string;
+    // insertConceptType(conceptType: ConceptType, parentConceptTypes: ConceptType[]): ConceptType;
+    insertConceptTypeAtRoot(conceptType: ConceptType): ConceptType;
+    insertConceptTypeAsSubtype(subConceptType: ConceptType, parentConceptType: ConceptType): ConceptType;
+    getConceptTypeById(conceptTypeId: string): ConceptType;
+    getConceptTypeByLabel(label: string): ConceptType;
+    getRootConceptTypes(): ConceptType[];
+    // updateConceptType(concpetType: ConceptType): void;
+    // deleteConceptType(conceptTypeId: string): void;
+    generateHierarchyFromObject(hierarchyToGenerate: SimpleConceptType[]): void;
+}
+
+export class NoSuchConceptTypeError extends Error {
+    constructor(msg: string) {
+        super(msg);
+        Object.setPrototypeOf(this, NoSuchConceptTypeError.prototype);
+    }
+}
+
+export class UniqueConceptTypeViolationError extends Error {
+    constructor(msg: string) {
+        super(msg);
+        Object.setPrototypeOf(this, UniqueConceptTypeViolationError.prototype);
+    }
 }
