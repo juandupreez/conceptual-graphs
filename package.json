@@ -1,10 +1,11 @@
 {
-  "name": "conceptual-graph-tests",
+  "name": "conceptual-graphs",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build": "tsc"
   },
   "author": "",
   "license": "ISC",
