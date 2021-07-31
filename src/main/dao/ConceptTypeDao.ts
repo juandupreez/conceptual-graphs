@@ -9,7 +9,7 @@ export interface ConceptTypeDao {
     getConceptTypeById(conceptTypeId: string): ConceptType;
     getConceptTypeByLabel(label: string): ConceptType;
     getRootConceptTypes(): ConceptType[];
-    // updateConceptType(concpetType: ConceptType): void;
+    updateConceptType(concpetType: ConceptType): ConceptType;
     // deleteConceptType(conceptTypeId: string): void;
     importHierarchyFromSimpleConceptTypes(hierarchyToGenerate: SimpleConceptType[]): void;
 }

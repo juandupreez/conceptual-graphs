@@ -59,6 +59,26 @@ export class InMemoryConceptTypeDao implements ConceptTypeDao {
         })
     }
 
+    updateConceptType(conceptTypeToUpdate: ConceptType): ConceptType {
+        const oldConceptType: ConceptType = this.getConceptTypeById(conceptTypeToUpdate.id);
+
+        // Update Labels of the item, parent references, and sub references
+        this.conceptTypes.forEach((singleConceptType: ConceptType) => {
+            if (singleConceptType.id === conceptTypeToUpdate.id) {
+                singleConceptType.label = conceptTypeToUpdate.label;
+            }
+            const indexOfOldLabelInParents: number = singleConceptType.parentConceptTypeLabels.indexOf(oldConceptType.label);
+            if (indexOfOldLabelInParents !== -1) {
+                singleConceptType.parentConceptTypeLabels[indexOfOldLabelInParents] = conceptTypeToUpdate.label;
+            }
+            const indexOfOldLabelInSubs: number = singleConceptType.subConceptTypeLabels.indexOf(oldConceptType.label);
+            if (indexOfOldLabelInSubs !== -1) {
+                singleConceptType.subConceptTypeLabels[indexOfOldLabelInSubs] = conceptTypeToUpdate.label;
+            }
+        })
+        return this.getConceptTypeByLabel(conceptTypeToUpdate.label);
+    }
+
     importHierarchyFromSimpleConceptTypes(hierarchyToGenerate: SimpleConceptType[]): void {
         hierarchyToGenerate.forEach((singleNewConceptType) => {
             // Insert current root node

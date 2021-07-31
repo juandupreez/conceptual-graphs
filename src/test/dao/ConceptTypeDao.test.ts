@@ -9,6 +9,8 @@ const testRootConceptTypeLabelPrefix1: string = 'TestRootConcept1-';
 const testRootConceptTypeLabelPrefix2: string = 'TestRootConcept2-';
 const testSubConceptTypeLabelPrefix1: string = 'TestSubConcept1-';
 const testSubConceptTypeLabelPrefix2: string = 'TestSubConcept2-';
+const testSubSubConceptTypeLabelPrefix1: string = 'TestSubSubConcept1-';
+const testSubSubConceptTypeLabelPrefix2: string = 'TestSubSubConcept2-';
 
 describe('ConceptTypeDao basic tests', () => {
 
@@ -70,7 +72,7 @@ describe('ConceptTypeDao basic tests', () => {
         });
     })
 
-    it('Create Concept Type should create transient object', () => {
+    it('Create Concept Type should return transient object', () => {
         const testId: string = IdGenerator.getInstance().getNextUniquTestId();
         const testRootConceptTypeLabel: string = testRootConceptTypeLabelPrefix1 + testId;
 
@@ -108,6 +110,121 @@ describe('ConceptTypeDao basic tests', () => {
 
         expect(() => conceptTypeDao.createConceptType(newSubConceptTypeLabel, [testRootConceptTypeLabel]))
             .toThrow(`Could not create concept '${newSubConceptTypeLabel}'. A concept with that label already exists.`);
+    })
+
+    xit('Error: Create Concept Type with parent as itself should throw error', () => {
+    })
+
+    xit('Get Concept Type by Id', () => {
+    })
+
+    xit('Get Concept Type by label', () => {
+    })
+
+    xit('Get Root Concept Types', () => {
+    })
+
+    xit('Error: Get Concept Type by Id when none exist should throw error', () => {
+    })
+
+    xit('Error: Get Concept Type by label when none exist should throw error', () => {
+    })
+
+    it('Update Root Concept Type label', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const originalConceptTypeLabel: string = testRootConceptTypeLabelPrefix1 + testId + '-old';
+        const newConceptTypeLabel: string = testRootConceptTypeLabelPrefix2 + testId + '-new';
+        const createdConceptType: ConceptType = conceptTypeDao.createConceptType(originalConceptTypeLabel);
+        const conceptTypeToUpdate: ConceptType = { ...createdConceptType, label: newConceptTypeLabel };
+
+        const updatedConceptType: ConceptType = conceptTypeDao.updateConceptType(conceptTypeToUpdate);
+
+        const savedConceptType: ConceptType = conceptTypeDao.getConceptTypeByLabel(newConceptTypeLabel);
+        expect(updatedConceptType).toEqual(savedConceptType);
+        expect(updatedConceptType).not.toEqual(createdConceptType);
+    })
+
+    it('Update Sub Concept Type label', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const rootConceptTypeLabel: string = testRootConceptTypeLabelPrefix1 + testId;
+        const oldConceptTypeLabel: string = testSubConceptTypeLabelPrefix1 + testId + '-old';
+        const newConceptTypeLabel: string = testSubConceptTypeLabelPrefix2 + testId + '-new';
+        const rootConceptType: ConceptType = conceptTypeDao.createConceptType(rootConceptTypeLabel);
+        const createdConceptType: ConceptType = conceptTypeDao.createConceptType(oldConceptTypeLabel, [rootConceptTypeLabel]);
+        const conceptTypeToUpdate: ConceptType = { ...createdConceptType, label: newConceptTypeLabel };
+
+        const updatedConceptType: ConceptType = conceptTypeDao.updateConceptType(conceptTypeToUpdate);
+
+        const savedConceptType: ConceptType = conceptTypeDao.getConceptTypeByLabel(newConceptTypeLabel);
+        expect(updatedConceptType).toEqual(savedConceptType);
+        expect(updatedConceptType).not.toEqual(createdConceptType);
+    })
+
+    it('Update Concept Type label should update parent and sub concept types', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const rootConceptTypeLabel: string = testRootConceptTypeLabelPrefix1 + testId;
+        const oldConceptTypeLabel: string = testSubConceptTypeLabelPrefix1 + testId + '-old';
+        const newConceptTypeLabel: string = testSubConceptTypeLabelPrefix2 + testId + '-new';
+        const subSubConceptTypeLabel: string = testSubSubConceptTypeLabelPrefix1 + testId;
+        const oldRootConceptType: ConceptType = conceptTypeDao.createConceptType(rootConceptTypeLabel);
+        const createdConceptType: ConceptType = conceptTypeDao.createConceptType(oldConceptTypeLabel, [rootConceptTypeLabel]);
+        const oldSubSubConceptType: ConceptType = conceptTypeDao.createConceptType(subSubConceptTypeLabel, [oldConceptTypeLabel]);
+        const conceptTypeToUpdate: ConceptType = { ...createdConceptType, label: newConceptTypeLabel };
+
+        const updatedConceptType: ConceptType = conceptTypeDao.updateConceptType(conceptTypeToUpdate);
+
+        const newRootConceptType: ConceptType = conceptTypeDao.getConceptTypeByLabel(rootConceptTypeLabel);
+        const newSubSubConceptType: ConceptType = conceptTypeDao.getConceptTypeByLabel(subSubConceptTypeLabel);
+        expect(newRootConceptType.subConceptTypeLabels[0]).toBe(newConceptTypeLabel);
+        expect(newSubSubConceptType.parentConceptTypeLabels[0]).toBe(newConceptTypeLabel);
+    })
+
+    xit('Update Concept Type structure to add parent', () => {
+    })
+
+    xit('Update Concept Type structure to add parent and remove from root', () => {
+    })
+
+    xit('Update Concept Type structure to remove parent but not move to root', () => {
+    })
+
+    xit('Update Concept Type structure to remove parent and move to root', () => {
+    })
+
+    xit('Update Concept Type structure to add parent', () => {
+    })
+
+    xit('Update Concept Type structure to add child and remove child from root', () => {
+    })
+
+    xit('Error: Update Concept Type with no id should throw error', () => {
+    })
+
+    xit('Error: Update Concept Type label to something that already exists should throw error', () => {
+    })
+
+    xit('Error: Update Concept Type structure to leave orphan child should throw error', () => {
+    })
+
+    xit('Error: Update Concept Type structure to add child which is itself should throw error', () => {
+    })
+
+    xit('Error: Update Concept Type structure to add parent which is itself should throw error', () => {
+    })
+
+    xit('Delete Concept Type from root', () => {
+    })
+
+    xit('Delete Sub Concept Type', () => {
+    })
+
+    xit('Delete All Sub Concept Types Recursively (Cascade)', () => {
+    })
+
+    xit('Error: Delete Concept Type which does not exist should throw error', () => {
+    })
+
+    xit('Error: Delete Concept Type which leaves orphan should throw error', () => {
     })
 
     it('Generate big concept type hierarchy from JSON structure', () => {
@@ -187,5 +304,4 @@ describe('ConceptTypeDao basic tests', () => {
         expect(maleConceptType.subConceptTypeLabels).toEqual([manConceptType.label, boyConceptType.label]);
     })
 
-    
 })
