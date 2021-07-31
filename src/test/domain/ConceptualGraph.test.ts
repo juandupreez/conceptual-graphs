@@ -89,7 +89,7 @@ describe('ConceptualGraph', () => {
                 { label: "Mat" }
             ]
         }]
-        conceptTypeDao.generateHierarchyFromObject(conceptTypeHierarchy);
+        conceptTypeDao.importHierarchyFromSimpleConceptTypes(conceptTypeHierarchy);
 
         const relationTypeHierarchy: SimpleRelationType[] = [{
             label: "Link",

@@ -6,15 +6,12 @@ export interface SimpleConceptType {
 }
 export interface ConceptTypeDao {
     createConceptType(newLabel: string, parentLabels?: string[]): ConceptType;
-    // insertConceptType(conceptType: ConceptType, parentConceptTypes: ConceptType[]): ConceptType;
-    insertConceptTypeAtRoot(conceptType: ConceptType): ConceptType;
-    insertConceptTypeAsSubtype(subConceptType: ConceptType, parentConceptType: ConceptType): ConceptType;
     getConceptTypeById(conceptTypeId: string): ConceptType;
     getConceptTypeByLabel(label: string): ConceptType;
     getRootConceptTypes(): ConceptType[];
     // updateConceptType(concpetType: ConceptType): void;
     // deleteConceptType(conceptTypeId: string): void;
-    generateHierarchyFromObject(hierarchyToGenerate: SimpleConceptType[]): void;
+    importHierarchyFromSimpleConceptTypes(hierarchyToGenerate: SimpleConceptType[]): void;
 }
 
 export class NoSuchConceptTypeError extends Error {

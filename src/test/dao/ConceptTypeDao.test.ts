@@ -1,124 +1,116 @@
 import { ConceptType } from "../../main/domain/ConceptType";
 import { ConceptTypeDao, SimpleConceptType } from "../../main/dao/ConceptTypeDao";
 import { InMemoryConceptTypeDao } from "../../main/dao/inmemory/InMemoryConceptTypeDao";
-import { Concept } from "../../main/domain/Concept";
+import { IdGenerator } from "../../main/util/IdGenerator";
 
 const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
 
+const testRootConceptTypeLabelPrefix1: string = 'TestRootConcept1-';
+const testRootConceptTypeLabelPrefix2: string = 'TestRootConcept2-';
+const testSubConceptTypeLabelPrefix1: string = 'TestSubConcept1-';
+const testSubConceptTypeLabelPrefix2: string = 'TestSubConcept2-';
+
 describe('ConceptTypeDao basic tests', () => {
 
-    it('Create Concept type at root', () => {
-        const conceptType: ConceptType = conceptTypeDao.createConceptType("RootConceptType1");
+    it('Create Concept Type at root', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const testRootConceptTypeLabel: string = testRootConceptTypeLabelPrefix1 + testId;
+
+        const conceptType: ConceptType = conceptTypeDao.createConceptType(testRootConceptTypeLabel);
+
         expect(conceptType.id).not.toBeNull();
         expect(conceptType).toEqual({
             id: conceptType.id,
-            label: "RootConceptType1",
-            parentConceptTypeIds: [],
-            subConceptTypeIds: []
+            label: testRootConceptTypeLabel,
+            parentConceptTypeLabels: [],
+            subConceptTypeLabels: []
         });
     })
 
-    it('Create Concept type as child', () => {
-        let rootConceptType: ConceptType = conceptTypeDao.createConceptType("RootConceptType2");
-        const subConceptType: ConceptType = conceptTypeDao.createConceptType("SubConceptType1", ["RootConceptType2"]);
-        rootConceptType = conceptTypeDao.getConceptTypeByLabel("RootConceptType2");
-        expect(rootConceptType.subConceptTypeIds).toEqual([subConceptType.id]);
+    it('Create Concept Type as child of single existing parent', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const existingParentConceptTypeLabel: string = testRootConceptTypeLabelPrefix1 + testId;
+        const newSubConceptTypeLabel: string = testSubConceptTypeLabelPrefix1 + testId;
+        let rootConceptType: ConceptType = conceptTypeDao.createConceptType(existingParentConceptTypeLabel);
+
+        const subConceptType: ConceptType = conceptTypeDao.createConceptType(newSubConceptTypeLabel, [existingParentConceptTypeLabel]);
+
+        rootConceptType = conceptTypeDao.getConceptTypeByLabel(existingParentConceptTypeLabel);
+        expect(rootConceptType.subConceptTypeLabels).toEqual([subConceptType.label]);
         expect(subConceptType.id).not.toBeNull();
         expect(subConceptType).toEqual({
             id: subConceptType.id,
-            label: "SubConceptType1",
-            parentConceptTypeIds: [rootConceptType.id],
-            subConceptTypeIds: []
+            label: newSubConceptTypeLabel,
+            parentConceptTypeLabels: [existingParentConceptTypeLabel],
+            subConceptTypeLabels: []
         });
     })
 
-    it('Error: Create Concept type with non-existent parent should throw error', () => {
-        expect(() => conceptTypeDao.createConceptType("SubConceptType2", ["RootConceptType3"]))
-            .toThrow("Could not create concept 'SubConceptType2'. No parent concept type with label: 'RootConceptType3'.");
-    })
+    it('Create Concept Type as child of two existing parents', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const existingParentConceptTypeLabel1: string = testRootConceptTypeLabelPrefix1 + testId;
+        const existingParentConceptTypeLabel2: string = testRootConceptTypeLabelPrefix2 + testId;
+        const newSubConceptTypeLabel: string = testSubConceptTypeLabelPrefix1 + testId;
+        let rootConceptType1: ConceptType = conceptTypeDao.createConceptType(existingParentConceptTypeLabel1);
+        let rootConceptType2: ConceptType = conceptTypeDao.createConceptType(existingParentConceptTypeLabel2);
 
-    it('Error: Create Duplicate Concept type should throw error', () => {
-        let rootConceptType: ConceptType = conceptTypeDao.createConceptType("RootConceptType4");
-        const subConceptType: ConceptType = conceptTypeDao.createConceptType("SubConceptType3", ["RootConceptType4"]);
-        expect(() => conceptTypeDao.createConceptType("SubConceptType3", ["RootConceptType4"]))
-            .toThrow("Could not create concept 'SubConceptType3'. A concept with that label already exists.");
-    })
+        const subConceptType: ConceptType = conceptTypeDao.createConceptType(newSubConceptTypeLabel,
+            [existingParentConceptTypeLabel1, existingParentConceptTypeLabel2]);
 
-    it('Insert concept type at root then get by id', () => {
-        const conceptType: ConceptType = new ConceptType();
-        conceptType.label = "Entity1";
-        const savedConceptType: ConceptType = conceptTypeDao.insertConceptTypeAtRoot(conceptType);
-
-        const gottenConceptType: ConceptType = conceptTypeDao.getConceptTypeById(savedConceptType.id);
-        expect(savedConceptType).toEqual(gottenConceptType);
-    })
-
-    it('Error: insert concept type at root with given id should throw error', () => {
-        const conceptType: ConceptType = new ConceptType();
-        conceptType.id = "cutom_made_id";
-        conceptType.label = "Entity2";
-        expect(() => conceptTypeDao.insertConceptTypeAtRoot(conceptType))
-            .toThrow("Cannot create concept. Expected id to be null but instead it was: 'cutom_made_id'");
-    })
-
-    it('Error: insert duplicate concept type should throw error', () => {
-        const conceptType: ConceptType = new ConceptType();
-        conceptType.label = "Entity3";
-        const conceptTypeDuplicate: ConceptType = { ...conceptType };
-        const savedConceptType: ConceptType = conceptTypeDao.insertConceptTypeAtRoot(conceptType);
-        expect(() => conceptTypeDao.insertConceptTypeAtRoot(conceptTypeDuplicate))
-            .toThrow("Could not create concept 'Entity3'. A concept with that label already exists.");
-    })
-
-    it('insert concept type as child of parent', () => {
-        const parentConceptType: ConceptType = new ConceptType();
-        parentConceptType.label = "Entity4";
-        const savedConceptType1: ConceptType = conceptTypeDao.insertConceptTypeAtRoot(parentConceptType);
-
-        const subConceptType: ConceptType = new ConceptType();
-        subConceptType.label = "Sub-entity4";
-        const savedConceptType2: ConceptType = conceptTypeDao.insertConceptTypeAsSubtype(subConceptType, parentConceptType);
-
-        const savedParentConceptType: ConceptType = conceptTypeDao.getConceptTypeById(savedConceptType1.id);
-        expect(savedParentConceptType).toEqual({
-            ...parentConceptType,
-            subConceptTypeIds: [savedConceptType2.id]
+        rootConceptType1 = conceptTypeDao.getConceptTypeByLabel(existingParentConceptTypeLabel1);
+        rootConceptType2 = conceptTypeDao.getConceptTypeByLabel(existingParentConceptTypeLabel2);
+        expect(rootConceptType1.subConceptTypeLabels).toEqual([subConceptType.label]);
+        expect(rootConceptType2.subConceptTypeLabels).toEqual([subConceptType.label]);
+        expect(subConceptType.id).not.toBeNull();
+        expect(subConceptType).toEqual({
+            id: subConceptType.id,
+            label: newSubConceptTypeLabel,
+            parentConceptTypeLabels: [existingParentConceptTypeLabel1, existingParentConceptTypeLabel2],
+            subConceptTypeLabels: []
         });
-
-        const savedSubConceptType: ConceptType = conceptTypeDao.getConceptTypeById(savedConceptType2.id);
-        expect(savedSubConceptType).toEqual({
-            ...subConceptType,
-            parentConceptTypeIds: [savedConceptType1.id]
-        });
-
     })
 
-    it('Error: insert concept type as subtype with given id should throw error', () => {
-        const parentConceptType: ConceptType = new ConceptType();
-        parentConceptType.label = "Entity5";
-        const savedParentConceptType: ConceptType = conceptTypeDao.insertConceptTypeAtRoot(parentConceptType);
+    it('Create Concept Type should create transient object', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const testRootConceptTypeLabel: string = testRootConceptTypeLabelPrefix1 + testId;
 
-        const conceptType: ConceptType = new ConceptType();
-        conceptType.id = "cutom_made_id";
-        conceptType.label = "SubEntity5";
-        expect(() => conceptTypeDao.insertConceptTypeAsSubtype(conceptType, savedParentConceptType))
-            .toThrow("Cannot create concept. Expected id to be null but instead it was: 'cutom_made_id'");
+        const createdConceptType: ConceptType = conceptTypeDao.createConceptType(testRootConceptTypeLabel);
+        createdConceptType.label = "SomethingElse";
+        const savedConceptType: ConceptType = conceptTypeDao.getConceptTypeByLabel(testRootConceptTypeLabel);
+
+        expect(createdConceptType).not.toEqual(savedConceptType);
     })
 
-    it('Error: insert duplicate concept type as subtype should throw error', () => {
-        const parentConceptType: ConceptType = new ConceptType();
-        parentConceptType.label = "Entity6";
-        const savedParentConceptType: ConceptType = conceptTypeDao.insertConceptTypeAtRoot(parentConceptType);
+    it('Error: Create Concept Type with non-existent parent should throw error', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const nonExistentparentConceptTypeLabel: string = testRootConceptTypeLabelPrefix1 + testId;
+        const newSubConceptTypeLabel: string = testSubConceptTypeLabelPrefix1 + testId;
 
-        const conceptType: ConceptType = new ConceptType();
-        conceptType.label = "SubEntity6";
-        const conceptTypeDuplicate: ConceptType = { ...conceptType };
-        const savedConceptType: ConceptType = conceptTypeDao.insertConceptTypeAsSubtype(conceptType, savedParentConceptType);
-        expect(() => conceptTypeDao.insertConceptTypeAtRoot(conceptTypeDuplicate))
-            .toThrow("Could not create concept 'SubEntity6'. A concept with that label already exists.");
+        expect(() => conceptTypeDao.createConceptType(newSubConceptTypeLabel, [nonExistentparentConceptTypeLabel]))
+            .toThrow(`Could not create concept '${newSubConceptTypeLabel}'. No parent concept type with label: '${nonExistentparentConceptTypeLabel}'.`);
     })
 
-    it('Generate concept type hierarchy from JSON structure', () => {
+    it('Error: Create Duplicate Root Concept Type should throw error', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const testRootConceptTypeLabel: string = testRootConceptTypeLabelPrefix1 + testId;
+        let rootConceptType: ConceptType = conceptTypeDao.createConceptType(testRootConceptTypeLabel);
+
+        expect(() => conceptTypeDao.createConceptType(testRootConceptTypeLabel))
+            .toThrow(`Could not create concept '${testRootConceptTypeLabel}'. A concept with that label already exists.`);
+    })
+
+    it('Error: Create Duplicate Sub Concept Type should throw error', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const testRootConceptTypeLabel: string = testRootConceptTypeLabelPrefix1 + testId;
+        const newSubConceptTypeLabel: string = testSubConceptTypeLabelPrefix1 + testId;
+        let rootConceptType: ConceptType = conceptTypeDao.createConceptType(testRootConceptTypeLabel);
+        let existingConceptType: ConceptType = conceptTypeDao.createConceptType(newSubConceptTypeLabel, [testRootConceptTypeLabel]);
+
+        expect(() => conceptTypeDao.createConceptType(newSubConceptTypeLabel, [testRootConceptTypeLabel]))
+            .toThrow(`Could not create concept '${newSubConceptTypeLabel}'. A concept with that label already exists.`);
+    })
+
+    it('Generate big concept type hierarchy from JSON structure', () => {
         const hierarchyToGenerate: SimpleConceptType[] = [
             {
                 label: "Entity",
@@ -157,10 +149,10 @@ describe('ConceptTypeDao basic tests', () => {
             }
         ];
 
-        conceptTypeDao.generateHierarchyFromObject(hierarchyToGenerate);
+        conceptTypeDao.importHierarchyFromSimpleConceptTypes(hierarchyToGenerate);
         const rootConceptTypes: ConceptType[] = conceptTypeDao.getRootConceptTypes();
         const entityConceptType: ConceptType = conceptTypeDao.getConceptTypeByLabel("Entity");
-        expect(rootConceptTypes).toContain(entityConceptType);
+        expect(rootConceptTypes).toContainEqual(entityConceptType);
 
         const humanConceptType: ConceptType = conceptTypeDao.getConceptTypeByLabel("Human");
         const adultConceptType: ConceptType = conceptTypeDao.getConceptTypeByLabel("Adult");
@@ -173,27 +165,27 @@ describe('ConceptTypeDao basic tests', () => {
         const boyConceptType: ConceptType = conceptTypeDao.getConceptTypeByLabel("Boy");
 
         // Assert parent ids
-        expect(humanConceptType.parentConceptTypeIds[0]).toBe(entityConceptType.id);
-        expect(adultConceptType.parentConceptTypeIds[0]).toBe(humanConceptType.id);
-        expect(femaleConceptType.parentConceptTypeIds[0]).toBe(humanConceptType.id);
-        expect(childConceptType.parentConceptTypeIds[0]).toBe(humanConceptType.id);
-        expect(maleConceptType.parentConceptTypeIds[0]).toBe(humanConceptType.id);
+        expect(humanConceptType.parentConceptTypeLabels[0]).toBe(entityConceptType.label);
+        expect(adultConceptType.parentConceptTypeLabels[0]).toBe(humanConceptType.label);
+        expect(femaleConceptType.parentConceptTypeLabels[0]).toBe(humanConceptType.label);
+        expect(childConceptType.parentConceptTypeLabels[0]).toBe(humanConceptType.label);
+        expect(maleConceptType.parentConceptTypeLabels[0]).toBe(humanConceptType.label);
 
-        expect(womanConceptType.parentConceptTypeIds).toEqual([adultConceptType.id, femaleConceptType.id]);
-        expect(manConceptType.parentConceptTypeIds).toEqual([adultConceptType.id, maleConceptType.id]);
-        expect(girlConceptType.parentConceptTypeIds).toEqual([femaleConceptType.id, childConceptType.id]);
-        expect(boyConceptType.parentConceptTypeIds).toEqual([childConceptType.id, maleConceptType.id]);
+        expect(womanConceptType.parentConceptTypeLabels).toEqual([adultConceptType.label, femaleConceptType.label]);
+        expect(manConceptType.parentConceptTypeLabels).toEqual([adultConceptType.label, maleConceptType.label]);
+        expect(girlConceptType.parentConceptTypeLabels).toEqual([femaleConceptType.label, childConceptType.label]);
+        expect(boyConceptType.parentConceptTypeLabels).toEqual([childConceptType.label, maleConceptType.label]);
 
         // Assert sub ids
-        expect(entityConceptType.subConceptTypeIds[0]).toBe(humanConceptType.id);
-        expect(humanConceptType.subConceptTypeIds).toEqual([
-            adultConceptType.id, femaleConceptType.id, childConceptType.id, maleConceptType.id
+        expect(entityConceptType.subConceptTypeLabels[0]).toBe(humanConceptType.label);
+        expect(humanConceptType.subConceptTypeLabels).toEqual([
+            adultConceptType.label, femaleConceptType.label, childConceptType.label, maleConceptType.label
         ]);
-        expect(adultConceptType.subConceptTypeIds).toEqual([womanConceptType.id, manConceptType.id]);
-        expect(femaleConceptType.subConceptTypeIds).toEqual([womanConceptType.id, girlConceptType.id]);
-        expect(childConceptType.subConceptTypeIds).toEqual([girlConceptType.id, boyConceptType.id]);
-        expect(maleConceptType.subConceptTypeIds).toEqual([manConceptType.id, boyConceptType.id]);
-
+        expect(adultConceptType.subConceptTypeLabels).toEqual([womanConceptType.label, manConceptType.label]);
+        expect(femaleConceptType.subConceptTypeLabels).toEqual([womanConceptType.label, girlConceptType.label]);
+        expect(childConceptType.subConceptTypeLabels).toEqual([girlConceptType.label, boyConceptType.label]);
+        expect(maleConceptType.subConceptTypeLabels).toEqual([manConceptType.label, boyConceptType.label]);
     })
 
+    
 })

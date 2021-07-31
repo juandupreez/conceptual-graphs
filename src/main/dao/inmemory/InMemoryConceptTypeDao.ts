@@ -21,60 +21,36 @@ export class InMemoryConceptTypeDao implements ConceptTypeDao {
 
         if (parentLabels) {
             parentLabels.forEach((singleParentLabel) => {
-                const parentConceptType = this.getConceptTypeByLabel(singleParentLabel);
-                if (!parentConceptType) {
+                const transientParentConceptType = this.getConceptTypeByLabel(singleParentLabel);
+                if (!transientParentConceptType) {
                     throw new NoSuchConceptTypeError(`Could not create concept '${newConceptTypeLabel}'. No parent concept type with label: '${singleParentLabel}'.`);
                 }
-                parentConceptType.subConceptTypeIds.push(newConceptType.id);
-                newConceptType.parentConceptTypeIds.push(parentConceptType.id);
+                for (let i = 0; i < this.conceptTypes.length; i++) {
+                    const singleConceptType = this.conceptTypes[i];
+                    if (transientParentConceptType.id === singleConceptType.id) {
+                        singleConceptType.subConceptTypeLabels.push(newConceptType.label);
+                    }               
+                }
+                newConceptType.parentConceptTypeLabels.push(singleParentLabel);
             });
         } else {
             this.rootConceptTypeIds.push(generatedId);
         }
-        return newConceptType;
-    }
-
-    insertConceptTypeAtRoot(conceptType: ConceptType): ConceptType {
-        if (conceptType.id) {
-            throw new Error(`Cannot create concept. Expected id to be null but instead it was: '${conceptType.id}'`);
-        }
-        if (this.getConceptTypeByLabel(conceptType.label)) {
-            throw new UniqueConceptTypeViolationError(`Could not create concept '${conceptType.label}'. A concept with that label already exists.`);
-        }
-        const generatedId = IdGenerator.getInstance().getNextUniqueConceptTypeId();
-        conceptType.id = generatedId;
-        this.conceptTypes.push(conceptType);
-        this.rootConceptTypeIds.push(generatedId);
-        return conceptType;
-    }
-
-    insertConceptTypeAsSubtype(subConceptType: ConceptType, parentConceptType: ConceptType): ConceptType {
-        if (subConceptType.id) {
-            throw new Error(`Cannot create concept. Expected id to be null but instead it was: '${subConceptType.id}'`);
-        }
-        if (this.getConceptTypeByLabel(subConceptType.label)) {
-            throw new UniqueConceptTypeViolationError(`Could not create concept '${subConceptType.label}'. A concept with that label already exists.`);
-        }
-        const generatedId = IdGenerator.getInstance().getNextUniqueConceptTypeId();
-        subConceptType.id = generatedId;
-        this.conceptTypes.push(subConceptType);
-        parentConceptType.subConceptTypeIds.push(subConceptType.id);
-        subConceptType.parentConceptTypeIds.push(parentConceptType.id)
-        return subConceptType;
+        return { ...newConceptType };
     }
 
     getConceptTypeById(idToFind: string): ConceptType {
         const foundConceptType: ConceptType = this.conceptTypes.find((singleConceptType) => {
             return (singleConceptType.id === idToFind);
         })
-        return foundConceptType;
+        return foundConceptType ? { ...foundConceptType } : foundConceptType;
     }
 
     getConceptTypeByLabel(labelOfConceptTypeToFind: string): ConceptType {
         const foundConceptType: ConceptType = this.conceptTypes.find((singleConceptType) => {
             return (singleConceptType.label === labelOfConceptTypeToFind);
         })
-        return foundConceptType;
+        return foundConceptType ? { ...foundConceptType } : foundConceptType;
     }
 
     getRootConceptTypes(): ConceptType[] {
@@ -83,12 +59,10 @@ export class InMemoryConceptTypeDao implements ConceptTypeDao {
         })
     }
 
-    generateHierarchyFromObject(hierarchyToGenerate: SimpleConceptType[]): void {
+    importHierarchyFromSimpleConceptTypes(hierarchyToGenerate: SimpleConceptType[]): void {
         hierarchyToGenerate.forEach((singleNewConceptType) => {
             // Insert current root node
-            const rootConceptType: ConceptType = new ConceptType;
-            rootConceptType.label = singleNewConceptType.label;
-            this.insertConceptTypeAtRoot(rootConceptType);
+            const rootConceptType: ConceptType = this.createConceptType(singleNewConceptType.label);
 
             // insert child nodes recursively
             this.recursiveInsertSimpleConceptTypes(rootConceptType, singleNewConceptType.subConceptTypes);
@@ -101,18 +75,22 @@ export class InMemoryConceptTypeDao implements ConceptTypeDao {
                 // See if current label exists
                 const existingConceptType: ConceptType = this.getConceptTypeByLabel(singleNewSimpleConceptType.label);
                 if (existingConceptType) {
-                    parentConceptType.subConceptTypeIds.push(existingConceptType.id);
-                    existingConceptType.parentConceptTypeIds.push(parentConceptType.id);
+                    for (let i = 0; i < this.conceptTypes.length; i++) {
+                        const element = this.conceptTypes[i];
+                        if (element.id === parentConceptType.id) {
+                            element.subConceptTypeLabels.push(existingConceptType.label);
+                        }
+                        if (element.id === existingConceptType.id) {
+                            element.parentConceptTypeLabels.push(parentConceptType.label);
+                        }                        
+                    }
                     this.recursiveInsertSimpleConceptTypes(existingConceptType, singleNewSimpleConceptType.subConceptTypes);
                 } else {
                     // Insert current node
-                    const newConceptType: ConceptType = new ConceptType;
-                    newConceptType.label = singleNewSimpleConceptType.label;
-                    this.insertConceptTypeAsSubtype(newConceptType, parentConceptType);
+                    const newConceptType: ConceptType = this.createConceptType(singleNewSimpleConceptType.label, [parentConceptType.label]);
 
                     // Insert child nodes recursively
                     this.recursiveInsertSimpleConceptTypes(newConceptType, singleNewSimpleConceptType.subConceptTypes);
-
                 }
             })
         }
