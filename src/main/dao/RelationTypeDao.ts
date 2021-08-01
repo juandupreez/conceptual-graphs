@@ -2,10 +2,11 @@ import { RelationType } from "../domain/RelationType";
 
 export interface SimpleRelationType {
     label: string;
-    subRelationTypes?: SimpleRelationType[]
+    signature: string[];
+    subRelationTypes?: SimpleRelationType[];
 }
 export interface RelationTypeDao {
-    createRelationType(newLabel: string, parentLabels?: string[]): RelationType;
+    createRelationType(newLabel: string, signatureConceptTypeLabels: string[], parentLabels?: string[]): RelationType;
     getRelationTypeById(relationTypeId: string): RelationType;
     getRelationTypeByLabel(label: string): RelationType;
     getRootRelationTypes(): RelationType[];

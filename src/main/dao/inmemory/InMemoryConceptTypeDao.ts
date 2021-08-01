@@ -62,6 +62,23 @@ export class InMemoryConceptTypeDao implements ConceptTypeDao {
         })
     }
 
+    getLabelAndAllSubLabelsOfConcept(label: string): string[] {
+        return this._getLabelAndAllSubLabelsOfConcept(label, []);
+    }
+
+    _getLabelAndAllSubLabelsOfConcept(label: string, labelsGottenSoFar: string[]): string[] {
+        if (!labelsGottenSoFar.includes(label)) {
+            const toReturn = [label, ...labelsGottenSoFar];
+            const conceptType: ConceptType = this.getConceptTypeByLabel(label);
+            conceptType.subConceptTypeLabels.forEach((singleSubConceptTypeLabel) => {
+                toReturn.push(...this._getLabelAndAllSubLabelsOfConcept(singleSubConceptTypeLabel, labelsGottenSoFar));
+            })
+            return toReturn;
+        } else {
+            return [];
+        }
+    }
+
     updateConceptType(conceptTypeToUpdate: ConceptType): ConceptType {
         this._validateConceptTypeToUpdate(conceptTypeToUpdate);
 

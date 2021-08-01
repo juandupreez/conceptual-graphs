@@ -1,6 +1,7 @@
+import { ConceptType } from "../../domain/ConceptType";
 import { RelationType } from "../../domain/RelationType";
 import { IdGenerator } from "../../util/IdGenerator";
-import { ConceptTypeDao } from "../ConceptTypeDao";
+import { ConceptTypeDao, NoSuchConceptTypeError } from "../ConceptTypeDao";
 import { NoSuchRelationTypeError, UniqueRelationTypeViolationError } from "../RelationTypeDao";
 import { RelationTypeDao, SimpleRelationType } from "../RelationTypeDao";
 import { Store } from "./store/Store";
@@ -8,23 +9,20 @@ import { Store } from "./store/Store";
 export class InMemoryRelationTypeDao implements RelationTypeDao {
     relationTypes: RelationType[] = Store.getInstance().state.relationTypes;
     rootRelationTypeIds: string[] = Store.getInstance().state.rootRelationTypeIds;
+    conceptTypeDao: ConceptTypeDao;
 
     constructor(conceptTypeDao: ConceptTypeDao) {
-
+        this.conceptTypeDao = conceptTypeDao;
     }
 
-    createRelationType(newRelationTypeLabel: string, parentLabels?: string[]): RelationType {
-        if (parentLabels && parentLabels.includes(newRelationTypeLabel)) {
-            throw new Error(`Could not create relation '${newRelationTypeLabel}'. A relation cannot reference itself as parent`);
-        }
-        if (this.getRelationTypeByLabel(newRelationTypeLabel)) {
-            throw new UniqueRelationTypeViolationError(`Could not create relation '${newRelationTypeLabel}'. A relation with that label already exists.`);
-        }
+    createRelationType(newRelationTypeLabel: string, signatureConceptTypeLabels: string[], parentLabels?: string[]): RelationType {
+        this._validateRelationTypeBeforeCreate(newRelationTypeLabel, signatureConceptTypeLabels, parentLabels);
 
         const newRelationType: RelationType = new RelationType();
         newRelationType.label = newRelationTypeLabel;
         const generatedId = IdGenerator.getInstance().getNextUniqueRelationTypeId();
         newRelationType.id = generatedId;
+        newRelationType.signature = signatureConceptTypeLabels;
         this.relationTypes.push(newRelationType);
 
         if (parentLabels) {
@@ -45,6 +43,54 @@ export class InMemoryRelationTypeDao implements RelationTypeDao {
             this.rootRelationTypeIds.push(generatedId);
         }
         return this._clone(newRelationType);
+    }
+
+    _validateRelationTypeBeforeCreate(newRelationTypeLabel: string, signatureConceptTypeLabels: string[], parentLabels?: string[]) {
+        if (parentLabels && parentLabels.includes(newRelationTypeLabel)) {
+            throw new Error(`Could not create relation '${newRelationTypeLabel}'. A relation cannot reference itself as parent`);
+        }
+        if (this.getRelationTypeByLabel(newRelationTypeLabel)) {
+            throw new UniqueRelationTypeViolationError(`Could not create relation '${newRelationTypeLabel}'. A relation with that label already exists.`);
+        }
+        if (!signatureConceptTypeLabels || signatureConceptTypeLabels.length === 0) {
+            throw new Error(`Could not create relation type with label: ${newRelationTypeLabel}. Signature needs at least one concept type`);
+        }
+        if (parentLabels) {
+            parentLabels.forEach((parentRelationTypeLabel) => {
+                const parentRelationType: RelationType = this.getRelationTypeByLabel(parentRelationTypeLabel);
+                if (!parentRelationType) {
+                    throw new NoSuchRelationTypeError(`Could not create relation '${newRelationTypeLabel}'. No parent relation type with label: '${parentRelationTypeLabel}'.`);
+                }
+                if (signatureConceptTypeLabels.length !== parentRelationType.signature.length) {
+                    throw new Error('Could not create relation type with label: '
+                    +   newRelationTypeLabel
+                    + '. Signature needs the same number of concept types as parent'
+                    + parentRelationTypeLabel + '" (Signature: ' + parentRelationType.signature + ')');
+                }
+            })
+        }
+        signatureConceptTypeLabels.forEach((singleConceptTypeLabel) => {
+            if (!this.conceptTypeDao.getConceptTypeByLabel(singleConceptTypeLabel)) {
+                throw new NoSuchConceptTypeError(`Could not create relation type with label: ${newRelationTypeLabel}. No such concept type: ${singleConceptTypeLabel}`);
+            }
+        })
+        if (parentLabels) {
+            signatureConceptTypeLabels.forEach((singleSignatureLabel, singleSignatureIndex) => {
+                const possibleSignatureConceptTypeLabels: string[] = [];
+                parentLabels.forEach((singleParentLabel) => {
+                    const parentRelationType: RelationType = this.getRelationTypeByLabel(singleParentLabel);
+                    const conceptTypeLabelAndSubConceptTypeLabels: string[]
+                        = this.conceptTypeDao.getLabelAndAllSubLabelsOfConcept(parentRelationType.signature[singleSignatureIndex]);
+                    possibleSignatureConceptTypeLabels.push(...conceptTypeLabelAndSubConceptTypeLabels);
+                })
+                if (!possibleSignatureConceptTypeLabels.includes(singleSignatureLabel)) {
+                    throw new Error('Could not create relation type with label: ' + newRelationTypeLabel
+                        + '. Provided signature: ' + signatureConceptTypeLabels
+                        + ' is not a specialization of any parent signature'
+                        + '. Specifically concept type: ' + singleSignatureLabel)
+                }
+            })
+        }
     }
 
     getRelationTypeById(idToFind: string): RelationType {
@@ -215,7 +261,7 @@ export class InMemoryRelationTypeDao implements RelationTypeDao {
     importHierarchyFromSimpleRelationTypes(hierarchyToGenerate: SimpleRelationType[]): void {
         hierarchyToGenerate.forEach((singleNewRelationType) => {
             // Insert current root node
-            const rootRelationType: RelationType = this.createRelationType(singleNewRelationType.label);
+            const rootRelationType: RelationType = this.createRelationType(singleNewRelationType.label, singleNewRelationType.signature);
 
             // insert child nodes recursively
             this.recursiveInsertSimpleRelationTypes(rootRelationType, singleNewRelationType.subRelationTypes);
@@ -240,7 +286,8 @@ export class InMemoryRelationTypeDao implements RelationTypeDao {
                     this.recursiveInsertSimpleRelationTypes(existingRelationType, singleNewSimpleRelationType.subRelationTypes);
                 } else {
                     // Insert current node
-                    const newRelationType: RelationType = this.createRelationType(singleNewSimpleRelationType.label, [parentRelationType.label]);
+                    const newRelationType: RelationType = this.createRelationType(singleNewSimpleRelationType.label,
+                        singleNewSimpleRelationType.signature, [parentRelationType.label]);
 
                     // Insert child nodes recursively
                     this.recursiveInsertSimpleRelationTypes(newRelationType, singleNewSimpleRelationType.subRelationTypes);
