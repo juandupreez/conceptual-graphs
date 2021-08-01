@@ -170,6 +170,43 @@ export class InMemoryConceptTypeDao implements ConceptTypeDao {
         })
     }
 
+    deleteConceptType(conceptTypeIdToDelete: string): boolean {
+        let successfulDelete: boolean = false;
+        const conceptTypeCountBefore: number = this.conceptTypes.length;
+        const conceptTypeToDelete: ConceptType = this.getConceptTypeById(conceptTypeIdToDelete);
+        if (!conceptTypeToDelete) {
+            return false;
+        }
+        Store.getInstance().state.conceptTypes = this.conceptTypes.filter((singleConceptType: ConceptType) => {
+            return (singleConceptType.id !== conceptTypeIdToDelete);
+        })
+        this.conceptTypes = Store.getInstance().state.conceptTypes;
+        this.rootConceptTypeIds.filter((singleConceptTypeId: string) => {
+            return (singleConceptTypeId !== conceptTypeIdToDelete);
+        })
+        this.conceptTypes.forEach((singleConceptType: ConceptType) => {
+            if (singleConceptType.subConceptTypeLabels.includes(conceptTypeToDelete.label)) {
+                singleConceptType.subConceptTypeLabels = singleConceptType.subConceptTypeLabels.filter((singleSubConceptTypeLabel) => {
+                    return (singleSubConceptTypeLabel !== conceptTypeToDelete.label);
+                })
+            }
+            if (singleConceptType.parentConceptTypeLabels.includes(conceptTypeToDelete.label)) {
+                singleConceptType.parentConceptTypeLabels = singleConceptType.parentConceptTypeLabels.filter((singleParentConceptTypeLabel) => {
+                    return (singleParentConceptTypeLabel !== conceptTypeToDelete.label);
+                })
+                if (singleConceptType.parentConceptTypeLabels.length === 0) {
+                    if (!this.rootConceptTypeIds.includes(singleConceptType.id)) {
+                        this.rootConceptTypeIds.push(singleConceptType.id);
+                    }
+                }
+            }
+        })
+        if (this.conceptTypes.length === (conceptTypeCountBefore - 1)) {
+            successfulDelete = true;
+        }
+        return successfulDelete;
+    }
+
     importHierarchyFromSimpleConceptTypes(hierarchyToGenerate: SimpleConceptType[]): void {
         hierarchyToGenerate.forEach((singleNewConceptType) => {
             // Insert current root node

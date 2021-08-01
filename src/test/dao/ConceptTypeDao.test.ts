@@ -420,19 +420,92 @@ describe('ConceptTypeDao basic tests', () => {
             .toThrow(`Could not update concept type with label: ${conceptTypeToUpdate.label}. No such sub concept type: ${nonExistentConceptTypeLabel}`);
     })
 
-    xit('Delete Concept Type from root', () => {
+    it('Delete Concept Type from root', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const rootConceptTypeLabel: string = testRootConceptTypeLabelPrefix1 + testId;
+        const conceptTypeToDelete: ConceptType = conceptTypeDao.createConceptType(rootConceptTypeLabel);
+
+        const isSuccessfulDeletion: boolean = conceptTypeDao.deleteConceptType(conceptTypeToDelete.id);
+
+        expect(isSuccessfulDeletion).toBe(true);
+        expect(conceptTypeDao.getConceptTypeByLabel(conceptTypeToDelete.label)).toBeUndefined();
+        expect(conceptTypeDao.getRootConceptTypes()).not.toContainEqual(conceptTypeToDelete);
     })
 
-    xit('Delete Sub Concept Type', () => {
+    it('Delete Sub Concept Type', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const rootConceptTypeLabel: string = testRootConceptTypeLabelPrefix1 + testId;
+        const subConceptTypeLabel: string = testSubConceptTypeLabelPrefix1 + testId;
+        const rootConceptType: ConceptType = conceptTypeDao.createConceptType(rootConceptTypeLabel);
+        const conceptTypeToDelete: ConceptType = conceptTypeDao.createConceptType(subConceptTypeLabel, [rootConceptTypeLabel]);
+        const rootBeforeDelete: ConceptType = conceptTypeDao.getConceptTypeByLabel(rootConceptTypeLabel);
+        expect(rootBeforeDelete).toEqual({
+            ...rootConceptType,
+            subConceptTypeLabels: [subConceptTypeLabel]
+        });
+
+        const isSuccessfulDeletion: boolean = conceptTypeDao.deleteConceptType(conceptTypeToDelete.id);
+
+        expect(isSuccessfulDeletion).toBe(true);
+        const rootAfterDelete: ConceptType = conceptTypeDao.getConceptTypeByLabel(rootConceptTypeLabel);
+        expect(rootBeforeDelete).not.toEqual(rootAfterDelete);
+        expect(rootAfterDelete).toEqual({
+            ...rootBeforeDelete,
+            subConceptTypeLabels: []
+        });
+    })
+
+    it('Delete Parent Concept Type', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const rootConceptTypeLabel: string = testRootConceptTypeLabelPrefix1 + testId;
+        const subConceptTypeLabel: string = testSubConceptTypeLabelPrefix1 + testId;
+        const conceptTypeToDelete: ConceptType = conceptTypeDao.createConceptType(rootConceptTypeLabel);
+        const subConceptType: ConceptType = conceptTypeDao.createConceptType(subConceptTypeLabel, [rootConceptTypeLabel]);
+        const subBeforeDelete: ConceptType = conceptTypeDao.getConceptTypeByLabel(subConceptTypeLabel);
+        expect(subBeforeDelete).toEqual({
+            ...subConceptType,
+            parentConceptTypeLabels: [rootConceptTypeLabel]
+        });
+
+        const isSuccessfulDeletion: boolean = conceptTypeDao.deleteConceptType(conceptTypeToDelete.id);
+
+        expect(isSuccessfulDeletion).toBe(true);
+        const subAfterDelete: ConceptType = conceptTypeDao.getConceptTypeByLabel(subConceptTypeLabel);
+        expect(subBeforeDelete).not.toEqual(subAfterDelete);
+        expect(subAfterDelete).toEqual({
+            ...subBeforeDelete,
+            parentConceptTypeLabels: []
+        });
+    })
+
+    it('Delete Parent Concept Type should move subs to root if no other parents', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const rootConceptTypeLabel: string = testRootConceptTypeLabelPrefix1 + testId;
+        const subConceptTypeLabel: string = testSubConceptTypeLabelPrefix1 + testId;
+        const conceptTypeToDelete: ConceptType = conceptTypeDao.createConceptType(rootConceptTypeLabel);
+        const subConceptType: ConceptType = conceptTypeDao.createConceptType(subConceptTypeLabel, [rootConceptTypeLabel]);
+        const subBeforeDelete: ConceptType = conceptTypeDao.getConceptTypeByLabel(subConceptTypeLabel);
+        expect(subBeforeDelete).toEqual({
+            ...subConceptType,
+            parentConceptTypeLabels: [rootConceptTypeLabel]
+        });
+
+        const isSuccessfulDeletion: boolean = conceptTypeDao.deleteConceptType(conceptTypeToDelete.id);
+
+        expect(isSuccessfulDeletion).toBe(true);
+        const subAfterDelete: ConceptType = conceptTypeDao.getConceptTypeByLabel(subConceptTypeLabel);
+        expect(conceptTypeDao.getRootConceptTypes()).toContainEqual(subAfterDelete);
+    })
+
+    it('Delete Concept Type which does not exist should return false', () => {
+        const nonExistentConceptTypetId: string = IdGenerator.getInstance().getNextUniqueConceptTypeId();
+
+        const isSuccessfulDeletion: boolean = conceptTypeDao.deleteConceptType(nonExistentConceptTypetId);
+
+        expect(isSuccessfulDeletion).toBe(false);
     })
 
     xit('Delete All Sub Concept Types Recursively (Cascade)', () => {
-    })
-
-    xit('Error: Delete Concept Type which does not exist should throw error', () => {
-    })
-
-    xit('Error: Delete Concept Type which leaves orphan should throw error', () => {
     })
 
     it('Import big concept type hierarchy from JSON structure into DB', () => {
