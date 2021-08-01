@@ -1,58 +1,521 @@
 import { RelationType } from "../../main/domain/RelationType";
+import { InMemoryConceptTypeDao } from "../../main/dao/inmemory/InMemoryConceptTypeDao";
+import { ConceptTypeDao } from "../../main/dao/ConceptTypeDao";
 import { RelationTypeDao, SimpleRelationType } from "../../main/dao/RelationTypeDao";
 import { InMemoryRelationTypeDao } from "../../main/dao/inmemory/InMemoryRelationTypeDao";
-import { ConceptTypeDao } from "../../main/dao/ConceptTypeDao";
-import { InMemoryConceptTypeDao } from "../../main/dao/inmemory/InMemoryConceptTypeDao";
+import { IdGenerator } from "../../main/util/IdGenerator";
 
 const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
 const relationTypeDao: RelationTypeDao = new InMemoryRelationTypeDao(conceptTypeDao);
 
+const testRootRelationTypeLabelPrefix1: string = 'TestRootRelation1-';
+const testRootRelationTypeLabelPrefix2: string = 'TestRootRelation2-';
+const testRootRelationTypeLabelPrefix3: string = 'TestRootRelation3-';
+const testSubRelationTypeLabelPrefix1: string = 'TestSubRelation1-';
+const testSubRelationTypeLabelPrefix2: string = 'TestSubRelation2-';
+const testSubSubRelationTypeLabelPrefix1: string = 'TestSubSubRelation1-';
+const testSubSubRelationTypeLabelPrefix2: string = 'TestSubSubRelation2-';
+
 describe('RelationTypeDao basic tests', () => {
 
-    it('insert then get relation type', () => {
+    it('Create Relation Type at root', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const testRootRelationTypeLabel: string = testRootRelationTypeLabelPrefix1 + testId;
 
-        const relationType: RelationType = new RelationType();
-        relationType.label = "Link1";
-        const generatedId: string = relationTypeDao.insertRelationTypeAtRoot(relationType);
+        const relationType: RelationType = relationTypeDao.createRelationType(testRootRelationTypeLabel);
 
-        const savedRelationType: RelationType = relationTypeDao.getRelationTypeById(generatedId);
-        expect(savedRelationType).toEqual({
-            ...relationType,
-            id: generatedId
+        expect(relationType.id).not.toBeNull();
+        expect(relationType).toEqual({
+            id: relationType.id,
+            label: testRootRelationTypeLabel,
+            parentRelationTypeLabels: [],
+            subRelationTypeLabels: []
         });
-
     })
 
-    it('insert relation type as child of parent', () => {
-        const relationTypeDao: RelationTypeDao = new InMemoryRelationTypeDao(conceptTypeDao);
+    it('Create Relation Type as child of single existing parent', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const existingParentRelationTypeLabel: string = testRootRelationTypeLabelPrefix1 + testId;
+        const newSubRelationTypeLabel: string = testSubRelationTypeLabelPrefix1 + testId;
+        let rootRelationType: RelationType = relationTypeDao.createRelationType(existingParentRelationTypeLabel);
 
-        const parentRelationType: RelationType = new RelationType();
-        parentRelationType.label = "Link2";
-        const parentGeneratedId: string = relationTypeDao.insertRelationTypeAtRoot(parentRelationType);
+        const subRelationType: RelationType = relationTypeDao.createRelationType(newSubRelationTypeLabel, [existingParentRelationTypeLabel]);
 
-        const subRelationType: RelationType = new RelationType();
-        subRelationType.label = "Sub-link";
-        const childGeneratedId: string = relationTypeDao.insertRelationTypeAsSubtype(parentRelationType, subRelationType);
-
-        const savedParentRelationType: RelationType = relationTypeDao.getRelationTypeById(parentGeneratedId);
-        expect(savedParentRelationType).toEqual({
-            ...parentRelationType,
-            subRelationTypeIds: [childGeneratedId]
+        rootRelationType = relationTypeDao.getRelationTypeByLabel(existingParentRelationTypeLabel);
+        expect(rootRelationType.subRelationTypeLabels).toEqual([subRelationType.label]);
+        expect(subRelationType.id).not.toBeNull();
+        expect(subRelationType).toEqual({
+            id: subRelationType.id,
+            label: newSubRelationTypeLabel,
+            parentRelationTypeLabels: [existingParentRelationTypeLabel],
+            subRelationTypeLabels: []
         });
+    })
 
-        const savedSubRelationType: RelationType = relationTypeDao.getRelationTypeById(childGeneratedId);
-        expect(savedSubRelationType).toEqual({
+    it('Create Relation Type as child of two existing parents', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const existingParentRelationTypeLabel1: string = testRootRelationTypeLabelPrefix1 + testId;
+        const existingParentRelationTypeLabel2: string = testRootRelationTypeLabelPrefix2 + testId;
+        const newSubRelationTypeLabel: string = testSubRelationTypeLabelPrefix1 + testId;
+        let rootRelationType1: RelationType = relationTypeDao.createRelationType(existingParentRelationTypeLabel1);
+        let rootRelationType2: RelationType = relationTypeDao.createRelationType(existingParentRelationTypeLabel2);
+
+        const subRelationType: RelationType = relationTypeDao.createRelationType(newSubRelationTypeLabel,
+            [existingParentRelationTypeLabel1, existingParentRelationTypeLabel2]);
+
+        rootRelationType1 = relationTypeDao.getRelationTypeByLabel(existingParentRelationTypeLabel1);
+        rootRelationType2 = relationTypeDao.getRelationTypeByLabel(existingParentRelationTypeLabel2);
+        expect(rootRelationType1.subRelationTypeLabels).toEqual([subRelationType.label]);
+        expect(rootRelationType2.subRelationTypeLabels).toEqual([subRelationType.label]);
+        expect(subRelationType.id).not.toBeNull();
+        expect(subRelationType).toEqual({
+            id: subRelationType.id,
+            label: newSubRelationTypeLabel,
+            parentRelationTypeLabels: [existingParentRelationTypeLabel1, existingParentRelationTypeLabel2],
+            subRelationTypeLabels: []
+        });
+    })
+
+    it('Create Relation Type should return transient object', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const testRootRelationTypeLabel: string = testRootRelationTypeLabelPrefix1 + testId;
+
+        const createdRelationType: RelationType = relationTypeDao.createRelationType(testRootRelationTypeLabel);
+        createdRelationType.label = "SomethingElse";
+        const savedRelationType: RelationType = relationTypeDao.getRelationTypeByLabel(testRootRelationTypeLabel);
+
+        expect(createdRelationType).not.toEqual(savedRelationType);
+    })
+
+    it('Error: Create Relation Type with non-existent parent should throw error', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const nonExistentparentRelationTypeLabel: string = testRootRelationTypeLabelPrefix1 + testId;
+        const newSubRelationTypeLabel: string = testSubRelationTypeLabelPrefix1 + testId;
+
+        expect(() => relationTypeDao.createRelationType(newSubRelationTypeLabel, [nonExistentparentRelationTypeLabel]))
+            .toThrow(`Could not create relation '${newSubRelationTypeLabel}'. No parent relation type with label: '${nonExistentparentRelationTypeLabel}'.`);
+    })
+
+    it('Error: Create Duplicate Root Relation Type should throw error', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const testRootRelationTypeLabel: string = testRootRelationTypeLabelPrefix1 + testId;
+        let rootRelationType: RelationType = relationTypeDao.createRelationType(testRootRelationTypeLabel);
+
+        expect(() => relationTypeDao.createRelationType(testRootRelationTypeLabel))
+            .toThrow(`Could not create relation '${testRootRelationTypeLabel}'. A relation with that label already exists.`);
+    })
+
+    it('Error: Create Duplicate Sub Relation Type should throw error', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const testRootRelationTypeLabel: string = testRootRelationTypeLabelPrefix1 + testId;
+        const newSubRelationTypeLabel: string = testSubRelationTypeLabelPrefix1 + testId;
+        let rootRelationType: RelationType = relationTypeDao.createRelationType(testRootRelationTypeLabel);
+        let existingRelationType: RelationType = relationTypeDao.createRelationType(newSubRelationTypeLabel, [testRootRelationTypeLabel]);
+
+        expect(() => relationTypeDao.createRelationType(newSubRelationTypeLabel, [testRootRelationTypeLabel]))
+            .toThrow(`Could not create relation '${newSubRelationTypeLabel}'. A relation with that label already exists.`);
+    })
+
+    it('Error: Create Relation Type with parent as itself should throw error', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const testRootRelationTypeLabel: string = testRootRelationTypeLabelPrefix1 + testId;
+        let rootRelationType: RelationType = relationTypeDao.createRelationType(testRootRelationTypeLabel);
+
+        expect(() => relationTypeDao.createRelationType(testRootRelationTypeLabel, [testRootRelationTypeLabel]))
+            .toThrow(`Could not create relation '${testRootRelationTypeLabel}'. A relation cannot reference itself as parent`);
+    })
+
+    it('Get Relation Type by Id', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const testRootRelationTypeLabel: string = testRootRelationTypeLabelPrefix1 + testId;
+        let createdRelationType: RelationType = relationTypeDao.createRelationType(testRootRelationTypeLabel);
+        let gottenRelationType: RelationType = relationTypeDao.getRelationTypeById(createdRelationType.id);
+        expect(createdRelationType).toEqual(gottenRelationType);
+    })
+
+    it('Get Relation Type by label', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const testRootRelationTypeLabel: string = testRootRelationTypeLabelPrefix1 + testId;
+        let createdRelationType: RelationType = relationTypeDao.createRelationType(testRootRelationTypeLabel);
+        let gottenRelationType: RelationType = relationTypeDao.getRelationTypeByLabel(testRootRelationTypeLabel);
+        expect(createdRelationType).toEqual(gottenRelationType);
+    })
+
+    it('Get Root Relation Types', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const testRootRelationTypeLabel1: string = testRootRelationTypeLabelPrefix1 + testId;
+        const testRootRelationTypeLabel2: string = testRootRelationTypeLabelPrefix2 + testId;
+        const testRootRelationTypeLabel3: string = testRootRelationTypeLabelPrefix3 + testId;
+        let rootRelationType1: RelationType = relationTypeDao.createRelationType(testRootRelationTypeLabel1);
+        let rootRelationType2: RelationType = relationTypeDao.createRelationType(testRootRelationTypeLabel2);
+        let rootRelationType3: RelationType = relationTypeDao.createRelationType(testRootRelationTypeLabel3);
+        let rootRelationTypes: RelationType[] = relationTypeDao.getRootRelationTypes();
+        expect(rootRelationTypes).toContainEqual(rootRelationType1);
+        expect(rootRelationTypes).toContainEqual(rootRelationType2);
+        expect(rootRelationTypes).toContainEqual(rootRelationType3);
+    })
+
+    it('Error: Get Relation Type by Id when none exist should return undefined', () => {
+        const testRelationTypeId: string = IdGenerator.getInstance().getNextUniqueRelationTypeId();
+        const rootRelationType: RelationType = relationTypeDao.getRelationTypeById(testRelationTypeId);
+        expect(rootRelationType).toBeUndefined();
+    })
+
+    it('Error: Get Relation Type by label when none exist should throw error', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const testRootRelationTypeLabel1: string = testRootRelationTypeLabelPrefix1 + testId;
+        const rootRelationType: RelationType = relationTypeDao.getRelationTypeByLabel(testRootRelationTypeLabel1);
+        expect(rootRelationType).toBeUndefined();
+    })
+
+    it('Update Root Relation Type label', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const originalRelationTypeLabel: string = testRootRelationTypeLabelPrefix1 + testId + '-old';
+        const newRelationTypeLabel: string = testRootRelationTypeLabelPrefix2 + testId + '-new';
+        const createdRelationType: RelationType = relationTypeDao.createRelationType(originalRelationTypeLabel);
+        const relationTypeToUpdate: RelationType = { ...createdRelationType, label: newRelationTypeLabel };
+
+        const updatedRelationType: RelationType = relationTypeDao.updateRelationType(relationTypeToUpdate);
+
+        const savedRelationType: RelationType = relationTypeDao.getRelationTypeByLabel(newRelationTypeLabel);
+        expect(updatedRelationType).toEqual(savedRelationType);
+        expect(updatedRelationType).not.toEqual(createdRelationType);
+    })
+
+    it('Update Sub Relation Type label', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const rootRelationTypeLabel: string = testRootRelationTypeLabelPrefix1 + testId;
+        const oldRelationTypeLabel: string = testSubRelationTypeLabelPrefix1 + testId + '-old';
+        const newRelationTypeLabel: string = testSubRelationTypeLabelPrefix2 + testId + '-new';
+        const rootRelationType: RelationType = relationTypeDao.createRelationType(rootRelationTypeLabel);
+        const createdRelationType: RelationType = relationTypeDao.createRelationType(oldRelationTypeLabel, [rootRelationTypeLabel]);
+        const relationTypeToUpdate: RelationType = { ...createdRelationType, label: newRelationTypeLabel };
+
+        const updatedRelationType: RelationType = relationTypeDao.updateRelationType(relationTypeToUpdate);
+
+        const savedRelationType: RelationType = relationTypeDao.getRelationTypeByLabel(newRelationTypeLabel);
+        expect(updatedRelationType).toEqual(savedRelationType);
+        expect(updatedRelationType).not.toEqual(createdRelationType);
+    })
+
+    it('Update Relation Type label should update parent and sub relation types', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const rootRelationTypeLabel: string = testRootRelationTypeLabelPrefix1 + testId;
+        const oldRelationTypeLabel: string = testSubRelationTypeLabelPrefix1 + testId + '-old';
+        const newRelationTypeLabel: string = testSubRelationTypeLabelPrefix2 + testId + '-new';
+        const subSubRelationTypeLabel: string = testSubSubRelationTypeLabelPrefix1 + testId;
+        const oldRootRelationType: RelationType = relationTypeDao.createRelationType(rootRelationTypeLabel);
+        const createdRelationType: RelationType = relationTypeDao.createRelationType(oldRelationTypeLabel, [rootRelationTypeLabel]);
+        const oldSubSubRelationType: RelationType = relationTypeDao.createRelationType(subSubRelationTypeLabel, [oldRelationTypeLabel]);
+        const relationTypeToUpdate: RelationType = { ...createdRelationType, label: newRelationTypeLabel };
+
+        const updatedRelationType: RelationType = relationTypeDao.updateRelationType(relationTypeToUpdate);
+
+        const newRootRelationType: RelationType = relationTypeDao.getRelationTypeByLabel(rootRelationTypeLabel);
+        const newSubSubRelationType: RelationType = relationTypeDao.getRelationTypeByLabel(subSubRelationTypeLabel);
+        expect(newRootRelationType.subRelationTypeLabels[0]).toBe(newRelationTypeLabel);
+        expect(newSubSubRelationType.parentRelationTypeLabels[0]).toBe(newRelationTypeLabel);
+    })
+
+    it('Update Relation Type structure to add parent', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const rootRelationTypeLabel: string = testRootRelationTypeLabelPrefix1 + testId;
+        const subRelationTypeLabel: string = testSubRelationTypeLabelPrefix1 + testId;
+        const rootRelationType: RelationType = relationTypeDao.createRelationType(rootRelationTypeLabel);
+        const relationTypeToUpdate: RelationType = relationTypeDao.createRelationType(subRelationTypeLabel);
+        const originalRelationTypeToUpdate: RelationType = {
+            ...relationTypeToUpdate,
+            parentRelationTypeLabels: [...relationTypeToUpdate.parentRelationTypeLabels]
+        };
+
+        relationTypeToUpdate.parentRelationTypeLabels.push(rootRelationTypeLabel);
+        const updatedRelationType: RelationType = relationTypeDao.updateRelationType(relationTypeToUpdate);
+
+        const savedRelationType: RelationType = relationTypeDao.getRelationTypeByLabel(subRelationTypeLabel);
+        expect(updatedRelationType).toEqual(savedRelationType);
+        expect(updatedRelationType).not.toEqual(originalRelationTypeToUpdate);
+        expect(updatedRelationType).toEqual({
+            ...originalRelationTypeToUpdate,
+            parentRelationTypeLabels: [rootRelationTypeLabel]
+        });
+        const newRootRelationType: RelationType = relationTypeDao.getRelationTypeByLabel(rootRelationTypeLabel);
+        expect(newRootRelationType).not.toEqual(rootRelationType);
+        expect(newRootRelationType).toEqual({
+            ...rootRelationType,
+            subRelationTypeLabels: [subRelationTypeLabel]
+        });
+    })
+
+    it('Update Relation Type structure to add parent and remove from root', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const rootRelationTypeLabel: string = testRootRelationTypeLabelPrefix1 + testId;
+        const subRelationTypeLabel: string = testSubRelationTypeLabelPrefix1 + testId;
+        const rootRelationType: RelationType = relationTypeDao.createRelationType(rootRelationTypeLabel);
+        const relationTypeToUpdate: RelationType = relationTypeDao.createRelationType(subRelationTypeLabel);
+        const originalRelationTypeToUpdate: RelationType = {
+            ...relationTypeToUpdate,
+            parentRelationTypeLabels: [...relationTypeToUpdate.parentRelationTypeLabels]
+        };
+        expect(relationTypeDao.getRootRelationTypes()).toContainEqual(relationTypeToUpdate);
+
+        relationTypeToUpdate.parentRelationTypeLabels.push(rootRelationTypeLabel);
+        const updatedRelationType: RelationType = relationTypeDao.updateRelationType(relationTypeToUpdate);
+        expect(relationTypeDao.getRootRelationTypes()).not.toContainEqual(relationTypeToUpdate);
+    })
+
+    it('Update Relation Type structure to remove parent but not move to root', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const rootRelationTypeLabel1: string = testRootRelationTypeLabelPrefix1 + testId;
+        const rootRelationTypeLabel2: string = testRootRelationTypeLabelPrefix2 + testId;
+        const subRelationTypeLabel: string = testSubRelationTypeLabelPrefix1 + testId;
+        const rootRelationType1: RelationType = relationTypeDao.createRelationType(rootRelationTypeLabel1);
+        const rootRelationType2: RelationType = relationTypeDao.createRelationType(rootRelationTypeLabel2);
+        const relationTypeToUpdate: RelationType = relationTypeDao.createRelationType(subRelationTypeLabel, [rootRelationTypeLabel1, rootRelationTypeLabel2]);
+        const originalRelationTypeToUpdate: RelationType = {
+            ...relationTypeToUpdate,
+            parentRelationTypeLabels: [...relationTypeToUpdate.parentRelationTypeLabels]
+        };
+
+        relationTypeToUpdate.parentRelationTypeLabels = [rootRelationTypeLabel1];
+        const updatedRelationType: RelationType = relationTypeDao.updateRelationType(relationTypeToUpdate);
+        expect(relationTypeDao.getRootRelationTypes()).not.toContainEqual(relationTypeToUpdate);
+    })
+
+    it('Update Relation Type structure to remove parent and move to root', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const rootRelationTypeLabel1: string = testRootRelationTypeLabelPrefix1 + testId;
+        const subRelationTypeLabel: string = testSubRelationTypeLabelPrefix1 + testId;
+        const rootRelationType1: RelationType = relationTypeDao.createRelationType(rootRelationTypeLabel1);
+        const relationTypeToUpdate: RelationType = relationTypeDao.createRelationType(subRelationTypeLabel, [rootRelationTypeLabel1]);
+        const originalRelationTypeToUpdate: RelationType = {
+            ...relationTypeToUpdate,
+            parentRelationTypeLabels: [...relationTypeToUpdate.parentRelationTypeLabels]
+        };
+
+        relationTypeToUpdate.parentRelationTypeLabels = [];
+        const updatedRelationType: RelationType = relationTypeDao.updateRelationType(relationTypeToUpdate);
+        expect(relationTypeDao.getRootRelationTypes()).toContainEqual(relationTypeToUpdate);
+    })
+
+    it('Update Relation Type structure to add child', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const rootRelationTypeLabel: string = testRootRelationTypeLabelPrefix1 + testId;
+        const subRelationTypeLabel: string = testSubRelationTypeLabelPrefix1 + testId;
+        const relationTypeToUpdate: RelationType = relationTypeDao.createRelationType(rootRelationTypeLabel);
+        const subRelationType: RelationType = relationTypeDao.createRelationType(subRelationTypeLabel);
+        const originalRelationTypeToUpdate: RelationType = {
+            ...relationTypeToUpdate,
+            subRelationTypeLabels: [...relationTypeToUpdate.subRelationTypeLabels]
+        };
+
+        relationTypeToUpdate.subRelationTypeLabels.push(subRelationTypeLabel);
+        const updatedRelationType: RelationType = relationTypeDao.updateRelationType(relationTypeToUpdate);
+
+        const savedRelationType: RelationType = relationTypeDao.getRelationTypeByLabel(rootRelationTypeLabel);
+        expect(updatedRelationType).toEqual(savedRelationType);
+        expect(updatedRelationType).not.toEqual(originalRelationTypeToUpdate);
+        expect(updatedRelationType).toEqual({
+            ...originalRelationTypeToUpdate,
+            subRelationTypeLabels: [subRelationTypeLabel]
+        });
+        const newSubRelationType: RelationType = relationTypeDao.getRelationTypeByLabel(subRelationTypeLabel);
+        expect(newSubRelationType).not.toEqual(subRelationType);
+        expect(newSubRelationType).toEqual({
             ...subRelationType,
-            parentRelationTypeIds: [parentGeneratedId]
+            parentRelationTypeLabels: [rootRelationTypeLabel]
         });
-
     })
 
-    it('Generate concept type hierarchy from JSON structure', () => {   
+    it('Update Relation Type structure to add child and remove child from root', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const rootRelationTypeLabel: string = testRootRelationTypeLabelPrefix1 + testId;
+        const subRelationTypeLabel: string = testSubRelationTypeLabelPrefix1 + testId;
+        const relationTypeToUpdate: RelationType = relationTypeDao.createRelationType(rootRelationTypeLabel);
+        const subRelationType: RelationType = relationTypeDao.createRelationType(subRelationTypeLabel);
+        const originalRelationTypeToUpdate: RelationType = {
+            ...relationTypeToUpdate,
+            subRelationTypeLabels: [...relationTypeToUpdate.subRelationTypeLabels]
+        };
+        expect(relationTypeDao.getRootRelationTypes()).toContainEqual(subRelationType);
+
+        relationTypeToUpdate.subRelationTypeLabels.push(subRelationTypeLabel);
+        const updatedRelationType: RelationType = relationTypeDao.updateRelationType(relationTypeToUpdate);
+
+        const savedSubRelationType: RelationType = relationTypeDao.getRelationTypeByLabel(subRelationTypeLabel);
+        expect(relationTypeDao.getRootRelationTypes()).not.toContainEqual(savedSubRelationType);
+    })
+
+    it('Update Relation Type structure to remove child should add child to root if it has no other parents', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const rootRelationTypeLabel: string = testRootRelationTypeLabelPrefix1 + testId;
+        const subRelationTypeLabel: string = testSubRelationTypeLabelPrefix1 + testId;
+        const relationTypeToUpdate: RelationType = relationTypeDao.createRelationType(rootRelationTypeLabel);
+        const subRelationType: RelationType = relationTypeDao.createRelationType(subRelationTypeLabel, [rootRelationTypeLabel]);
+        const originalRelationTypeToUpdate: RelationType = {
+            ...relationTypeToUpdate,
+            subRelationTypeLabels: [...relationTypeToUpdate.subRelationTypeLabels]
+        };
+        expect(relationTypeDao.getRootRelationTypes()).not.toContainEqual(subRelationType);
+
+        relationTypeToUpdate.subRelationTypeLabels = [];
+        const updatedRelationType: RelationType = relationTypeDao.updateRelationType(relationTypeToUpdate);
+
+        const savedSubRelationType: RelationType = relationTypeDao.getRelationTypeByLabel(subRelationTypeLabel);
+        expect(relationTypeDao.getRootRelationTypes()).toContainEqual(savedSubRelationType);
+    })
+
+    it('Error: Update Relation Type with no id should throw error', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const rootRelationTypeLabel: string = testRootRelationTypeLabelPrefix1 + testId;
+        const relationTypeToUpdate: RelationType = relationTypeDao.createRelationType(rootRelationTypeLabel);
+        relationTypeToUpdate.id = undefined;
+
+        expect(() => relationTypeDao.updateRelationType(relationTypeToUpdate))
+            .toThrow(`Could not update relation type with label: ${relationTypeToUpdate.label}. Id is ${relationTypeToUpdate.id}.`)
+    })
+
+    it('Error: Update Relation Type label to something that already exists should throw error', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const rootRelationTypeLabel1: string = testRootRelationTypeLabelPrefix1 + testId;
+        const rootRelationTypeLabel2: string = testRootRelationTypeLabelPrefix2 + testId;
+        const relationTypeToUpdate: RelationType = relationTypeDao.createRelationType(rootRelationTypeLabel1);
+        const existingRelationType: RelationType = relationTypeDao.createRelationType(rootRelationTypeLabel2);
+        relationTypeToUpdate.label = rootRelationTypeLabel2;
+
+        expect(() => relationTypeDao.updateRelationType(relationTypeToUpdate))
+            .toThrow(`Could not update relation type with label: ${relationTypeToUpdate.label}. Id is ${relationTypeToUpdate.id}. A relation type with that label already exists with id ${existingRelationType.id}`)
+    })
+
+    it('Error: Update Relation Type structure to add child which is itself should throw error', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const rootRelationTypeLabel1: string = testRootRelationTypeLabelPrefix1 + testId;
+        const relationTypeToUpdate: RelationType = relationTypeDao.createRelationType(rootRelationTypeLabel1);
+
+        relationTypeToUpdate.subRelationTypeLabels.push(rootRelationTypeLabel1);
+        expect(() => relationTypeDao.updateRelationType(relationTypeToUpdate))
+            .toThrow(`Could not update relation type with label: ${relationTypeToUpdate.label}. One of the sub relation types is listed as itself`);
+    })
+
+    it('Error: Update Relation Type structure to add parent which is itself should throw error', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const rootRelationTypeLabel1: string = testRootRelationTypeLabelPrefix1 + testId;
+        const relationTypeToUpdate: RelationType = relationTypeDao.createRelationType(rootRelationTypeLabel1);
+
+        relationTypeToUpdate.parentRelationTypeLabels.push(rootRelationTypeLabel1);
+        expect(() => relationTypeDao.updateRelationType(relationTypeToUpdate))
+            .toThrow(`Could not update relation type with label: ${relationTypeToUpdate.label}. One of the parent relation types is listed as itself`);
+    })
+
+    it('Error: Update Relation Type structure to point to relation type that does not exist', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const rootRelationTypeLabel: string = testRootRelationTypeLabelPrefix1 + testId;
+        const nonExistentRelationTypeLabel: string = testRootRelationTypeLabelPrefix2 + testId;
+        const relationTypeToUpdate: RelationType = relationTypeDao.createRelationType(rootRelationTypeLabel);
+
+        relationTypeToUpdate.parentRelationTypeLabels.push(nonExistentRelationTypeLabel);
+        relationTypeToUpdate.subRelationTypeLabels = [];
+        expect(() => relationTypeDao.updateRelationType(relationTypeToUpdate))
+            .toThrow(`Could not update relation type with label: ${relationTypeToUpdate.label}. No such parent relation type: ${nonExistentRelationTypeLabel}`);
+
+        relationTypeToUpdate.subRelationTypeLabels.push(nonExistentRelationTypeLabel);
+        relationTypeToUpdate.parentRelationTypeLabels = [];
+        expect(() => relationTypeDao.updateRelationType(relationTypeToUpdate))
+            .toThrow(`Could not update relation type with label: ${relationTypeToUpdate.label}. No such sub relation type: ${nonExistentRelationTypeLabel}`);
+    })
+
+    it('Delete Relation Type from root', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const rootRelationTypeLabel: string = testRootRelationTypeLabelPrefix1 + testId;
+        const relationTypeToDelete: RelationType = relationTypeDao.createRelationType(rootRelationTypeLabel);
+
+        const isSuccessfulDeletion: boolean = relationTypeDao.deleteRelationType(relationTypeToDelete.id);
+
+        expect(isSuccessfulDeletion).toBe(true);
+        expect(relationTypeDao.getRelationTypeByLabel(relationTypeToDelete.label)).toBeUndefined();
+        expect(relationTypeDao.getRootRelationTypes()).not.toContainEqual(relationTypeToDelete);
+    })
+
+    it('Delete Sub Relation Type', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const rootRelationTypeLabel: string = testRootRelationTypeLabelPrefix1 + testId;
+        const subRelationTypeLabel: string = testSubRelationTypeLabelPrefix1 + testId;
+        const rootRelationType: RelationType = relationTypeDao.createRelationType(rootRelationTypeLabel);
+        const relationTypeToDelete: RelationType = relationTypeDao.createRelationType(subRelationTypeLabel, [rootRelationTypeLabel]);
+        const rootBeforeDelete: RelationType = relationTypeDao.getRelationTypeByLabel(rootRelationTypeLabel);
+        expect(rootBeforeDelete).toEqual({
+            ...rootRelationType,
+            subRelationTypeLabels: [subRelationTypeLabel]
+        });
+
+        const isSuccessfulDeletion: boolean = relationTypeDao.deleteRelationType(relationTypeToDelete.id);
+
+        expect(isSuccessfulDeletion).toBe(true);
+        const rootAfterDelete: RelationType = relationTypeDao.getRelationTypeByLabel(rootRelationTypeLabel);
+        expect(rootBeforeDelete).not.toEqual(rootAfterDelete);
+        expect(rootAfterDelete).toEqual({
+            ...rootBeforeDelete,
+            subRelationTypeLabels: []
+        });
+    })
+
+    it('Delete Parent Relation Type', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const rootRelationTypeLabel: string = testRootRelationTypeLabelPrefix1 + testId;
+        const subRelationTypeLabel: string = testSubRelationTypeLabelPrefix1 + testId;
+        const relationTypeToDelete: RelationType = relationTypeDao.createRelationType(rootRelationTypeLabel);
+        const subRelationType: RelationType = relationTypeDao.createRelationType(subRelationTypeLabel, [rootRelationTypeLabel]);
+        const subBeforeDelete: RelationType = relationTypeDao.getRelationTypeByLabel(subRelationTypeLabel);
+        expect(subBeforeDelete).toEqual({
+            ...subRelationType,
+            parentRelationTypeLabels: [rootRelationTypeLabel]
+        });
+
+        const isSuccessfulDeletion: boolean = relationTypeDao.deleteRelationType(relationTypeToDelete.id);
+
+        expect(isSuccessfulDeletion).toBe(true);
+        const subAfterDelete: RelationType = relationTypeDao.getRelationTypeByLabel(subRelationTypeLabel);
+        expect(subBeforeDelete).not.toEqual(subAfterDelete);
+        expect(subAfterDelete).toEqual({
+            ...subBeforeDelete,
+            parentRelationTypeLabels: []
+        });
+    })
+
+    it('Delete Parent Relation Type should move subs to root if no other parents', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const rootRelationTypeLabel: string = testRootRelationTypeLabelPrefix1 + testId;
+        const subRelationTypeLabel: string = testSubRelationTypeLabelPrefix1 + testId;
+        const relationTypeToDelete: RelationType = relationTypeDao.createRelationType(rootRelationTypeLabel);
+        const subRelationType: RelationType = relationTypeDao.createRelationType(subRelationTypeLabel, [rootRelationTypeLabel]);
+        const subBeforeDelete: RelationType = relationTypeDao.getRelationTypeByLabel(subRelationTypeLabel);
+        expect(subBeforeDelete).toEqual({
+            ...subRelationType,
+            parentRelationTypeLabels: [rootRelationTypeLabel]
+        });
+
+        const isSuccessfulDeletion: boolean = relationTypeDao.deleteRelationType(relationTypeToDelete.id);
+
+        expect(isSuccessfulDeletion).toBe(true);
+        const subAfterDelete: RelationType = relationTypeDao.getRelationTypeByLabel(subRelationTypeLabel);
+        expect(relationTypeDao.getRootRelationTypes()).toContainEqual(subAfterDelete);
+    })
+
+    it('Delete Relation Type which does not exist should return false', () => {
+        const nonExistentRelationTypetId: string = IdGenerator.getInstance().getNextUniqueRelationTypeId();
+
+        const isSuccessfulDeletion: boolean = relationTypeDao.deleteRelationType(nonExistentRelationTypetId);
+
+        expect(isSuccessfulDeletion).toBe(false);
+    })
+
+    xit('Delete All Sub Relation Types Recursively (Cascade)', () => {
+    })
+
+    it('Generate relation type hierarchy from JSON structure', () => {   
         const relationTypeDao: RelationTypeDao = new InMemoryRelationTypeDao(conceptTypeDao);
         const hierarchyToGenerate: SimpleRelationType[] = [
             {
-                label: "Link3",
+                label: "Link",
                 subRelationTypes: [
                     {
                         label: "RelatedWith",
@@ -91,10 +554,10 @@ describe('RelationTypeDao basic tests', () => {
             }
         ];
 
-        relationTypeDao.generateHierarchyFromObject(hierarchyToGenerate);
+        relationTypeDao.importHierarchyFromSimpleRelationTypes(hierarchyToGenerate);
         const rootRelationTypes: RelationType[] = relationTypeDao.getRootRelationTypes();
-        const linkWithRelationType: RelationType = relationTypeDao.getRelationTypeByLabel("Link3");
-        expect(rootRelationTypes).toContain(linkWithRelationType);
+        const linkWithRelationType: RelationType = relationTypeDao.getRelationTypeByLabel("Link");
+        expect(rootRelationTypes).toContainEqual(linkWithRelationType);
 
         const relatedWithRelationType: RelationType = relationTypeDao.getRelationTypeByLabel("RelatedWith");
         const dislikeRelationType: RelationType = relationTypeDao.getRelationTypeByLabel("Dislike");
@@ -110,31 +573,31 @@ describe('RelationTypeDao basic tests', () => {
         const marriedToRelationType: RelationType = relationTypeDao.getRelationTypeByLabel("MarriedTo");
 
         // Assert parent ids
-        expect(relatedWithRelationType.parentRelationTypeIds[0]).toBe(linkWithRelationType.id);
-        expect(dislikeRelationType.parentRelationTypeIds[0]).toBe(linkWithRelationType.id);
-        expect(likeRelationType.parentRelationTypeIds[0]).toBe(linkWithRelationType.id);
+        expect(relatedWithRelationType.parentRelationTypeLabels[0]).toBe(linkWithRelationType.label);
+        expect(dislikeRelationType.parentRelationTypeLabels[0]).toBe(linkWithRelationType.label);
+        expect(likeRelationType.parentRelationTypeLabels[0]).toBe(linkWithRelationType.label);
 
-        expect(siblingOfRelationType.parentRelationTypeIds[0]).toBe(relatedWithRelationType.id);
-        expect(ancesterOfRelationType.parentRelationTypeIds[0]).toBe(relatedWithRelationType.id);
-        expect(childOfRelationType.parentRelationTypeIds[0]).toBe(relatedWithRelationType.id);
-        expect(marriedToRelationType.parentRelationTypeIds[0]).toBe(relatedWithRelationType.id);
+        expect(siblingOfRelationType.parentRelationTypeLabels[0]).toBe(relatedWithRelationType.label);
+        expect(ancesterOfRelationType.parentRelationTypeLabels[0]).toBe(relatedWithRelationType.label);
+        expect(childOfRelationType.parentRelationTypeLabels[0]).toBe(relatedWithRelationType.label);
+        expect(marriedToRelationType.parentRelationTypeLabels[0]).toBe(relatedWithRelationType.label);
 
-        expect(sisterOfRelationType.parentRelationTypeIds[0]).toBe(siblingOfRelationType.id);
-        expect(brotherOfRelationType.parentRelationTypeIds[0]).toBe(siblingOfRelationType.id);
-        expect(parentOfRelationType.parentRelationTypeIds[0]).toBe(ancesterOfRelationType.id);
-        expect(motherOfRelationType.parentRelationTypeIds[0]).toBe(parentOfRelationType.id);
-        expect(fatherOfRelationType.parentRelationTypeIds[0]).toBe(parentOfRelationType.id);
+        expect(sisterOfRelationType.parentRelationTypeLabels[0]).toBe(siblingOfRelationType.label);
+        expect(brotherOfRelationType.parentRelationTypeLabels[0]).toBe(siblingOfRelationType.label);
+        expect(parentOfRelationType.parentRelationTypeLabels[0]).toBe(ancesterOfRelationType.label);
+        expect(motherOfRelationType.parentRelationTypeLabels[0]).toBe(parentOfRelationType.label);
+        expect(fatherOfRelationType.parentRelationTypeLabels[0]).toBe(parentOfRelationType.label);
         
         // Assert sub ids
-        expect(linkWithRelationType.subRelationTypeIds).toEqual([
-            relatedWithRelationType.id, dislikeRelationType.id, likeRelationType.id
+        expect(linkWithRelationType.subRelationTypeLabels).toEqual([
+            relatedWithRelationType.label, dislikeRelationType.label, likeRelationType.label
         ]);
-        expect(relatedWithRelationType.subRelationTypeIds).toEqual([
-            siblingOfRelationType.id, ancesterOfRelationType.id, childOfRelationType.id, marriedToRelationType.id
+        expect(relatedWithRelationType.subRelationTypeLabels).toEqual([
+            siblingOfRelationType.label, ancesterOfRelationType.label, childOfRelationType.label, marriedToRelationType.label
         ]);
-        expect(siblingOfRelationType.subRelationTypeIds).toEqual([sisterOfRelationType.id, brotherOfRelationType.id]);
-        expect(ancesterOfRelationType.subRelationTypeIds).toEqual([parentOfRelationType.id]);
-        expect(parentOfRelationType.subRelationTypeIds).toEqual([motherOfRelationType.id, fatherOfRelationType.id]);
+        expect(siblingOfRelationType.subRelationTypeLabels).toEqual([sisterOfRelationType.label, brotherOfRelationType.label]);
+        expect(ancesterOfRelationType.subRelationTypeLabels).toEqual([parentOfRelationType.label]);
+        expect(parentOfRelationType.subRelationTypeLabels).toEqual([motherOfRelationType.label, fatherOfRelationType.label]);
 
     })
 

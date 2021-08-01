@@ -5,11 +5,25 @@ export interface SimpleRelationType {
     subRelationTypes?: SimpleRelationType[]
 }
 export interface RelationTypeDao {
-    getRelationTypeByLabel(arg0: string): RelationType;
+    createRelationType(newLabel: string, parentLabels?: string[]): RelationType;
+    getRelationTypeById(relationTypeId: string): RelationType;
+    getRelationTypeByLabel(label: string): RelationType;
     getRootRelationTypes(): RelationType[];
-    generateHierarchyFromObject(hierarchyToGenerate: SimpleRelationType[]);
-    insertRelationTypeAsSubtype(parentRelationType: RelationType, subRelationType: RelationType): string;
-    getRelationTypeById(generatedId: string): RelationType;
-    insertRelationTypeAtRoot(relationType: RelationType): string;
-    createRelationType(newRelationTypeLabel: string, conceptTypeLabelsInSignature: string[], parentLabels?: string[]): RelationType;
+    updateRelationType(concpetType: RelationType): RelationType;
+    deleteRelationType(relationTypeId: string): boolean;
+    importHierarchyFromSimpleRelationTypes(hierarchyToGenerate: SimpleRelationType[]): void;
+}
+
+export class NoSuchRelationTypeError extends Error {
+    constructor(msg: string) {
+        super(msg);
+        Object.setPrototypeOf(this, NoSuchRelationTypeError.prototype);
+    }
+}
+
+export class UniqueRelationTypeViolationError extends Error {
+    constructor(msg: string) {
+        super(msg);
+        Object.setPrototypeOf(this, UniqueRelationTypeViolationError.prototype);
+    }
 }

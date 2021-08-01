@@ -1,8 +1,8 @@
 export class RelationType {
     id: string;
     label: string;
-    subRelationTypeIds: string[] = [];
-    parentRelationTypeIds: string[] = [];
+    subRelationTypeLabels: string[] = [];
+    parentRelationTypeLabels: string[] = [];
     signature: string[];
 
 }
