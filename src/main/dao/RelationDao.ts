@@ -1,7 +1,9 @@
-import { Relation } from "../domain/Relation";
-import { RelationType } from "../domain/RelationType";
+import { Relation, RelationId } from "../domain/Relation";
 
 export interface RelationDao {
-    insertRelation(singleRelation: Relation);
-    createRelation(label: string, relationTypeLabel: string, conceptArguments: string[]): Relation;
+    createRelation(conceptualGraphId: string, label: string, relationTypeLabels: string[], conceptArgumentLabels: string[]): Relation;
+    getRelationById(relationIdToFind: RelationId): Relation;
+    getRelationByConceptualGraphIdAndLabel(conceptualGraphId: string, relationLabel: string): Relation;
+    updateRelation(relationToUpdate: Relation): Relation;
+    deleteRelation(id: RelationId): boolean;
 }

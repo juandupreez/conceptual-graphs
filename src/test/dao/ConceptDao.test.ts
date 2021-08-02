@@ -3,19 +3,11 @@ import { ConceptTypeDao } from "../../main/dao/ConceptTypeDao";
 import { InMemoryConceptDao } from "../../main/dao/inmemory/InMemoryConceptDao";
 import { InMemoryConceptTypeDao } from "../../main/dao/inmemory/InMemoryConceptTypeDao";
 import { Concept, ConceptId } from "../../main/domain/Concept"
-import { ConceptType } from "../../main/domain/ConceptType";
 import { IdGenerator } from "../../main/util/IdGenerator";
 
 const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
 const conceptDao: ConceptDao = new InMemoryConceptDao(new InMemoryConceptTypeDao);
 
-const rootConceptTypeLabelPrefix1: string = 'TestRootConcept1-';
-const testRootConceptTypeLabelPrefix2: string = 'TestRootConcept2-';
-const testRootConceptTypeLabelPrefix3: string = 'TestRootConcept3-';
-const testSubConceptTypeLabelPrefix1: string = 'TestSubConcept1-';
-const testSubConceptTypeLabelPrefix2: string = 'TestSubConcept2-';
-const testSubSubConceptTypeLabelPrefix1: string = 'TestSubSubConcept1-';
-const testSubSubConceptTypeLabelPrefix2: string = 'TestSubSubConcept2-';
 const entityConceptTypeLabel: string = 'Entity';
 const subEntityConceptTypeLabel: string = 'SubEntity';
 const subSubEntityConceptTypeLabel: string = 'SubSubEntity';
