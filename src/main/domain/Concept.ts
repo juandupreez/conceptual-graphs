@@ -1,11 +1,13 @@
 import { ConceptType } from "./ConceptType";
 
 export class Concept {
-    id: {
-        conceptId: string,
-        conceptualGraphId: string
-    };
+    id: ConceptId;
     conceptTypeLabels: string[] = [];
     label: string;
     referent: string;
+}
+
+export class ConceptId {
+    conceptId: string;
+    conceptualGraphId: string
 }
