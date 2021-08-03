@@ -8,11 +8,12 @@ import { InMemoryConceptTypeDao } from "../../main/dao/inmemory/InMemoryConceptT
 import { ConceptTypeDao } from "../../main/dao/ConceptTypeDao";
 import { ConceptDao } from "../../main/dao/ConceptDao";
 import { InMemoryConceptDao } from "../../main/dao/inmemory/InMemoryConceptDao";
+import { Concept } from "../../main/domain/Concept";
 
 const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
 const relationTypeDao: RelationTypeDao = new InMemoryRelationTypeDao(conceptTypeDao);
 const conceptDao: ConceptDao = new InMemoryConceptDao(conceptTypeDao);
-const relationDao: RelationDao = new InMemoryRelationDao(conceptTypeDao, relationTypeDao);
+const relationDao: RelationDao = new InMemoryRelationDao(conceptDao, conceptTypeDao, relationTypeDao);
 
 const entityConceptTypeLabel: string = 'Entity';
 const subEntityConceptTypeLabel: string = 'SubEntity';
@@ -20,6 +21,7 @@ const subSubEntityConceptTypeLabel: string = 'SubSubEntity';
 const nonExistentConceptTypeLabel: string = 'NonExistentEntity';
 const entityConceptLabel1: string = "EntityConcept1"
 const entityConceptLabel2: string = "EntityConcept2"
+const nonExistentConceptLabel: string = "NonExistentEntityConcept"
 const linkRelationTypeLabel: string = 'Link';
 const subLinkRelationTypeLabel: string = 'SubLink';
 const subSubLinkRelationTypeLabel: string = 'SubSubLink';
@@ -54,13 +56,15 @@ describe('RelationDao basic tests', () => {
         }]);
     })
 
-    it('create a relation with some concept arguments', () => {
+    it('Create Relation with some concept arguments', () => {
         const testId: string = IdGenerator.getInstance().getNextUniquTestId();
         const conceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
         const relationLabel: string = relationLabelPrefix1 + testId;
         const conceptArgumentLabels: string[] = [entityConceptLabel1];
+        const entityConcept: Concept = conceptDao.createConcept(conceptualGraphId, entityConceptLabel1, [entityConceptTypeLabel], "TextReferent");
 
         const relation: Relation = relationDao.createRelation(conceptualGraphId, relationLabel, [linkRelationTypeLabel], conceptArgumentLabels);
+
         expect(relation.id).not.toBeNull();
         relation.id.conceptualGraphId
         expect(relation).toEqual({
@@ -81,7 +85,7 @@ describe('RelationDao basic tests', () => {
         const conceptArgumentLabels: string[] = [entityConceptLabel1];
 
         expect(() => relationDao.createRelation(conceptualGraphId, relationLabel, [nonExistentRelationTypeLabel], conceptArgumentLabels))
-            .toThrow('Cannot create relation type with label: ' + relationLabel + ". Relation Type '"
+            .toThrow('Cannot create relation with label: ' + relationLabel + ". Relation Type '"
                 + nonExistentRelationTypeLabel + "' does not exist");
     })
 
@@ -90,29 +94,68 @@ describe('RelationDao basic tests', () => {
         const conceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
         const relationLabel: string = relationLabelPrefix1 + testId;
         const conceptArgumentLabels: string[] = [entityConceptLabel1];
+        const entityConcept: Concept = conceptDao.createConcept(conceptualGraphId, entityConceptLabel1, [entityConceptTypeLabel], "TextReferent");
 
         expect(() => relationDao.createRelation(conceptualGraphId, relationLabel, [], conceptArgumentLabels))
-            .toThrow('Cannot create relation type with label: ' + relationLabel + ". Needs at least one relation type");
+            .toThrow('Cannot create relation with label: ' + relationLabel + ". Needs at least one relation type");
     })
 
-    it('Error: Create Relation must have a relationual graph id', () => {
+    it('Error: Create Relation must have a conceptual graph id', () => {
         const testId: string = IdGenerator.getInstance().getNextUniquTestId();
         const relationLabel: string = relationLabelPrefix1 + testId;
         const conceptArgumentLabels: string[] = [entityConceptLabel1];
 
         expect(() => relationDao.createRelation(null, relationLabel, [linkRelationTypeLabel], conceptArgumentLabels))
-            .toThrow('Cannot create relation type with label: ' + relationLabel + ". A relationual graph must exist and id must be provided");
+            .toThrow('Cannot create relation type with label: ' + relationLabel + ". A conceptual graph must exist and id must be provided");
     })
 
-    it('Error: Create Relation with existing label for that relationual graph should throw error', () => {
+    it('Error: Create Relation with existing label for that conceptual graph should throw error', () => {
         const testId: string = IdGenerator.getInstance().getNextUniquTestId();
         const conceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
         const relationLabel: string = relationLabelPrefix1 + testId;
         const conceptArgumentLabels: string[] = [entityConceptLabel1];
+        const entityConcept: Concept = conceptDao.createConcept(conceptualGraphId, entityConceptLabel1, [entityConceptTypeLabel], "TextReferent");
         const relation: Relation = relationDao.createRelation(conceptualGraphId, relationLabel, [linkRelationTypeLabel], conceptArgumentLabels);
 
         expect(() => relationDao.createRelation(conceptualGraphId, relationLabel, [linkRelationTypeLabel], conceptArgumentLabels))
-            .toThrow('Cannot create relation type with label: ' + relationLabel + ". A relation with that label already exists for relationual graph with id: " + conceptualGraphId);
+            .toThrow('Cannot create relation with label: ' + relationLabel + ". A relation with that label already exists for conceptual graph with id: " + conceptualGraphId);
+    })
+
+    it('Error: Create Relation with Concept whose Concept Type does not match Relation Type signature', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const conceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
+        const relationLabel: string = relationLabelPrefix1 + testId;
+        const conceptArgumentLabels: string[] = [entityConceptLabel1];
+        const entityConcept: Concept = conceptDao.createConcept(conceptualGraphId, entityConceptLabel1, [entityConceptTypeLabel], "TextReferent");
+
+        expect(() => relationDao.createRelation(conceptualGraphId, relationLabel, [subLinkRelationTypeLabel], conceptArgumentLabels))
+            .toThrow('Cannot create relation with label: '
+                + relationLabel + ". Concept " + entityConceptLabel1 + " does not match any relation type signature");
+    })
+
+    it('Error: Create Relation with more concepts than concept type in signature', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const conceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
+        const relationLabel: string = relationLabelPrefix1 + testId;
+        const conceptArgumentLabels: string[] = [entityConceptLabel1, entityConceptLabel1];
+        const entityConcept: Concept = conceptDao.createConcept(conceptualGraphId, entityConceptLabel1, [entityConceptTypeLabel], "TextReferent");
+
+        expect(() => relationDao.createRelation(conceptualGraphId, relationLabel, [subLinkRelationTypeLabel], conceptArgumentLabels))
+            .toThrow('Cannot create relation with label: '
+                + relationLabel + ". Number of concept arguments (2) does not match number of concept types in relation type signature (1)");
+    })
+
+    it('Error: Create Relation with a concept that does not exist', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const conceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
+        const relationLabel: string = relationLabelPrefix1 + testId;
+        const conceptArgumentLabels: string[] = [nonExistentConceptLabel];
+        const entityConcept: Concept = conceptDao.createConcept(conceptualGraphId, entityConceptLabel1, [entityConceptTypeLabel], "TextReferent");
+
+        expect(() => relationDao.createRelation(conceptualGraphId, relationLabel, [subLinkRelationTypeLabel], conceptArgumentLabels))
+            .toThrow('Cannot create relation with label: '
+                + relationLabel + ". Concept given as argument ("
+                + nonExistentConceptLabel + ") does not exist");
     })
 
     it('Get relation by Id', () => {
@@ -120,6 +163,7 @@ describe('RelationDao basic tests', () => {
         const conceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
         const relationLabel: string = relationLabelPrefix1 + testId;
         const conceptArgumentLabels: string[] = [entityConceptLabel1];
+        const entityConcept: Concept = conceptDao.createConcept(conceptualGraphId, entityConceptLabel1, [entityConceptTypeLabel], "TextReferent");
         const createdRelation: Relation = relationDao.createRelation(conceptualGraphId, relationLabel, [linkRelationTypeLabel], conceptArgumentLabels);
 
         const relationIdToFind: RelationId = {
@@ -130,11 +174,12 @@ describe('RelationDao basic tests', () => {
         expect(createdRelation).toEqual(savedRelation);
     })
 
-    it('Get relation by relationual graph id and label', () => {
+    it('Get relation by conceptual graph id and label', () => {
         const testId: string = IdGenerator.getInstance().getNextUniquTestId();
         const conceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
         const relationLabel: string = relationLabelPrefix1 + testId;
         const conceptArgumentLabels: string[] = [entityConceptLabel1];
+        const entityConcept: Concept = conceptDao.createConcept(conceptualGraphId, entityConceptLabel1, [entityConceptTypeLabel], "TextReferent");
         const createdRelation: Relation = relationDao.createRelation(conceptualGraphId, relationLabel, [linkRelationTypeLabel], conceptArgumentLabels);
 
         const savedRelation: Relation = relationDao.getRelationByConceptualGraphIdAndLabel(conceptualGraphId, relationLabel);
@@ -147,6 +192,8 @@ describe('RelationDao basic tests', () => {
         const relationLabel: string = relationLabelPrefix1 + testId;
         const oldConceptArgumentLabels: string[] = [entityConceptLabel1];
         const newConceptArgumentLabels: string[] = [entityConceptLabel2];
+        const entityConcept: Concept = conceptDao.createConcept(conceptualGraphId, entityConceptLabel1, [entityConceptTypeLabel], "TextReferent");
+        const entityConcept2: Concept = conceptDao.createConcept(conceptualGraphId, entityConceptLabel2, [entityConceptTypeLabel], "TextReferent");
         const createdRelation: Relation = relationDao.createRelation(conceptualGraphId, relationLabel, [linkRelationTypeLabel], oldConceptArgumentLabels);
         const relationToUpdate: Relation = {
             ...createdRelation,
@@ -171,6 +218,7 @@ describe('RelationDao basic tests', () => {
         const oldRelationLabel: string = relationLabelPrefix1 + testId + "-old";
         const newRelationLabel: string = relationLabelPrefix1 + testId + "-new";
         const conceptArgumentLabels: string[] = [entityConceptLabel1];
+        const entityConcept: Concept = conceptDao.createConcept(conceptualGraphId, entityConceptLabel1, [entityConceptTypeLabel], "TextReferent");
         const createdRelation: Relation = relationDao.createRelation(conceptualGraphId, oldRelationLabel, [linkRelationTypeLabel], conceptArgumentLabels);
         const relationToUpdate: Relation = {
             ...createdRelation,
@@ -189,12 +237,14 @@ describe('RelationDao basic tests', () => {
         expect(savedRelation).toEqual(updatedRelation);
     })
 
-    it('Update relation relationual graph', () => {
+    it('Update relation conceptual graph', () => {
         const testId: string = IdGenerator.getInstance().getNextUniquTestId();
         const oldConceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
         const newConceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
         const relationLabel: string = relationLabelPrefix1 + testId;
         const conceptArgumentLabels: string[] = [entityConceptLabel1];
+        const entityConcept1: Concept = conceptDao.createConcept(oldConceptualGraphId, entityConceptLabel1, [entityConceptTypeLabel], "TextReferent");
+        const entityConcept2: Concept = conceptDao.createConcept(newConceptualGraphId, entityConceptLabel1, [entityConceptTypeLabel], "TextReferent");
         const createdRelation: Relation = relationDao.createRelation(oldConceptualGraphId, relationLabel, [linkRelationTypeLabel], conceptArgumentLabels);
         const relationToUpdate: Relation = {
             ...createdRelation,
@@ -218,6 +268,7 @@ describe('RelationDao basic tests', () => {
         const conceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
         const relationLabel: string = relationLabelPrefix1 + testId;
         const conceptArgumentLabels: string[] = [entityConceptLabel1];
+        const entityConcept: Concept = conceptDao.createConcept(conceptualGraphId, entityConceptLabel1, [entityConceptTypeLabel], "TextReferent");
         const createdRelation: Relation = relationDao.createRelation(conceptualGraphId, relationLabel, [linkRelationTypeLabel], conceptArgumentLabels);
         const relationToUpdate: Relation = {
             ...createdRelation,
@@ -238,6 +289,7 @@ describe('RelationDao basic tests', () => {
         const conceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
         const relationLabel: string = relationLabelPrefix1 + testId;
         const conceptArgumentLabels: string[] = [entityConceptLabel1];
+        const entityConcept: Concept = conceptDao.createConcept(conceptualGraphId, entityConceptLabel1, [entityConceptTypeLabel], "TextReferent");
         const createdRelation: Relation = relationDao.createRelation(conceptualGraphId, relationLabel, [linkRelationTypeLabel], conceptArgumentLabels);
         const relationToUpdate: Relation = {
             ...createdRelation,
@@ -253,11 +305,12 @@ describe('RelationDao basic tests', () => {
                 + '. A relation must have at least one relation type');
     })
 
-    it('Error: Update Relation must have a relationual graph id', () => {
+    it('Error: Update Relation must have a conceptual graph id', () => {
         const testId: string = IdGenerator.getInstance().getNextUniquTestId();
         const conceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
         const relationLabel: string = relationLabelPrefix1 + testId;
         const conceptArgumentLabels: string[] = [entityConceptLabel1];
+        const entityConcept: Concept = conceptDao.createConcept(conceptualGraphId, entityConceptLabel1, [entityConceptTypeLabel], "TextReferent");
         const createdRelation: Relation = relationDao.createRelation(conceptualGraphId, relationLabel, [linkRelationTypeLabel], conceptArgumentLabels);
         const relationToUpdate: Relation = {
             ...createdRelation,
@@ -271,15 +324,16 @@ describe('RelationDao basic tests', () => {
         expect(() => relationDao.updateRelation(relationToUpdate))
             .toThrow('Could not update relation with label: '
                 + relationToUpdate.label
-                + '. A relation must have relationual graph id');
+                + '. A relation must have conceptual graph id');
     })
 
-    it('Error: Update Relation with existing label for that relationual graph should throw error', () => {
+    it('Error: Update Relation with existing label for that conceptual graph should throw error', () => {
         const testId: string = IdGenerator.getInstance().getNextUniquTestId();
         const conceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
         const existingLabel: string = relationLabelPrefix1 + testId;
         const newLabel: string = relationLabelPrefix2 + testId;
         const conceptArgumentLabels: string[] = [entityConceptLabel1];
+        const entityConcept: Concept = conceptDao.createConcept(conceptualGraphId, entityConceptLabel1, [entityConceptTypeLabel], "TextReferent");
         const existingRelation: Relation = relationDao.createRelation(conceptualGraphId, existingLabel, [linkRelationTypeLabel], conceptArgumentLabels);
         const createdRelation: Relation = relationDao.createRelation(conceptualGraphId, newLabel, [linkRelationTypeLabel], conceptArgumentLabels);
         const relationToUpdate: Relation = {
@@ -294,8 +348,79 @@ describe('RelationDao basic tests', () => {
         expect(() => relationDao.updateRelation(relationToUpdate))
             .toThrow('Could not update relation with label: '
                 + relationToUpdate.label
-                + '. Another relation with that label already exists for this relationual graph. It has id: '
+                + '. Another relation with that label already exists for this conceptual graph. It has id: '
                 + existingRelation.id.relationId);
+    })
+
+    it('Error: Update Relation with Concept whose Concept Type does not match Relation Type signature', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const conceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
+        const relationLabel: string = relationLabelPrefix1 + testId;
+        const conceptLabel: string = entityConceptLabel1 + testId;
+        const entityConcept1: Concept = conceptDao.createConcept(conceptualGraphId, entityConceptLabel1, [subSubEntityConceptTypeLabel], "TextReferent");
+        const entityConcept2: Concept = conceptDao.createConcept(conceptualGraphId, entityConceptLabel2, [entityConceptTypeLabel], "TextReferent");
+        const conceptArgumentLabels: string[] = [entityConceptLabel1];
+        const createdRelation: Relation = relationDao.createRelation(conceptualGraphId, relationLabel, [subSubLinkRelationTypeLabel], conceptArgumentLabels);
+        const relationToUpdate: Relation = {
+            ...createdRelation,
+            id: {
+                ...createdRelation.id
+            },
+            relationTypeLabels: [...createdRelation.relationTypeLabels],
+            conceptArguments: [entityConceptLabel2]
+        }
+
+        expect(() => relationDao.updateRelation(relationToUpdate))
+            .toThrow('Cannot update relation with label: '
+                + relationLabel + ". Concept " + entityConceptLabel2 + " does not match any relation type signature");
+    })
+
+    it('Error: Update Relation with more concepts than concept type in signature', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const conceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
+        const relationLabel: string = relationLabelPrefix1 + testId;
+        const conceptLabel: string = entityConceptLabel1 + testId;
+        const entityConcept1: Concept = conceptDao.createConcept(conceptualGraphId, entityConceptLabel1, [subSubEntityConceptTypeLabel], "TextReferent");
+        const entityConcept2: Concept = conceptDao.createConcept(conceptualGraphId, entityConceptLabel2, [entityConceptTypeLabel], "TextReferent");
+        const conceptArgumentLabels: string[] = [entityConceptLabel1];
+        const createdRelation: Relation = relationDao.createRelation(conceptualGraphId, relationLabel, [subSubLinkRelationTypeLabel], conceptArgumentLabels);
+        const relationToUpdate: Relation = {
+            ...createdRelation,
+            id: {
+                ...createdRelation.id
+            },
+            relationTypeLabels: [...createdRelation.relationTypeLabels],
+            conceptArguments: [entityConceptLabel1, entityConceptLabel2]
+        }
+
+        expect(() => relationDao.updateRelation(relationToUpdate))
+            .toThrow('Cannot update relation with label: '
+                + relationLabel + ". Number of concept arguments (2) does not match number of concept types in relation type signature (1)");
+    })
+
+    it('Error: Create Relation with a concept that does not exist', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const conceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
+        const relationLabel: string = relationLabelPrefix1 + testId;
+        const conceptLabel: string = entityConceptLabel1 + testId;
+        const entityConcept1: Concept = conceptDao.createConcept(conceptualGraphId, entityConceptLabel1, [subSubEntityConceptTypeLabel], "TextReferent");
+        const entityConcept2: Concept = conceptDao.createConcept(conceptualGraphId, entityConceptLabel2, [entityConceptTypeLabel], "TextReferent");
+        const conceptArgumentLabels: string[] = [entityConceptLabel1];
+        const createdRelation: Relation = relationDao.createRelation(conceptualGraphId, relationLabel, [subSubLinkRelationTypeLabel], conceptArgumentLabels);
+        const relationToUpdate: Relation = {
+            ...createdRelation,
+            id: {
+                ...createdRelation.id
+            },
+            relationTypeLabels: [...createdRelation.relationTypeLabels],
+            conceptArguments: [nonExistentConceptLabel]
+        }
+
+
+        expect(() => relationDao.updateRelation(relationToUpdate))
+            .toThrow('Cannot update relation with label: '
+                + relationLabel + ". Concept given as argument ("
+                + nonExistentConceptLabel + ") does not exist");
     })
 
     it('Delete relation', () => {
@@ -303,6 +428,7 @@ describe('RelationDao basic tests', () => {
         const conceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
         const label: string = relationLabelPrefix1 + testId;
         const conceptArgumentLabels: string[] = [entityConceptLabel1];
+        const entityConcept: Concept = conceptDao.createConcept(conceptualGraphId, entityConceptLabel1, [entityConceptTypeLabel], "TextReferent");
         const createdRelation: Relation = relationDao.createRelation(conceptualGraphId, label, [linkRelationTypeLabel], conceptArgumentLabels);
 
         const isSuccessfulDelete: boolean = relationDao.deleteRelation(createdRelation.id);
