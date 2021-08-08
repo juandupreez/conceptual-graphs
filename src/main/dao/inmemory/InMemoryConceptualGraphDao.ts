@@ -40,7 +40,7 @@ export class InMemoryConceptualGraphDao implements ConceptualGraphDao {
         })
         conceptualGraph.relations.forEach((singleRelation: Relation) => {
             const createdRelation: Relation
-                = this.relationDao.createRelation(generatedId, singleRelation.label, singleRelation.relationTypeLabels, singleRelation.conceptArgumentLabels);
+                = this.relationDao.createRelation(singleRelation.label, singleRelation.relationTypeLabels, singleRelation.conceptArgumentLabels);
             createdConceptualGraph.relations.push(createdRelation);
             simpleConceptualGraph.relationLabels.push(singleRelation.label);
         })
@@ -62,7 +62,7 @@ export class InMemoryConceptualGraphDao implements ConceptualGraphDao {
                 conceptualGraph.addConcept(this.conceptDao.getConceptByLabel(singleConceptLabel))
             })
             foundSimpleConceptualGraph.relationLabels.forEach((singleRelationLabel) => {
-                const singleRelation: Relation =  this.relationDao.getRelationByConceptualGraphIdAndLabel(foundSimpleConceptualGraph.id, singleRelationLabel)
+                const singleRelation: Relation =  this.relationDao.getRelationByLabel(singleRelationLabel)
                 conceptualGraph.addRelation(singleRelation)
             })
             return conceptualGraph;

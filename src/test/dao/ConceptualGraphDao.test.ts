@@ -62,7 +62,7 @@ describe('ConceptualGraphDao', () => {
             ...matConcept,
             id: createdMatConcept.id
         });
-        const createdOnTheRelation: Relation = relationDao.getRelationByConceptualGraphIdAndLabel(createdConceptualGraph.id, "OnThe");
+        const createdOnTheRelation: Relation = relationDao.getRelationByLabel("OnThe");
         expect(createdOnTheRelation).toEqual({
             ...onRelation,
             id: createdOnTheRelation.id
