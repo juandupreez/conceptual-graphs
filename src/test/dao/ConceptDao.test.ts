@@ -2,7 +2,7 @@ import { ConceptDao } from "../../main/dao/ConceptDao";
 import { ConceptTypeDao } from "../../main/dao/ConceptTypeDao";
 import { InMemoryConceptDao } from "../../main/dao/inmemory/InMemoryConceptDao";
 import { InMemoryConceptTypeDao } from "../../main/dao/inmemory/InMemoryConceptTypeDao";
-import { Concept, ConceptId } from "../../main/domain/Concept"
+import { Concept } from "../../main/domain/Concept"
 import { IdGenerator } from "../../main/util/IdGenerator";
 
 const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
@@ -31,18 +31,13 @@ describe('ConceptDao basic tests', () => {
 
     it('create a concept with text referet', () => {
         const testId: string = IdGenerator.getInstance().getNextUniquTestId();
-        const conceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
         const conceptLabel: string = conceptLabelPrefix1 + testId;
         const textReferent: string = 'TextReferent';
 
-        const concept: Concept = conceptDao.createConcept(conceptualGraphId, conceptLabel, [entityConceptTypeLabel], textReferent);
+        const concept: Concept = conceptDao.createConcept(conceptLabel, [entityConceptTypeLabel], textReferent);
         expect(concept.id).not.toBeNull();
-        concept.id.conceptualGraphId
         expect(concept).toEqual({
-            id: {
-                conceptId: concept.id.conceptId,
-                conceptualGraphId: conceptualGraphId
-            },
+            id: concept.id,
             label: conceptLabel,
             conceptTypeLabels: [entityConceptTypeLabel],
             referent: textReferent
@@ -51,90 +46,70 @@ describe('ConceptDao basic tests', () => {
 
     it('Error: Create Concept with non-existent concept type should throw error', () => {
         const testId: string = IdGenerator.getInstance().getNextUniquTestId();
-        const conceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
         const conceptLabel: string = conceptLabelPrefix1 + testId;
         const textReferent: string = 'TextReferent';
 
-        expect(() => conceptDao.createConcept(conceptualGraphId, conceptLabel, [nonExistentConceptTypeLabel], textReferent))
+        expect(() => conceptDao.createConcept(conceptLabel, [nonExistentConceptTypeLabel], textReferent))
             .toThrow('Cannot create concept type with label: ' + conceptLabel + ". Concept Type '"
                 + nonExistentConceptTypeLabel + "' does not exist");
     })
 
     it('Error: Create Concept must have a concept type', () => {
         const testId: string = IdGenerator.getInstance().getNextUniquTestId();
-        const conceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
         const conceptLabel: string = conceptLabelPrefix1 + testId;
         const textReferent: string = 'TextReferent';
 
-        expect(() => conceptDao.createConcept(conceptualGraphId, conceptLabel, [], textReferent))
+        expect(() => conceptDao.createConcept(conceptLabel, [], textReferent))
             .toThrow('Cannot create concept type with label: ' + conceptLabel + ". Needs at least one concept type");
-    })
-
-    it('Error: Create Concept must have a conceptual graph id', () => {
-        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
-        const conceptLabel: string = conceptLabelPrefix1 + testId;
-        const textReferent: string = 'TextReferent';
-
-        expect(() => conceptDao.createConcept(null, conceptLabel, [entityConceptTypeLabel], textReferent))
-            .toThrow('Cannot create concept type with label: ' + conceptLabel + ". A conceptual graph must exist and id must be provided");
     })
 
     it('Error: Create Concept with existing label for that conceptual graph should throw error', () => {
         const testId: string = IdGenerator.getInstance().getNextUniquTestId();
-        const conceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
         const conceptLabel: string = conceptLabelPrefix1 + testId;
         const textReferent: string = 'TextReferent';
-        const concept: Concept = conceptDao.createConcept(conceptualGraphId, conceptLabel, [entityConceptTypeLabel], textReferent);
+        const concept: Concept = conceptDao.createConcept(conceptLabel, [entityConceptTypeLabel], textReferent);
 
-        expect(() => conceptDao.createConcept(conceptualGraphId, conceptLabel, [entityConceptTypeLabel], textReferent))
-            .toThrow('Cannot create concept type with label: ' + conceptLabel + ". A concept with that label already exists for conceptual graph with id: " + conceptualGraphId);
+        expect(() => conceptDao.createConcept(conceptLabel, [entityConceptTypeLabel], textReferent))
+            .toThrow('Cannot create concept type with label: ' + conceptLabel + ". A concept with that label already exists");
     })
 
     it('Get concept by Id', () => {
         const testId: string = IdGenerator.getInstance().getNextUniquTestId();
-        const conceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
         const conceptLabel: string = conceptLabelPrefix1 + testId;
         const textReferent: string = 'TextReferent';
-        const createdConcept: Concept = conceptDao.createConcept(conceptualGraphId, conceptLabel, [entityConceptTypeLabel], textReferent);
+        const createdConcept: Concept = conceptDao.createConcept(conceptLabel, [entityConceptTypeLabel], textReferent);
 
-        const conceptIdToFind: ConceptId = {
-            conceptId: createdConcept.id.conceptId,
-            conceptualGraphId: conceptualGraphId
-        }
+        const conceptIdToFind: string = createdConcept.id;
         const savedConcept: Concept = conceptDao.getConceptById(conceptIdToFind);
         expect(createdConcept).toEqual(savedConcept);
     })
 
     it('Get concept by conceptual graph id and label', () => {
         const testId: string = IdGenerator.getInstance().getNextUniquTestId();
-        const conceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
         const conceptLabel: string = conceptLabelPrefix1 + testId;
         const textReferent: string = 'TextReferent';
-        const createdConcept: Concept = conceptDao.createConcept(conceptualGraphId, conceptLabel, [entityConceptTypeLabel], textReferent);
+        const createdConcept: Concept = conceptDao.createConcept(conceptLabel, [entityConceptTypeLabel], textReferent);
 
-        const savedConcept: Concept = conceptDao.getConceptByConceptualGraphIdAndLabel(conceptualGraphId, conceptLabel);
+        const savedConcept: Concept = conceptDao.getConceptByLabel(conceptLabel);
         expect(createdConcept).toEqual(savedConcept);
     })
 
     it('Update concept referent', () => {
         const testId: string = IdGenerator.getInstance().getNextUniquTestId();
-        const conceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
         const conceptLabel: string = conceptLabelPrefix1 + testId;
         const oldTextReferent: string = 'OldTextReferent';
         const newTextReferent: string = 'NewTextReferent';
-        const createdConcept: Concept = conceptDao.createConcept(conceptualGraphId, conceptLabel, [entityConceptTypeLabel], oldTextReferent);
+        const createdConcept: Concept = conceptDao.createConcept(conceptLabel, [entityConceptTypeLabel], oldTextReferent);
         const conceptToUpdate: Concept = {
             ...createdConcept,
-            id: {
-                ...createdConcept.id
-            },
+            id: createdConcept.id,
             conceptTypeLabels: [...createdConcept.conceptTypeLabels],
             referent: newTextReferent
         }
 
         const updatedConcept: Concept = conceptDao.updateConcept(conceptToUpdate);
 
-        const savedConcept: Concept = conceptDao.getConceptByConceptualGraphIdAndLabel(conceptualGraphId, conceptLabel);
+        const savedConcept: Concept = conceptDao.getConceptByLabel(conceptLabel);
         expect(createdConcept).not.toEqual(updatedConcept);
         expect(conceptToUpdate).toEqual(updatedConcept);
         expect(savedConcept).toEqual(updatedConcept);
@@ -142,47 +117,20 @@ describe('ConceptDao basic tests', () => {
 
     it('Update concept label', () => {
         const testId: string = IdGenerator.getInstance().getNextUniquTestId();
-        const conceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
         const oldConceptLabel: string = conceptLabelPrefix1 + testId + "-old";
         const newConceptLabel: string = conceptLabelPrefix1 + testId + "-new";
         const textReferent: string = 'TextReferent';
-        const createdConcept: Concept = conceptDao.createConcept(conceptualGraphId, oldConceptLabel, [entityConceptTypeLabel], textReferent);
+        const createdConcept: Concept = conceptDao.createConcept(oldConceptLabel, [entityConceptTypeLabel], textReferent);
         const conceptToUpdate: Concept = {
             ...createdConcept,
-            id: {
-                ...createdConcept.id
-            },
+            id: createdConcept.id,
             conceptTypeLabels: [...createdConcept.conceptTypeLabels],
             label: newConceptLabel
         }
 
         const updatedConcept: Concept = conceptDao.updateConcept(conceptToUpdate);
 
-        const savedConcept: Concept = conceptDao.getConceptByConceptualGraphIdAndLabel(conceptualGraphId, newConceptLabel);
-        expect(createdConcept).not.toEqual(updatedConcept);
-        expect(conceptToUpdate).toEqual(updatedConcept);
-        expect(savedConcept).toEqual(updatedConcept);
-    })
-
-    it('Update concept conceptual graph', () => {
-        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
-        const oldConceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
-        const newConceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
-        const conceptLabel: string = conceptLabelPrefix1 + testId;
-        const textReferent: string = 'TextReferent';
-        const createdConcept: Concept = conceptDao.createConcept(oldConceptualGraphId, conceptLabel, [entityConceptTypeLabel], textReferent);
-        const conceptToUpdate: Concept = {
-            ...createdConcept,
-            id: {
-                ...createdConcept.id,
-                conceptualGraphId: newConceptualGraphId
-            },
-            conceptTypeLabels: [...createdConcept.conceptTypeLabels]
-        }
-
-        const updatedConcept: Concept = conceptDao.updateConcept(conceptToUpdate);
-
-        const savedConcept: Concept = conceptDao.getConceptByConceptualGraphIdAndLabel(newConceptualGraphId, conceptLabel);
+        const savedConcept: Concept = conceptDao.getConceptByLabel(newConceptLabel);
         expect(createdConcept).not.toEqual(updatedConcept);
         expect(conceptToUpdate).toEqual(updatedConcept);
         expect(savedConcept).toEqual(updatedConcept);
@@ -190,15 +138,12 @@ describe('ConceptDao basic tests', () => {
 
     it('Error: Update Concept with non-existent concept type should throw error', () => {
         const testId: string = IdGenerator.getInstance().getNextUniquTestId();
-        const conceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
         const conceptLabel: string = conceptLabelPrefix1 + testId;
         const textReferent: string = 'TextReferent';
-        const createdConcept: Concept = conceptDao.createConcept(conceptualGraphId, conceptLabel, [entityConceptTypeLabel], textReferent);
+        const createdConcept: Concept = conceptDao.createConcept(conceptLabel, [entityConceptTypeLabel], textReferent);
         const conceptToUpdate: Concept = {
             ...createdConcept,
-            id: {
-                ...createdConcept.id,
-            },
+            id: createdConcept.id,
             conceptTypeLabels: [nonExistentConceptTypeLabel]
         }
 
@@ -210,15 +155,12 @@ describe('ConceptDao basic tests', () => {
 
     it('Error: Update Concept must have a concept type', () => {
         const testId: string = IdGenerator.getInstance().getNextUniquTestId();
-        const conceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
         const conceptLabel: string = conceptLabelPrefix1 + testId;
         const textReferent: string = 'TextReferent';
-        const createdConcept: Concept = conceptDao.createConcept(conceptualGraphId, conceptLabel, [entityConceptTypeLabel], textReferent);
+        const createdConcept: Concept = conceptDao.createConcept(conceptLabel, [entityConceptTypeLabel], textReferent);
         const conceptToUpdate: Concept = {
             ...createdConcept,
-            id: {
-                ...createdConcept.id,
-            },
+            id: createdConcept.id,
             conceptTypeLabels: []
         }
 
@@ -228,40 +170,16 @@ describe('ConceptDao basic tests', () => {
                 + '. A concept must have at least one concept type');
     })
 
-    it('Error: Update Concept must have a conceptual graph id', () => {
-        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
-        const conceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
-        const conceptLabel: string = conceptLabelPrefix1 + testId;
-        const textReferent: string = 'TextReferent';
-        const createdConcept: Concept = conceptDao.createConcept(conceptualGraphId, conceptLabel, [entityConceptTypeLabel], textReferent);
-        const conceptToUpdate: Concept = {
-            ...createdConcept,
-            id: {
-                ...createdConcept.id,
-                conceptualGraphId: null
-            },
-            conceptTypeLabels: [...createdConcept.conceptTypeLabels]
-        }
-
-        expect(() => conceptDao.updateConcept(conceptToUpdate))
-            .toThrow('Could not update concept with label: '
-                + conceptToUpdate.label
-                + '. A concept must have conceptual graph id');
-    })
-
     it('Error: Update Concept with existing label for that conceptual graph should throw error', () => {
         const testId: string = IdGenerator.getInstance().getNextUniquTestId();
-        const conceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
         const existingLabel: string = conceptLabelPrefix1 + testId;
         const newLabel: string = conceptLabelPrefix2 + testId;
         const textReferent: string = 'TextReferent';
-        const existingConcept: Concept = conceptDao.createConcept(conceptualGraphId, existingLabel, [entityConceptTypeLabel], textReferent);
-        const createdConcept: Concept = conceptDao.createConcept(conceptualGraphId, newLabel, [entityConceptTypeLabel], textReferent);
+        const existingConcept: Concept = conceptDao.createConcept(existingLabel, [entityConceptTypeLabel], textReferent);
+        const createdConcept: Concept = conceptDao.createConcept(newLabel, [entityConceptTypeLabel], textReferent);
         const conceptToUpdate: Concept = {
             ...createdConcept,
-            id: {
-                ...createdConcept.id
-            },
+            id: createdConcept.id,
             conceptTypeLabels: [...createdConcept.conceptTypeLabels],
             label: existingLabel
         }
@@ -270,36 +188,31 @@ describe('ConceptDao basic tests', () => {
             .toThrow('Could not update concept with label: '
                 + conceptToUpdate.label
                 + '. Another concept with that label already exists for this conceptual graph. It has id: '
-                + existingConcept.id.conceptId);
+                + existingConcept.id);
     })
 
     it('Delete concept', () => {
         const testId: string = IdGenerator.getInstance().getNextUniquTestId();
-        const conceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
         const label: string = conceptLabelPrefix1 + testId;
         const textReferent: string = 'TextReferent';
-        const createdConcept: Concept = conceptDao.createConcept(conceptualGraphId, label, [entityConceptTypeLabel], textReferent);
+        const createdConcept: Concept = conceptDao.createConcept(label, [entityConceptTypeLabel], textReferent);
 
         const isSuccessfulDelete: boolean = conceptDao.deleteConcept(createdConcept.id);
         
         expect(isSuccessfulDelete).toBe(true);
-        const deletedConcept: Concept = conceptDao.getConceptByConceptualGraphIdAndLabel(conceptualGraphId, label);
+        const deletedConcept: Concept = conceptDao.getConceptByLabel(label);
         expect(deletedConcept).toBeUndefined();
     })
 
     it('Delete nonexistent concept should return false', () => {
         const testId: string = IdGenerator.getInstance().getNextUniquTestId();
-        const conceptualGraphId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
         const label: string = conceptLabelPrefix1 + testId;
-        const idToDelete: ConceptId = {
-            conceptId: IdGenerator.getInstance().getNextUniqueConceptId(),
-            conceptualGraphId: conceptualGraphId
-        }
+        const idToDelete: string = IdGenerator.getInstance().getNextUniqueConceptId()
 
         const isSuccessfulDelete: boolean = conceptDao.deleteConcept(idToDelete);
         
         expect(isSuccessfulDelete).toBe(false);
-        const deletedConcept: Concept = conceptDao.getConceptByConceptualGraphIdAndLabel(conceptualGraphId, label);
+        const deletedConcept: Concept = conceptDao.getConceptByLabel(label);
         expect(deletedConcept).toBeUndefined();
     })
 

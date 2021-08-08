@@ -52,12 +52,12 @@ describe('ConceptualGraphDao', () => {
 
         const savedConceptualGraph: ConceptualGraph = conceptualGraphDao.getConceptualGraphById(createdConceptualGraph.id);
         expect(createdConceptualGraph).toEqual(savedConceptualGraph);
-        const createdCatConcept: Concept = conceptDao.getConceptByConceptualGraphIdAndLabel(createdConceptualGraph.id, "TheCat");
+        const createdCatConcept: Concept = conceptDao.getConceptByLabel("TheCat");
         expect(createdCatConcept).toEqual({
             ...catConcept,
             id: createdCatConcept.id
         });
-        const createdMatConcept: Concept = conceptDao.getConceptByConceptualGraphIdAndLabel(createdConceptualGraph.id, "TheMat");
+        const createdMatConcept: Concept = conceptDao.getConceptByLabel("TheMat");
         expect(createdMatConcept).toEqual({
             ...matConcept,
             id: createdMatConcept.id

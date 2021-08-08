@@ -53,7 +53,7 @@ export class InMemoryRelationDao implements RelationDao {
         }
         if (conceptArgumentLabels) {
             conceptArgumentLabels.forEach((singleConceptArgumentLabel) => {
-                const concept: Concept = this.conceptDao.getConceptByConceptualGraphIdAndLabel(conceptualGraphId, singleConceptArgumentLabel);
+                const concept: Concept = this.conceptDao.getConceptByLabel(singleConceptArgumentLabel);
                 if (!concept) {
                     throw new Error('Cannot create relation with label: '
                         + newRelationLabel + ". Concept given as argument ("
@@ -79,7 +79,7 @@ export class InMemoryRelationDao implements RelationDao {
         if (conceptArgumentLabels) {
             let doesMatchAnySignature: boolean = false;
             const coneptArguments: Concept[] = conceptArgumentLabels.map((singleConceptArgumentLabel) => {
-                return this.conceptDao.getConceptByConceptualGraphIdAndLabel(conceptualGraphId, singleConceptArgumentLabel);
+                return this.conceptDao.getConceptByLabel(singleConceptArgumentLabel);
             })
             for (let i = 0; i < relationTypeLabels.length && doesMatchAnySignature === false; i++) {
                 const relationTypeLabel = relationTypeLabels[i];
@@ -159,7 +159,7 @@ export class InMemoryRelationDao implements RelationDao {
         }
         if (relationToUpdate.conceptArgumentLabels) {
             relationToUpdate.conceptArgumentLabels.forEach((singleConceptArgumentLabel) => {
-                const concept: Concept = this.conceptDao.getConceptByConceptualGraphIdAndLabel(relationToUpdate.id.conceptualGraphId, singleConceptArgumentLabel);
+                const concept: Concept = this.conceptDao.getConceptByLabel(singleConceptArgumentLabel);
                 if (!concept) {
                     throw new Error('Cannot update relation with label: '
                         + relationToUpdate.label + ". Concept given as argument ("
@@ -201,7 +201,7 @@ export class InMemoryRelationDao implements RelationDao {
                 const relationTypeLabel = relationToUpdate.relationTypeLabels[i];
                 const singleRelationType: RelationType = this.relationTypeDao.getRelationTypeByLabel(relationTypeLabel);
                 relationToUpdate.conceptArgumentLabels.forEach((singleConceptArgumentLabel, argumentIndex) => {
-                    const concept: Concept = this.conceptDao.getConceptByConceptualGraphIdAndLabel(relationToUpdate.id.conceptualGraphId, singleConceptArgumentLabel);
+                    const concept: Concept = this.conceptDao.getConceptByLabel(singleConceptArgumentLabel);
                     doesMatchSignature = singleRelationType.signature.reduce((accumulator, singleSignatureConceptTypeLabel) => {
                         const possibleConceptTypeLabels: string[]
                             = this.conceptTypeDao.getLabelAndAllSubLabelsOfConcept(singleSignatureConceptTypeLabel);

@@ -1,4 +1,4 @@
-import { Concept, ConceptId } from "../../domain/Concept";
+import { Concept } from "../../domain/Concept";
 import { ConceptType } from "../../domain/ConceptType";
 import { IdGenerator } from "../../util/IdGenerator";
 import { ConceptDao } from "../ConceptDao";
@@ -13,17 +13,11 @@ export class InMemoryConceptDao implements ConceptDao {
         this.conceptTypeDao = conceptTypeDao;
     }
 
-    createConcept(conceptualGraphId: string, newConceptLabel: string, conceptTypeLabels: string[], referent: string): Concept {
-        this._validateConceptBeforeCreate(conceptualGraphId, newConceptLabel, conceptTypeLabels, referent);
+    createConcept(newConceptLabel: string, conceptTypeLabels: string[], referent: string): Concept {
+        this._validateConceptBeforeCreate(newConceptLabel, conceptTypeLabels, referent);
         const newConcept: Concept = new Concept();
         const generatedId = IdGenerator.getInstance().getNextUniqueConceptId();
-        if (!newConcept.id) {
-            newConcept.id = {
-                conceptId: null,
-                conceptualGraphId: conceptualGraphId
-            }
-        }
-        newConcept.id.conceptId = generatedId;
+        newConcept.id = generatedId;
         newConcept.label = newConceptLabel;
         newConcept.conceptTypeLabels = conceptTypeLabels;
         newConcept.referent = referent;
@@ -31,10 +25,7 @@ export class InMemoryConceptDao implements ConceptDao {
         return this._clone(newConcept);
     }
 
-    _validateConceptBeforeCreate(conceptualGraphId: string, newConceptLabel: string, conceptTypeLabels: string[], referent: string) {
-        if (!conceptualGraphId) {
-            throw new Error('Cannot create concept type with label: ' + newConceptLabel + ". A conceptual graph must exist and id must be provided");
-        }
+    _validateConceptBeforeCreate(newConceptLabel: string, conceptTypeLabels: string[], referent: string) {
         if (conceptTypeLabels) {
             conceptTypeLabels.forEach((singleConceptTypeLabel) => {
                 if (!this.conceptTypeDao.getConceptTypeByLabel(singleConceptTypeLabel)) {
@@ -46,23 +37,21 @@ export class InMemoryConceptDao implements ConceptDao {
         if (!conceptTypeLabels || conceptTypeLabels.length === 0) {
             throw new Error('Cannot create concept type with label: ' + newConceptLabel + ". Needs at least one concept type");
         }
-        if (this.getConceptByConceptualGraphIdAndLabel(conceptualGraphId, newConceptLabel)) {
-            throw new Error('Cannot create concept type with label: ' + newConceptLabel + ". A concept with that label already exists for conceptual graph with id: " + conceptualGraphId);
+        if (this.getConceptByLabel(newConceptLabel)) {
+            throw new Error('Cannot create concept type with label: ' + newConceptLabel + ". A concept with that label already exists");
         }
     }
 
-    getConceptById(conceptIdToFind: ConceptId): Concept {
+    getConceptById(conceptIdToFind: string): Concept {
         return this._clone(this.concepts.find((singleConcept) => {
             return (singleConcept.id
-                && singleConcept.id.conceptId === conceptIdToFind.conceptId
-                && singleConcept.id.conceptualGraphId === conceptIdToFind.conceptualGraphId);
+                && singleConcept.id === conceptIdToFind);
         }))
     }
 
-    getConceptByConceptualGraphIdAndLabel(conceptualGraphId: string, conceptLabel: string): Concept {
+    getConceptByLabel(conceptLabel: string): Concept {
         return this.concepts.find((singleConcept) => {
             return (singleConcept.id
-                && singleConcept.id.conceptualGraphId === conceptualGraphId
                 && singleConcept.label === conceptLabel)
         })
     }
@@ -72,16 +61,14 @@ export class InMemoryConceptDao implements ConceptDao {
         this.concepts.forEach((singleConcept) => {
             if (singleConcept.id
                 && conceptToUpdate.id
-                && singleConcept.id.conceptId === conceptToUpdate.id.conceptId
-                && singleConcept.id.conceptualGraphId === conceptToUpdate.id.conceptualGraphId) {
+                && singleConcept.id === conceptToUpdate.id) {
                 singleConcept.referent = conceptToUpdate.referent;
                 singleConcept.label = conceptToUpdate.label;
             }
             if (singleConcept.id
                 && conceptToUpdate.id
-                && singleConcept.id.conceptId === conceptToUpdate.id.conceptId
+                && singleConcept.id === conceptToUpdate.id
                 && singleConcept.label === conceptToUpdate.label) {
-                singleConcept.id.conceptualGraphId = conceptToUpdate.id.conceptualGraphId;
                 singleConcept.referent = conceptToUpdate.referent;
                 singleConcept.label = conceptToUpdate.label;
             }
@@ -90,7 +77,7 @@ export class InMemoryConceptDao implements ConceptDao {
     }
 
     _validateConceptBeforeUpdate(conceptToUpdate: Concept): void {
-        if (!conceptToUpdate || !conceptToUpdate.id || !conceptToUpdate.id.conceptualGraphId) {
+        if (!conceptToUpdate || !conceptToUpdate.id) {
             throw new Error('Could not update concept with label: '
                 + conceptToUpdate.label
                 + '. A concept must have conceptual graph id');
@@ -111,22 +98,21 @@ export class InMemoryConceptDao implements ConceptDao {
             })
         }
         if (conceptToUpdate.id) {
-            const possibleExistingConcept: Concept = this.getConceptByConceptualGraphIdAndLabel(conceptToUpdate.id.conceptualGraphId, conceptToUpdate.label);
-            if (possibleExistingConcept && possibleExistingConcept.id.conceptId !== conceptToUpdate.id.conceptId) {
+            const possibleExistingConcept: Concept = this.getConceptByLabel(conceptToUpdate.label);
+            if (possibleExistingConcept && possibleExistingConcept.id !== conceptToUpdate.id) {
                 throw new Error('Could not update concept with label: '
                     + conceptToUpdate.label
                     + '. Another concept with that label already exists for this conceptual graph. It has id: '
-                    + possibleExistingConcept.id.conceptId);
+                    + possibleExistingConcept.id);
             }
         }
     }
 
-    deleteConcept(idToDelete: ConceptId): boolean {
+    deleteConcept(idToDelete: string): boolean {
         let isSuccessfulDelete: boolean = false;
         const lengthBeforeDelete: number = this.concepts.length;
         this.concepts = this.concepts.filter((singleConcpet) => {
-            return (singleConcpet.id.conceptId !== idToDelete.conceptId
-                && singleConcpet.id.conceptualGraphId !== idToDelete.conceptualGraphId);
+            return (singleConcpet.id !== idToDelete);
         })
         if (this.concepts.length !== lengthBeforeDelete) {
             isSuccessfulDelete = true;
@@ -137,9 +123,7 @@ export class InMemoryConceptDao implements ConceptDao {
     _clone(conceptToClone: Concept): Concept {
         return conceptToClone ? {
             ...conceptToClone,
-            id: {
-                ...conceptToClone.id
-            },
+            id: conceptToClone.id,
             conceptTypeLabels: [...conceptToClone.conceptTypeLabels]
         } : conceptToClone;
     }

@@ -1,9 +1,9 @@
-import { Concept, ConceptId } from "../domain/Concept";
+import { Concept } from "../domain/Concept";
 
 export interface ConceptDao {
-    createConcept(conceptualGraphId: string, label: string, conceptTypeLabels: string[], referent: string): Concept;
-    getConceptById(conceptIdToFind: ConceptId): Concept;
-    getConceptByConceptualGraphIdAndLabel(conceptualGraphId: string, conceptLabel: string): Concept;
+    createConcept(label: string, conceptTypeLabels: string[], referent: string): Concept;
+    getConceptById(conceptIdToFind: string): Concept;
+    getConceptByLabel(conceptLabel: string): Concept;
     updateConcept(conceptToUpdate: Concept): Concept;
-    deleteConcept(id: ConceptId): boolean;
+    deleteConcept(id: string): boolean;
 }
