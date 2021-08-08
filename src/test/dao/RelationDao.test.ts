@@ -201,7 +201,7 @@ describe('RelationDao basic tests', () => {
                 ...createdRelation.id
             },
             relationTypeLabels: [...createdRelation.relationTypeLabels],
-            conceptArguments: newConceptArgumentLabels
+            conceptArgumentLabels: newConceptArgumentLabels
         }
 
         const updatedRelation: Relation = relationDao.updateRelation(relationToUpdate);
@@ -367,7 +367,7 @@ describe('RelationDao basic tests', () => {
                 ...createdRelation.id
             },
             relationTypeLabels: [...createdRelation.relationTypeLabels],
-            conceptArguments: [entityConceptLabel2]
+            conceptArgumentLabels: [entityConceptLabel2]
         }
 
         expect(() => relationDao.updateRelation(relationToUpdate))
@@ -390,7 +390,7 @@ describe('RelationDao basic tests', () => {
                 ...createdRelation.id
             },
             relationTypeLabels: [...createdRelation.relationTypeLabels],
-            conceptArguments: [entityConceptLabel1, entityConceptLabel2]
+            conceptArgumentLabels: [entityConceptLabel1, entityConceptLabel2]
         }
 
         expect(() => relationDao.updateRelation(relationToUpdate))
@@ -413,7 +413,7 @@ describe('RelationDao basic tests', () => {
                 ...createdRelation.id
             },
             relationTypeLabels: [...createdRelation.relationTypeLabels],
-            conceptArguments: [nonExistentConceptLabel]
+            conceptArgumentLabels: [nonExistentConceptLabel]
         }
 
 

@@ -2,7 +2,7 @@
   "name": "conceptual-graphs",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "./build/conceptual-graphs.js",
   "scripts": {
     "test": "jest",
     "build": "tsc"

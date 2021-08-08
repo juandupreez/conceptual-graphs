@@ -1,5 +1,6 @@
 import { ConceptualGraph } from "../domain/ConceptualGraph";
 
 export interface ConceptualGraphDao {
-    insertConceptualGraph(conceptualGraph: ConceptualGraph): ConceptualGraph;    
+    createConceptualGraph(conceptualGraph: ConceptualGraph): ConceptualGraph;  
+    getConceptualGraphById(id: string): ConceptualGraph; 
 }

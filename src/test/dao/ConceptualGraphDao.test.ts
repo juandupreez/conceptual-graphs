@@ -11,17 +11,18 @@ import { Concept } from "../../main/domain/Concept";
 import { Relation } from "../../main/domain/Relation";
 import { ConceptualGraphDao } from "../../main/dao/ConceptualGraphDao";
 import { InMemoryConceptualGraphDao } from "../../main/dao/inmemory/InMemoryConceptualGraphDao";
+import { IdGenerator } from "../../main/util/IdGenerator";
 
 const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
 const relationTypeDao: RelationTypeDao = new InMemoryRelationTypeDao(conceptTypeDao);
 const conceptDao: ConceptDao = new InMemoryConceptDao(conceptTypeDao);
-const relationDao: RelationDao = new InMemoryRelationDao(relationTypeDao);
+const relationDao: RelationDao = new InMemoryRelationDao(conceptDao, conceptTypeDao, relationTypeDao);
 const conceptualGraphDao: ConceptualGraphDao = new InMemoryConceptualGraphDao(conceptDao, relationDao);
 
 describe('ConceptualGraphDao', () => {
 
     it('Create simple conceptual graph: The cat is on the mat', () => {
-        const conceptualGraph: ConceptualGraph = new ConceptualGraph();
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
         const conceptTypeHierarchy: SimpleConceptType[] = [{
             label: "Entity",
             subConceptTypes: [
@@ -33,18 +34,42 @@ describe('ConceptualGraphDao', () => {
 
         const relationTypeHierarchy: SimpleRelationType[] = [{
             label: "Link",
-            subRelationTypes: [{ label: "On" }]
+            signature: ["Entity", "Entity"],
+            subRelationTypes: [{
+                label: "On",
+                signature: ["Cat", "Mat"]
+            }]
         }]
-        relationTypeDao.generateHierarchyFromObject(relationTypeHierarchy);
+        relationTypeDao.importHierarchyFromSimpleRelationTypes(relationTypeHierarchy);
 
+        const conceptualGraph: ConceptualGraph = new ConceptualGraph();
+        conceptualGraph.label = "The cat is on the mat";
         const catConcept: Concept = conceptualGraph.createConcept("TheCat", "Cat", "The");
         const matConcept: Concept = conceptualGraph.createConcept("TheMat", "Mat", "The");
         const onRelation: Relation = conceptualGraph.createRelation("OnThe", "On", [catConcept, matConcept]);
 
-        conceptualGraphDao.insertConceptualGraph(conceptualGraph);
+        const createdConceptualGraph: ConceptualGraph = conceptualGraphDao.createConceptualGraph(conceptualGraph);
 
-        console.log(conceptualGraph);
-        
+        const savedConceptualGraph: ConceptualGraph = conceptualGraphDao.getConceptualGraphById(createdConceptualGraph.id);
+        expect(createdConceptualGraph).toEqual(savedConceptualGraph);
+        const createdCatConcept: Concept = conceptDao.getConceptByConceptualGraphIdAndLabel(createdConceptualGraph.id, "TheCat");
+        expect(createdCatConcept).toEqual({
+            ...catConcept,
+            id: createdCatConcept.id
+        });
+        const createdMatConcept: Concept = conceptDao.getConceptByConceptualGraphIdAndLabel(createdConceptualGraph.id, "TheMat");
+        expect(createdMatConcept).toEqual({
+            ...matConcept,
+            id: createdMatConcept.id
+        });
+        const createdOnTheRelation: Relation = relationDao.getRelationByConceptualGraphIdAndLabel(createdConceptualGraph.id, "OnThe");
+        expect(createdOnTheRelation).toEqual({
+            ...onRelation,
+            id: createdOnTheRelation.id
+        });
+    })
+
+    xit('Create conceptual graph with concepts/relations that already exist', () => {
     })
 
 })

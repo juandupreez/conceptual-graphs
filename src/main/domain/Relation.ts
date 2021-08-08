@@ -5,7 +5,7 @@ export class Relation {
     id: RelationId;
     label: string;
     relationTypeLabels: string[] = [];
-    conceptArguments: string[] = [];
+    conceptArgumentLabels: string[] = [];
 }
 
 export class RelationId {

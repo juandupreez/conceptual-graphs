@@ -1,8 +1,8 @@
 import { Concept } from "../../../domain/Concept";
-import { ConceptRelationEdge } from "../../../domain/ConceptRelationEdge";
 import { ConceptType } from "../../../domain/ConceptType";
 import { Relation } from "../../../domain/Relation";
 import { RelationType } from "../../../domain/RelationType";
+import { SimpleConceptualGraph } from "../InMemoryConceptualGraphDao";
 
 class ConceptualGraphState {
     conceptTypes: ConceptType[] = [];
@@ -11,7 +11,7 @@ class ConceptualGraphState {
     rootRelationTypeIds: string[] = [];
     concepts: Concept[] = [];
     relations: Relation[] = [];
-    edges: ConceptRelationEdge[] = [];
+    simpleConceptualGarphs: SimpleConceptualGraph[] = [];
 }
 
 export class Store {

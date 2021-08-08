@@ -1,5 +1,4 @@
 import { Concept } from "../../domain/Concept";
-import { ConceptRelationEdge } from "../../domain/ConceptRelationEdge";
 import { ConceptualGraph } from "../../domain/ConceptualGraph";
 import { Relation } from "../../domain/Relation";
 import { IdGenerator } from "../../util/IdGenerator";
@@ -8,49 +7,66 @@ import { ConceptualGraphDao } from "../ConceptualGraphDao";
 import { RelationDao } from "../RelationDao";
 import { Store } from "./store/Store";
 
+export class SimpleConceptualGraph {
+    id?: string;
+    label: string;
+    conceptLabels: string[] = [];
+    relationLabels: string[] = [];
+}
 export class InMemoryConceptualGraphDao implements ConceptualGraphDao {
     conceptDao: ConceptDao;
     relationDao: RelationDao;
+    simpleConceptualGraphs: SimpleConceptualGraph[] = Store.getInstance().state.simpleConceptualGarphs;
 
     constructor(conceptDao: ConceptDao, relationDao: RelationDao) {
         this.conceptDao = conceptDao;
         this.relationDao = relationDao;
     }
 
-    insertConceptualGraph(conceptualGraph: ConceptualGraph): ConceptualGraph {
+    createConceptualGraph(conceptualGraph: ConceptualGraph): ConceptualGraph {
+        const createdConceptualGraph = new ConceptualGraph();
+        const simpleConceptualGraph = new SimpleConceptualGraph();
         const generatedId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
         conceptualGraph.id = generatedId;
+        createdConceptualGraph.id = generatedId;
+        simpleConceptualGraph.id = generatedId;
+        createdConceptualGraph.label = conceptualGraph.label;
+        simpleConceptualGraph.label = conceptualGraph.label;
         conceptualGraph.concepts.forEach((singleConcept: Concept) => {
-            if (!singleConcept.id) {
-                singleConcept.id = {
-                    conceptId: null,
-                    conceptualGraphId: null
-                }
-            }
-            singleConcept.id.conceptualGraphId = generatedId;
-            this.conceptDao.insertConcept(singleConcept);
+            const createdConcept: Concept
+                = this.conceptDao.createConcept(generatedId, singleConcept.label, singleConcept.conceptTypeLabels, singleConcept.referent);
+            createdConceptualGraph.concepts.push(createdConcept);
+            simpleConceptualGraph.conceptLabels.push(createdConcept.label);
         })
         conceptualGraph.relations.forEach((singleRelation: Relation) => {
-            if (!singleRelation.id) {
-                singleRelation.id = {
-                    relationId: null,
-                    conceptualGraphId: null
-                }
-            }
-            singleRelation.id.conceptualGraphId = generatedId;
-            this.relationDao.insertRelation(singleRelation);
+            const createdRelation: Relation
+                = this.relationDao.createRelation(generatedId, singleRelation.label, singleRelation.relationTypeLabels, singleRelation.conceptArgumentLabels);
+            createdConceptualGraph.relations.push(createdRelation);
+            simpleConceptualGraph.relationLabels.push(singleRelation.label);
         })
-        conceptualGraph.edges.forEach((singleEdge: ConceptRelationEdge) => {
-            if (!singleEdge.id) {
-                singleEdge.id = {
-                    edgeId: null,
-                    conceptualGraphId: null
-                }
-            }
-            singleEdge.id.conceptualGraphId = generatedId;
-            Store.getInstance().state.edges.push(singleEdge);
+        this.simpleConceptualGraphs.push(simpleConceptualGraph);
+        return createdConceptualGraph;
+    }
+
+    getConceptualGraphById(conceptualGraphId: string): ConceptualGraph {
+        const foundSimpleConceptualGraph: SimpleConceptualGraph = this.simpleConceptualGraphs.find((singleSimpleConceptualGraph) => {
+            return (singleSimpleConceptualGraph.id && singleSimpleConceptualGraph.id === conceptualGraphId);
         })
-        return conceptualGraph;
+        if (!foundSimpleConceptualGraph) {
+            return undefined;
+        } else {
+            const conceptualGraph: ConceptualGraph = new ConceptualGraph();
+            conceptualGraph.id = foundSimpleConceptualGraph.id;
+            conceptualGraph.label = foundSimpleConceptualGraph.label;
+            foundSimpleConceptualGraph.conceptLabels.forEach((singleConceptLabel) => {
+                conceptualGraph.addConcept(this.conceptDao.getConceptByConceptualGraphIdAndLabel(foundSimpleConceptualGraph.id, singleConceptLabel))
+            })
+            foundSimpleConceptualGraph.relationLabels.forEach((singleRelationLabel) => {
+                const singleRelation: Relation =  this.relationDao.getRelationByConceptualGraphIdAndLabel(foundSimpleConceptualGraph.id, singleRelationLabel)
+                conceptualGraph.addRelation(singleRelation)
+            })
+            return conceptualGraph;
+        }
     }
 
 }

@@ -1,9 +1,15 @@
-{   
+{
     "compilerOptions": {
-      "esModuleInterop": true,
-      "outDir": "lib"  ,
-      "declaration": true,
-      "declarationDir": "lib/types"
+        "esModuleInterop": true,
+        // "outDir": "build",
+        "outFile": "build/index.js",
+        "declaration": true,
+        // "declarationDir": "./types",
+        // "module": "amd",
+        "module": "system",
+        "moduleResolution": "node",
+        // "composite": true,
+        "sourceMap": true
     },
     "include": [
         "src/**/*"
