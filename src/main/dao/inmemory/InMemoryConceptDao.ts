@@ -1,5 +1,6 @@
 import { Concept } from "../../domain/Concept";
 import { ConceptType } from "../../domain/ConceptType";
+import { cloneConcept } from "../../util/ConceptUtil";
 import { IdGenerator } from "../../util/IdGenerator";
 import { ConceptDao } from "../ConceptDao";
 import { ConceptTypeDao, NoSuchConceptTypeError } from "../ConceptTypeDao";
@@ -22,7 +23,7 @@ export class InMemoryConceptDao implements ConceptDao {
         newConcept.conceptTypeLabels = conceptTypeLabels;
         newConcept.referent = referent;
         this.concepts.push(newConcept);
-        return this._clone(newConcept);
+        return cloneConcept(newConcept);
     }
 
     _validateConceptBeforeCreate(newConceptLabel: string, conceptTypeLabels: string[], referent: string) {
@@ -43,7 +44,7 @@ export class InMemoryConceptDao implements ConceptDao {
     }
 
     getConceptById(conceptIdToFind: string): Concept {
-        return this._clone(this.concepts.find((singleConcept) => {
+        return cloneConcept(this.concepts.find((singleConcept) => {
             return (singleConcept.id
                 && singleConcept.id === conceptIdToFind);
         }))
@@ -73,7 +74,7 @@ export class InMemoryConceptDao implements ConceptDao {
                 singleConcept.label = conceptToUpdate.label;
             }
         })
-        return this._clone(conceptToUpdate);
+        return cloneConcept(conceptToUpdate);
     }
 
     _validateConceptBeforeUpdate(conceptToUpdate: Concept): void {
@@ -118,14 +119,6 @@ export class InMemoryConceptDao implements ConceptDao {
             isSuccessfulDelete = true;
         }
         return isSuccessfulDelete;
-    }
-
-    _clone(conceptToClone: Concept): Concept {
-        return conceptToClone ? {
-            ...conceptToClone,
-            id: conceptToClone.id,
-            conceptTypeLabels: [...conceptToClone.conceptTypeLabels]
-        } : conceptToClone;
     }
 
 }

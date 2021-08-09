@@ -1,8 +1,9 @@
 import { Concept } from "../../domain/Concept";
 import { Relation } from "../../domain/Relation";
 import { RelationType } from "../../domain/RelationType";
-import { ConceptUtil } from "../../util/ConceptUtil";
+import { hasAnyConceptTypes } from "../../util/ConceptUtil";
 import { IdGenerator } from "../../util/IdGenerator";
+import { cloneRelation } from "../../util/RelationUtil";
 import { ConceptDao } from "../ConceptDao";
 import { ConceptTypeDao } from "../ConceptTypeDao";
 import { RelationDao } from "../RelationDao";
@@ -30,7 +31,7 @@ export class InMemoryRelationDao implements RelationDao {
         newRelation.relationTypeLabels = relationTypeLabels;
         newRelation.conceptArgumentLabels = conceptArgumentLabels;
         this.relations.push(newRelation);
-        return this._clone(newRelation);
+        return cloneRelation(newRelation);
     }
 
     _validateRelationBeforeCreate(newRelationLabel: string, relationTypeLabels: string[], conceptArgumentLabels: string[]) {
@@ -94,20 +95,20 @@ export class InMemoryRelationDao implements RelationDao {
                 = this.conceptTypeDao.getLabelAndAllSubLabelsOfConcept(singleSignatureConceptTypeLabel);
             doesMatchAllInSignature = doesMatchAllInSignature
                 && conceptArguments[signatureIndex]
-                && ConceptUtil.hasAnyConceptTypes(conceptArguments[signatureIndex], possibleConceptTypeLabels);
+                && hasAnyConceptTypes(conceptArguments[signatureIndex], possibleConceptTypeLabels);
         })
         return doesMatchAllInSignature;
     }
 
     getRelationById(relationIdToFind: string): Relation {
-        return this._clone(this.relations.find((singleRelation) => {
+        return cloneRelation(this.relations.find((singleRelation) => {
             return (singleRelation.id
                 && singleRelation.id === relationIdToFind);
         }))
     }
 
     getRelationByLabel(relationLabel: string): Relation {
-        return this._clone(this.relations.find((singleRelation) => {
+        return cloneRelation(this.relations.find((singleRelation) => {
             return (singleRelation.id
                 && singleRelation.label === relationLabel)
         }))
@@ -115,30 +116,28 @@ export class InMemoryRelationDao implements RelationDao {
 
     updateRelation(relationToUpdate: Relation): Relation {
         this._validateRelationBeforeUpdate(relationToUpdate);
+        let didUpdateById: boolean = false;
         this.relations.forEach((singleRelation) => {
             if (singleRelation.id
                 && relationToUpdate.id
                 && singleRelation.id === relationToUpdate.id) {
                 singleRelation.conceptArgumentLabels = relationToUpdate.conceptArgumentLabels;
                 singleRelation.label = relationToUpdate.label;
-            }
-            if (singleRelation.id
-                && relationToUpdate.id
-                && singleRelation.id === relationToUpdate.id
-                && singleRelation.label === relationToUpdate.label) {
-                singleRelation.conceptArgumentLabels = relationToUpdate.conceptArgumentLabels;
-                singleRelation.label = relationToUpdate.label;
+                didUpdateById = true;
             }
         })
-        return this._clone(relationToUpdate);
+        if (!didUpdateById) { // then try updated by label
+            this.relations.forEach((singleRelation) => {
+                if (singleRelation.label === relationToUpdate.label) {
+                    singleRelation.conceptArgumentLabels = relationToUpdate.conceptArgumentLabels;
+                    relationToUpdate.id = singleRelation.id;
+                }
+            })
+        }
+        return cloneRelation(relationToUpdate);
     }
 
     _validateRelationBeforeUpdate(relationToUpdate: Relation): void {
-        if (!relationToUpdate || !relationToUpdate.id) {
-            throw new Error('Could not update relation with label: '
-                + relationToUpdate.label
-                + '. A relation must have conceptual graph id');
-        }
         if (!relationToUpdate.relationTypeLabels || relationToUpdate.relationTypeLabels.length === 0) {
             throw new Error('Could not update relation with label: '
                 + relationToUpdate.label
@@ -183,25 +182,21 @@ export class InMemoryRelationDao implements RelationDao {
             }
         }
         if (relationToUpdate.conceptArgumentLabels) {
-            let doesMatchSignature: boolean = false;
-            for (let i = 0; i < relationToUpdate.relationTypeLabels.length && !doesMatchSignature; i++) {
+            let doesMatchAnySignature: boolean = false;
+            const coneptArguments: Concept[] = relationToUpdate.conceptArgumentLabels.map((singleConceptArgumentLabel) => {
+                return this.conceptDao.getConceptByLabel(singleConceptArgumentLabel);
+            })
+            for (let i = 0; i < relationToUpdate.relationTypeLabels.length && doesMatchAnySignature === false; i++) {
                 const relationTypeLabel = relationToUpdate.relationTypeLabels[i];
                 const singleRelationType: RelationType = this.relationTypeDao.getRelationTypeByLabel(relationTypeLabel);
-                relationToUpdate.conceptArgumentLabels.forEach((singleConceptArgumentLabel, argumentIndex) => {
-                    const concept: Concept = this.conceptDao.getConceptByLabel(singleConceptArgumentLabel);
-                    doesMatchSignature = singleRelationType.signature.reduce((accumulator, singleSignatureConceptTypeLabel) => {
-                        const possibleConceptTypeLabels: string[]
-                            = this.conceptTypeDao.getLabelAndAllSubLabelsOfConcept(singleSignatureConceptTypeLabel);
-                        return accumulator && possibleConceptTypeLabels.reduce((accumulator, singlePossibleConceptTypeLabel) => {
-                            return accumulator || concept.conceptTypeLabels.includes(singlePossibleConceptTypeLabel);
-                        }, false)
-                    }, true);
-                    if (!doesMatchSignature) {
-                        throw new Error('Cannot update relation with label: '
-                            + relationToUpdate.label + ". Concept " + singleConceptArgumentLabel + " does not match any relation type signature");
-                    }
-                })
-
+                doesMatchAnySignature = doesMatchAnySignature || this._doesConceptArgumentsMatchRelationTypeSignature(coneptArguments, singleRelationType);
+            }
+            if (!doesMatchAnySignature) {
+                throw new Error('Cannot update relation with label: '
+                    + relationToUpdate.label + ". Argument concept types of arguments ("
+                    + relationToUpdate.conceptArgumentLabels
+                    + ") do not match any signatures of relation types: "
+                    + relationToUpdate.relationTypeLabels);
             }
         }
     }
@@ -216,15 +211,6 @@ export class InMemoryRelationDao implements RelationDao {
             isSuccessfulDelete = true;
         }
         return isSuccessfulDelete;
-    }
-
-    _clone(relationToClone: Relation): Relation {
-        return relationToClone ? {
-            ...relationToClone,
-            id: relationToClone.id,
-            relationTypeLabels: [...relationToClone.relationTypeLabels],
-            conceptArgumentLabels: [...relationToClone.conceptArgumentLabels]
-        } : relationToClone;
     }
 
 }

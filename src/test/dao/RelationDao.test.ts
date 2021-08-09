@@ -298,7 +298,9 @@ describe('RelationDao basic tests', () => {
 
         expect(() => relationDao.updateRelation(relationToUpdate))
             .toThrow('Cannot update relation with label: '
-                + relationLabel + ". Concept " + conceptLabel2 + " does not match any relation type signature");
+                + relationLabel + ". Argument concept types of arguments (" + conceptLabel2 
+                + ") do not match any signatures of relation types: "
+                + subSubLinkRelationTypeLabel);
     })
 
     it('Error: Update Relation with more concepts than concept type in signature', () => {

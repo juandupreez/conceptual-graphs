@@ -21,8 +21,7 @@ const conceptualGraphDao: ConceptualGraphDao = new InMemoryConceptualGraphDao(co
 
 describe('ConceptualGraphDao', () => {
 
-    it('Create simple conceptual graph: The cat is on the mat', () => {
-        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+    beforeAll(() => {        
         const conceptTypeHierarchy: SimpleConceptType[] = [{
             label: "Entity",
             subConceptTypes: [
@@ -41,35 +40,138 @@ describe('ConceptualGraphDao', () => {
             }]
         }]
         relationTypeDao.importHierarchyFromSimpleRelationTypes(relationTypeHierarchy);
+    })
+
+    it('Create simple conceptual graph: The cat is on the mat', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const catConceptLabel: string = "TheCat-" + testId;
+        const matConceptLabel: string = "TheMat-" + testId;
+        const onRelationLabel: string = "OnThe-" + testId;
 
         const conceptualGraph: ConceptualGraph = new ConceptualGraph();
-        conceptualGraph.label = "The cat is on the mat";
-        const catConcept: Concept = conceptualGraph.createConcept("TheCat", "Cat", "The");
-        const matConcept: Concept = conceptualGraph.createConcept("TheMat", "Mat", "The");
-        const onRelation: Relation = conceptualGraph.createRelation("OnThe", "On", [catConcept, matConcept]);
+        conceptualGraph.label = "The cat is on the mat - " + testId;
+        const catConcept: Concept = conceptualGraph.createConcept(catConceptLabel, "Cat", "The");
+        const matConcept: Concept = conceptualGraph.createConcept(matConceptLabel, "Mat", "The");
+        const onRelation: Relation = conceptualGraph.createRelation(onRelationLabel, "On", [catConcept, matConcept]);
 
         const createdConceptualGraph: ConceptualGraph = conceptualGraphDao.createConceptualGraph(conceptualGraph);
 
         const savedConceptualGraph: ConceptualGraph = conceptualGraphDao.getConceptualGraphById(createdConceptualGraph.id);
         expect(createdConceptualGraph).toEqual(savedConceptualGraph);
-        const createdCatConcept: Concept = conceptDao.getConceptByLabel("TheCat");
+        const createdCatConcept: Concept = conceptDao.getConceptByLabel(catConceptLabel);
         expect(createdCatConcept).toEqual({
             ...catConcept,
             id: createdCatConcept.id
         });
-        const createdMatConcept: Concept = conceptDao.getConceptByLabel("TheMat");
+        const createdMatConcept: Concept = conceptDao.getConceptByLabel(matConceptLabel);
         expect(createdMatConcept).toEqual({
             ...matConcept,
             id: createdMatConcept.id
         });
-        const createdOnTheRelation: Relation = relationDao.getRelationByLabel("OnThe");
+        const createdOnTheRelation: Relation = relationDao.getRelationByLabel(onRelationLabel);
         expect(createdOnTheRelation).toEqual({
             ...onRelation,
             id: createdOnTheRelation.id
         });
     })
 
-    xit('Create conceptual graph with concepts/relations that already exist', () => {
+    it('Create conceptual graph with concepts/relations that already exist', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const catConceptLabel: string = "TheCat-" + testId;
+        const matConceptLabel: string = "TheMat-" + testId;
+        const onRelationLabel: string = "OnThe-" + testId;
+
+        const conceptualGraph: ConceptualGraph = new ConceptualGraph();
+        conceptualGraph.label = "The cat is on the mat - " + testId;
+        const catConcept: Concept = conceptDao.createConcept(catConceptLabel, ["Cat"], "The");
+        catConcept.referent = "THE";
+        conceptualGraph.addConcept(catConcept);
+        const matConcept: Concept = conceptDao.createConcept(matConceptLabel, ["Mat"], "The");
+        matConcept.referent = "THE";
+        conceptualGraph.addConcept(matConcept);
+        const onRelation: Relation = relationDao.createRelation(onRelationLabel, ["On"], [catConceptLabel, matConceptLabel]);
+        conceptualGraph.addRelation(onRelation);
+
+        const createdConceptualGraph: ConceptualGraph = conceptualGraphDao.createConceptualGraph(conceptualGraph);
+
+        const savedConceptualGraph: ConceptualGraph = conceptualGraphDao.getConceptualGraphById(createdConceptualGraph.id);
+        expect(createdConceptualGraph).toEqual(savedConceptualGraph);
+        const savedCatConcept: Concept = conceptDao.getConceptByLabel(catConceptLabel);
+        expect(savedCatConcept).toEqual(catConcept);
+        const savedMatConcept: Concept = conceptDao.getConceptByLabel(matConceptLabel);
+        expect(savedMatConcept).toEqual({
+            ...matConcept
+        });
+        const savedOnTheRelation: Relation = relationDao.getRelationByLabel(onRelationLabel);
+        expect(savedOnTheRelation).toEqual({
+            ...onRelation
+        });
+    })
+
+    it('Get conceptual graph by Id', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const catConceptLabel: string = "TheCat-" + testId;
+        const matConceptLabel: string = "TheMat-" + testId;
+        const onRelationLabel: string = "OnThe-" + testId;
+
+        const conceptualGraph: ConceptualGraph = new ConceptualGraph();
+        conceptualGraph.label = "The cat is on the mat - " + testId;
+        const catConcept: Concept = conceptualGraph.createConcept(catConceptLabel, "Cat", "The");
+        const matConcept: Concept = conceptualGraph.createConcept(matConceptLabel, "Mat", "The");
+        const onRelation: Relation = conceptualGraph.createRelation(onRelationLabel, "On", [catConcept, matConcept]);
+
+        const createdConceptualGraph: ConceptualGraph = conceptualGraphDao.createConceptualGraph(conceptualGraph);
+
+        const savedConceptualGraph: ConceptualGraph = conceptualGraphDao.getConceptualGraphById(createdConceptualGraph.id);
+        expect(createdConceptualGraph).toEqual(savedConceptualGraph);
+    })
+
+    it('Get conceptual graph by Label', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const catConceptLabel: string = "TheCat-" + testId;
+        const matConceptLabel: string = "TheMat-" + testId;
+        const onRelationLabel: string = "OnThe-" + testId;
+
+        const conceptualGraph: ConceptualGraph = new ConceptualGraph();
+        conceptualGraph.label = "The cat is on the mat - " + testId;
+        const catConcept: Concept = conceptualGraph.createConcept(catConceptLabel, "Cat", "The");
+        const matConcept: Concept = conceptualGraph.createConcept(matConceptLabel, "Mat", "The");
+        const onRelation: Relation = conceptualGraph.createRelation(onRelationLabel, "On", [catConcept, matConcept]);
+
+        const createdConceptualGraph: ConceptualGraph = conceptualGraphDao.createConceptualGraph(conceptualGraph);
+
+        const savedConceptualGraph: ConceptualGraph = conceptualGraphDao.getConceptualGraphByLabel(createdConceptualGraph.label);
+        expect(createdConceptualGraph).toEqual(savedConceptualGraph);
+    })
+
+    it('Update conceptual graph', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const catConceptLabel1: string = "TheCat1-" + testId;
+        const catConceptLabel2: string = "TheCat2-" + testId;
+        const matConceptLabel1: string = "TheMat1-" + testId;
+        const matConceptLabel2: string = "TheMat2-" + testId;
+        const onRelationLabel: string = "OnThe-" + testId;
+
+        const conceptualGraph: ConceptualGraph = new ConceptualGraph();
+        conceptualGraph.label = "Old: the cat is on the mat - " + testId;
+        const catConcept1: Concept = conceptualGraph.createConcept(catConceptLabel1, "Cat", "The");
+        const matConcept1: Concept = conceptualGraph.createConcept(matConceptLabel1, "Mat", "The");
+        const onRelation: Relation = conceptualGraph.createRelation(onRelationLabel, "On", [catConcept1, matConcept1]);
+        const createdConceptualGraph: ConceptualGraph = conceptualGraphDao.createConceptualGraph(conceptualGraph);
+
+        conceptualGraph.label = "New: the cat is on the mat - " + testId;
+        const catConcept2: Concept = conceptDao.createConcept(catConceptLabel2, ["Cat"], "The");
+        const matConcept2: Concept = conceptDao.createConcept(matConceptLabel2, ["Mat"], "The");
+        onRelation.conceptArgumentLabels = [catConceptLabel2, matConceptLabel2];
+        conceptualGraph.updateRelationByLabel(onRelation);
+        conceptualGraph.removeConceptByLabel(catConceptLabel1);
+        conceptualGraph.removeConceptByLabel(matConceptLabel1);
+
+        const updatedConceptualGraph: ConceptualGraph = conceptualGraphDao.updateConceptualGraph(conceptualGraph);
+
+        const savedConceptualGraph: ConceptualGraph = conceptualGraphDao.getConceptualGraphById(updatedConceptualGraph.id);
+        expect(createdConceptualGraph).not.toEqual(savedConceptualGraph);
+        expect(updatedConceptualGraph).toEqual(savedConceptualGraph);
     })
 
 })
