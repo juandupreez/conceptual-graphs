@@ -2,7 +2,7 @@ import { ConceptDao } from "../../main/dao/ConceptDao";
 import { ConceptTypeDao } from "../../main/dao/ConceptTypeDao";
 import { InMemoryConceptDao } from "../../main/dao/inmemory/InMemoryConceptDao";
 import { InMemoryConceptTypeDao } from "../../main/dao/inmemory/InMemoryConceptTypeDao";
-import { Concept } from "../../main/domain/Concept"
+import { Concept, DesignatorType, QuantifierType } from "../../main/domain/Concept"
 import { IdGenerator } from "../../main/util/IdGenerator";
 
 const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
@@ -40,7 +40,11 @@ describe('ConceptDao basic tests', () => {
             id: concept.id,
             label: conceptLabel,
             conceptTypeLabels: [entityConceptTypeLabel],
-            referent: textReferent
+            referent: {
+                quantifierType: QuantifierType.A_SINGLE,
+                designatorType: DesignatorType.LITERAL,
+                designatorValue: textReferent
+            }
         });
     })
 
@@ -104,7 +108,11 @@ describe('ConceptDao basic tests', () => {
             ...createdConcept,
             id: createdConcept.id,
             conceptTypeLabels: [...createdConcept.conceptTypeLabels],
-            referent: newTextReferent
+            referent: {
+                quantifierType: QuantifierType.A_SINGLE,
+                designatorType: DesignatorType.LITERAL,
+                designatorValue: newTextReferent
+            }
         }
 
         const updatedConcept: Concept = conceptDao.updateConcept(conceptToUpdate);

@@ -7,7 +7,7 @@ import { RelationTypeDao, SimpleRelationType } from "../../main/dao/RelationType
 import { RelationDao } from "../../main/dao/RelationDao";
 import { InMemoryRelationDao } from "../../main/dao/inmemory/InMemoryRelationDao";
 import { ConceptualGraph } from "../../main/domain/ConceptualGraph";
-import { Concept } from "../../main/domain/Concept";
+import { Concept, DesignatorType, QuantifierType } from "../../main/domain/Concept";
 import { Relation } from "../../main/domain/Relation";
 import { ConceptualGraphDao } from "../../main/dao/ConceptualGraphDao";
 import { InMemoryConceptualGraphDao } from "../../main/dao/inmemory/InMemoryConceptualGraphDao";
@@ -84,10 +84,18 @@ describe('ConceptualGraphDao', () => {
         const conceptualGraph: ConceptualGraph = new ConceptualGraph();
         conceptualGraph.label = "The cat is on the mat - " + testId;
         const catConcept: Concept = conceptDao.createConcept(catConceptLabel, ["Cat"], "The");
-        catConcept.referent = "THE";
+        catConcept.referent = {
+            quantifierType: QuantifierType.A_SINGLE,
+            designatorType: DesignatorType.THE,
+            designatorValue: "THE"
+        };
         conceptualGraph.addConcept(catConcept);
         const matConcept: Concept = conceptDao.createConcept(matConceptLabel, ["Mat"], "The");
-        matConcept.referent = "THE";
+        matConcept.referent = {
+            quantifierType: QuantifierType.A_SINGLE,
+            designatorType: DesignatorType.THE,
+            designatorValue: "THE"
+        };
         conceptualGraph.addConcept(matConcept);
         const onRelation: Relation = relationDao.createRelation(onRelationLabel, ["On"], [catConceptLabel, matConceptLabel]);
         conceptualGraph.addRelation(onRelation);

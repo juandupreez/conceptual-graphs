@@ -1,4 +1,4 @@
-import { Concept } from "../../domain/Concept";
+import { Concept, DesignatorType, QuantifierType, Referent } from "../../domain/Concept";
 import { ConceptType } from "../../domain/ConceptType";
 import { cloneConcept } from "../../util/ConceptUtil";
 import { IdGenerator } from "../../util/IdGenerator";
@@ -14,19 +14,32 @@ export class InMemoryConceptDao implements ConceptDao {
         this.conceptTypeDao = conceptTypeDao;
     }
 
-    createConcept(newConceptLabel: string, conceptTypeLabels: string[], referent: string): Concept {
+    createConcept(newConceptLabel: string, conceptTypeLabels: string[], referent: string | Referent): Concept {
         this._validateConceptBeforeCreate(newConceptLabel, conceptTypeLabels, referent);
         const newConcept: Concept = new Concept();
         const generatedId = IdGenerator.getInstance().getNextUniqueConceptId();
         newConcept.id = generatedId;
         newConcept.label = newConceptLabel;
         newConcept.conceptTypeLabels = conceptTypeLabels;
-        newConcept.referent = referent;
+        if (typeof referent === 'string') {
+            newConcept.referent = {
+                quantifierType: QuantifierType.A_SINGLE,
+                designatorType: DesignatorType.LITERAL,
+                designatorValue: referent
+            }
+        } else {
+            newConcept.referent = {
+                quantifierType: referent.quantifierType,
+                quantifierValue: referent.quantifierValue,
+                designatorType: referent.designatorType,
+                designatorValue: referent.designatorValue
+            };
+        }
         this.concepts.push(newConcept);
         return cloneConcept(newConcept);
     }
 
-    _validateConceptBeforeCreate(newConceptLabel: string, conceptTypeLabels: string[], referent: string) {
+    _validateConceptBeforeCreate(newConceptLabel: string, conceptTypeLabels: string[], referent: string | Referent) {
         if (conceptTypeLabels) {
             conceptTypeLabels.forEach((singleConceptTypeLabel) => {
                 if (!this.conceptTypeDao.getConceptTypeByLabel(singleConceptTypeLabel)) {

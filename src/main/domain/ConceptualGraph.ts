@@ -1,6 +1,6 @@
 import { cloneConcept } from "../util/ConceptUtil";
 import { cloneRelation } from "../util/RelationUtil";
-import { Concept } from "./Concept";
+import { Concept, DesignatorType, QuantifierType, Referent } from "./Concept";
 import { Relation } from "./Relation";
 
 export class ConceptualGraph {
@@ -27,11 +27,26 @@ export class ConceptualGraph {
         this.relations.push(cloneRelation(relation));
     }
 
-    createConcept(label: string, conceptTypeLabel: string, referent: string): Concept {
+    createConcept(label: string, conceptTypeLabels: string | string[], referent: string | Referent): Concept {
         const newConcept: Concept = new Concept();
         newConcept.label = label;
-        newConcept.conceptTypeLabels.push(conceptTypeLabel);
-        newConcept.referent = referent;
+        if (typeof conceptTypeLabels === "string") {
+            newConcept.conceptTypeLabels.push(conceptTypeLabels);
+        } else if (conceptTypeLabels && conceptTypeLabels.length > 0) {
+            conceptTypeLabels.forEach((singleConceptTypeLabel) => {
+                newConcept.conceptTypeLabels.push(singleConceptTypeLabel);                
+            });
+        }
+        if (typeof referent === "string") {
+            
+        newConcept.referent = {
+            quantifierType: QuantifierType.A_SINGLE,
+            designatorType: DesignatorType.LITERAL,
+            designatorValue: referent
+        };
+        } else {
+            newConcept.referent = referent;
+        }
         this.concepts.push(newConcept);
         return newConcept;
     }
