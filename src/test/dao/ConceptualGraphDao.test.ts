@@ -174,4 +174,24 @@ describe('ConceptualGraphDao', () => {
         expect(updatedConceptualGraph).toEqual(savedConceptualGraph);
     })
 
+    it('Delete conceptual graph', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        const catConceptLabel: string = "TheCat-" + testId;
+        const matConceptLabel: string = "TheMat-" + testId;
+        const onRelationLabel: string = "OnThe-" + testId;
+
+        const conceptualGraph: ConceptualGraph = new ConceptualGraph();
+        conceptualGraph.label = "The cat is on the mat - " + testId;
+        const catConcept1: Concept = conceptualGraph.createConcept(catConceptLabel, "Cat", "The");
+        const matConcept1: Concept = conceptualGraph.createConcept(matConceptLabel, "Mat", "The");
+        const onRelation: Relation = conceptualGraph.createRelation(onRelationLabel, "On", [catConcept1, matConcept1]);
+        const createdConceptualGraph: ConceptualGraph = conceptualGraphDao.createConceptualGraph(conceptualGraph);
+
+        const isSuccessfulDelete: boolean = conceptualGraphDao.deleteConceptualGraph(conceptualGraph.id);
+
+        expect(isSuccessfulDelete).toBe(true);
+        const savedConceptualGraph: ConceptualGraph = conceptualGraphDao.getConceptualGraphById(createdConceptualGraph.id);
+        expect(savedConceptualGraph).toBeUndefined();
+    })
+
 })

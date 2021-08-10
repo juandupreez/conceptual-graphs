@@ -5,4 +5,5 @@ export interface ConceptualGraphDao {
     getConceptualGraphById(id: string): ConceptualGraph; 
     getConceptualGraphByLabel(label: string): ConceptualGraph;
     updateConceptualGraph(conceptualGraph: ConceptualGraph): ConceptualGraph;
+    deleteConceptualGraph(idToDelete: string): boolean;
 }

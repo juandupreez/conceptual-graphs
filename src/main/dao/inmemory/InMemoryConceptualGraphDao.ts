@@ -123,5 +123,17 @@ export class InMemoryConceptualGraphDao implements ConceptualGraphDao {
         })
         return conceptualGraphToUpdate;
     }
+    
+    deleteConceptualGraph(idToDelete: string): boolean {
+        let isSuccessfulDelete: boolean = false;
+        const lengthBeforeDelete: number = this.simpleConceptualGraphs.length;
+        this.simpleConceptualGraphs = this.simpleConceptualGraphs.filter((singleSimpleConceptualGraph) => {
+            return (singleSimpleConceptualGraph.id !== idToDelete);
+        })
+        if (this.simpleConceptualGraphs.length !== lengthBeforeDelete) {
+            isSuccessfulDelete = true;
+        }
+        return isSuccessfulDelete;
+    }
 
 }
