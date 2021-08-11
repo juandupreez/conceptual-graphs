@@ -27,23 +27,27 @@ export class ConceptualGraph {
         this.relations.push(cloneRelation(relation));
     }
 
-    createConcept(label: string, conceptTypeLabels: string | string[], referent: string | Referent): Concept {
+    createConcept(label: string, conceptTypeLabels: string | string[], referent?: string | Referent): Concept {
         const newConcept: Concept = new Concept();
         newConcept.label = label;
         if (typeof conceptTypeLabels === "string") {
             newConcept.conceptTypeLabels.push(conceptTypeLabels);
         } else if (conceptTypeLabels && conceptTypeLabels.length > 0) {
             conceptTypeLabels.forEach((singleConceptTypeLabel) => {
-                newConcept.conceptTypeLabels.push(singleConceptTypeLabel);                
+                newConcept.conceptTypeLabels.push(singleConceptTypeLabel);
             });
         }
-        if (typeof referent === "string") {
-            
-        newConcept.referent = {
-            quantifierType: QuantifierType.A_SINGLE,
-            designatorType: DesignatorType.LITERAL,
-            designatorValue: referent
-        };
+        if (!referent) {
+            newConcept.referent = {
+                quantifierType: QuantifierType.A_SINGLE,
+                designatorType: DesignatorType.BLANK
+            };
+        } else if (typeof referent === "string") {
+            newConcept.referent = {
+                quantifierType: QuantifierType.A_SINGLE,
+                designatorType: DesignatorType.LITERAL,
+                designatorValue: referent
+            };
         } else {
             newConcept.referent = referent;
         }
