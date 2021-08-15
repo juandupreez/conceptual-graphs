@@ -23,16 +23,16 @@ export class QueryManager {
         }
     }
 
-    _recursiveMatchNode(query: ConceptualGraph, queryNode: Concept | Relation,
+    private _recursiveMatchNode(query: ConceptualGraph, queryNode: Concept | Relation, previousQueryNode?: Concept | Relation,
         previousMatchedNode?: Concept | Relation, alreadyProcessedNodes?: (Concept | Relation)[]): ConceptualGraph[] {
-        if  (!alreadyProcessedNodes) {
+        if (!alreadyProcessedNodes) {
             alreadyProcessedNodes = [queryNode];
         } else {
             alreadyProcessedNodes.push(queryNode);
         }
         const returnAnswerConceptualGraphs: ConceptualGraph[] = [];
         const matchedNodes: Concept[] | Relation[] = this._matchNodesInDB(queryNode, previousMatchedNode);
-        if (this._isLeaf(query, queryNode, alreadyProcessedNodes) && matchedNodes?.length > 0) {
+        if (this._isLeaf(query, queryNode, previousQueryNode) && matchedNodes?.length > 0) {
             matchedNodes.forEach((singleMatchedNode: Concept | Relation) => {
                 const newPotentailAnswerCG: ConceptualGraph = new ConceptualGraph();
                 newPotentailAnswerCG.addConceptOrRelation(singleMatchedNode);
@@ -41,11 +41,12 @@ export class QueryManager {
         } else if (matchedNodes?.length > 0) {
             matchedNodes.forEach((singleMatchedNode: Concept | Relation) => {
                 let doesMatchAllChildren: boolean = true;
-                let nextQueryNodes: Concept[] | Relation[] = this._getNextQueryNodes(query, queryNode, alreadyProcessedNodes);
+                let nextQueryNodes: Concept[] | Relation[] = this._getNextQueryNodes(query, queryNode, previousQueryNode);
                 const potentialAnswerCGs = [];
                 for (let i = 0; nextQueryNodes && i < nextQueryNodes.length; i++) {
                     const singleNextQueryNode: Concept | Relation = nextQueryNodes[i];
-                    const subPotientialAnswerCGs: ConceptualGraph[] = this._recursiveMatchNode(query, singleNextQueryNode, singleMatchedNode, alreadyProcessedNodes);
+                    const subPotientialAnswerCGs: ConceptualGraph[]
+                        = this._recursiveMatchNode(query, singleNextQueryNode, queryNode, singleMatchedNode, alreadyProcessedNodes);
                     potentialAnswerCGs.forEach((singlePotentialAnswer) => {
                         subPotientialAnswerCGs.forEach((singleSubPotentialAnswer) => {
                             singlePotentialAnswer.addConceptsIfNotExist(singleSubPotentialAnswer.concepts);
@@ -68,25 +69,28 @@ export class QueryManager {
         }
         return returnAnswerConceptualGraphs;
     }
+
     private _matchNodesInDB(queryNode: Concept | Relation, previousMatchedNode: Concept | Relation): Concept[] | Relation[] {
         if ((queryNode as any).conceptTypeLabels) {
             const matchedConcepts = this.conceptDao.getConceptsByExample(queryNode as Concept);
             return matchedConcepts;
         } else {
-            const matchedRelations = this.relationDao.getRelationsByExample(queryNode as Relation);
-            return matchedRelations;
-
+            const matchedRelations: Relation[] = this.relationDao.getRelationsByExample(queryNode as Relation);
+            return matchedRelations.filter((singleMatchedRelation) => {
+                return (singleMatchedRelation.conceptArgumentLabels.includes(previousMatchedNode.label));
+            }) ?? [];
         }
     }
-    private _isLeaf(query: ConceptualGraph, queryNode: Concept | Relation, alreadyProcessedNodes: (Concept | Relation)[]): boolean {
+
+    private _isLeaf(query: ConceptualGraph, queryNode: Concept | Relation, nodeToExclude: Concept | Relation): boolean {
         let isLeaf: boolean = true;
         if ((queryNode as any).conceptTypeLabels) {
-            const relationsWhereConceptIsUsed: Relation[] = query.getRelationsWhereConceptIsUsed(queryNode as Concept, alreadyProcessedNodes);
+            const relationsWhereConceptIsUsed: Relation[] = query.getRelationsWhereConceptIsUsed(queryNode as Concept, nodeToExclude as Relation);
             if (relationsWhereConceptIsUsed.length > 0) {
                 isLeaf = false;
             }
         } else {
-            const conceptsUsedByRelation: Concept[] = query.getConceptsUsedByRelation(queryNode as Relation, alreadyProcessedNodes);
+            const conceptsUsedByRelation: Concept[] = query.getConceptsUsedByRelation(queryNode as Relation, nodeToExclude as Concept);
             if (conceptsUsedByRelation.length > 0) {
                 isLeaf = false;
             }
@@ -94,11 +98,12 @@ export class QueryManager {
         }
         return isLeaf;
     }
-    private _getNextQueryNodes(query: ConceptualGraph, queryNode: Concept | Relation, alreadyProcessedNodes: (Concept | Relation)[]): Concept[] | Relation[] {
+
+    private _getNextQueryNodes(query: ConceptualGraph, queryNode: Concept | Relation, nodeToExclude: Concept | Relation): Concept[] | Relation[] {
         if ((queryNode as any).conceptTypeLabels) {
-            return query.getRelationsWhereConceptIsUsed(queryNode as Concept, alreadyProcessedNodes);
+            return query.getRelationsWhereConceptIsUsed(queryNode as Concept, nodeToExclude as Relation);
         } else {
-            return query.getConceptsUsedByRelation(queryNode as Relation, alreadyProcessedNodes);
+            return query.getConceptsUsedByRelation(queryNode as Relation, nodeToExclude as Concept);
         }
     }
 }

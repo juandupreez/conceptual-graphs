@@ -114,38 +114,18 @@ export class ConceptualGraph {
         })
     }
 
-    getRelationsWhereConceptIsUsed(conceptToBeUsed: Concept, nodesToExclude: (Relation | Concept)[]): Relation[] {
+    getRelationsWhereConceptIsUsed(conceptToBeUsed: Concept, relationToExclude: Relation): Relation[] {
         return this.relations.filter((singleRelation) => {
             return (singleRelation.conceptArgumentLabels.includes(conceptToBeUsed.label)
-                && !this._extractRelationsFromNodes(nodesToExclude).includes(singleRelation));
+                && singleRelation !== relationToExclude);
         })
     }
 
-    _extractRelationsFromNodes(nodes: (Relation | Concept)[]): Relation[] {
-        const relations: Relation[] = [];
-        nodes?.forEach((singleNode) => {
-            if ((singleNode as any).relationTypeLabels) {
-                relations.push(singleNode as Relation);
-            }
-        })
-        return relations;
-    }
-
-    getConceptsUsedByRelation(relation: Relation, nodesToExclude: (Concept | Relation)[]): Concept[] {
+    getConceptsUsedByRelation(relation: Relation, conceptToExclude: Concept): Concept[] {
         return this.concepts.filter((singleConcept) => {
             return (relation.conceptArgumentLabels.includes(singleConcept.label)
-                && !this._extractConceptsFromNodes(nodesToExclude).includes(singleConcept));
+                && singleConcept !== conceptToExclude);
         })
-    }
-
-    _extractConceptsFromNodes(nodes: (Relation | Concept)[]): Concept[] {
-        const concepts: Concept[] = [];
-        nodes?.forEach((singleNode) => {
-            if ((singleNode as any).conceptTypeLabels) {
-                concepts.push(singleNode as Concept);
-            }
-        })
-        return concepts;
     }
 
 }
