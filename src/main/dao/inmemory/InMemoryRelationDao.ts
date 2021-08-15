@@ -114,6 +114,30 @@ export class InMemoryRelationDao implements RelationDao {
         }))
     }
 
+    getRelationsByExample(relationToMatch: Relation) {
+        // A relation matches when it has relation types equal to or lower than the relation to match's relation types
+        return this.relations.filter((singleRelation) => {
+            let doesConceptMatch: boolean = false;
+            let doConceptTypesMatch: boolean = this._isSetOneASubsetOfSetTwo(singleRelation.relationTypeLabels, relationToMatch.relationTypeLabels);
+            if (doConceptTypesMatch) {
+                doesConceptMatch = true;
+            }
+            return doesConceptMatch;
+        })
+    }
+
+    _isSetOneASubsetOfSetTwo(setA: string[], setB: string[]): boolean {
+        let isASubset: boolean = true;
+        for (let i = 0; i < setA.length; i++) {
+            const singeElement = setA[i];
+            if (!setB.includes(singeElement)) {
+                isASubset = false;
+                break;
+            }
+        }
+        return isASubset;
+    }
+
     updateRelation(relationToUpdate: Relation): Relation {
         this._validateRelationBeforeUpdate(relationToUpdate);
         let didUpdateById: boolean = false;

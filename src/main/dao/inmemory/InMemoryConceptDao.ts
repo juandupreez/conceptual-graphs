@@ -70,6 +70,36 @@ export class InMemoryConceptDao implements ConceptDao {
         })
     }
 
+    getConceptsByExample(conceptToMatch: Concept) {
+        // A concept matches when it has concept types equal to or lower than the concept to match's concept types
+        return this.concepts.filter((singleConcept) => {
+            let doesConceptMatch: boolean = false;
+            let doConceptTypesMatch: boolean = this._isSetOneASubsetOfSetTwo(singleConcept.conceptTypeLabels, conceptToMatch.conceptTypeLabels);
+            if (conceptToMatch.referent?.designatorType === DesignatorType.LAMBDA && doConceptTypesMatch) {
+                doesConceptMatch = true;
+            } else if (doConceptTypesMatch
+                && conceptToMatch.referent.quantifierType === singleConcept.referent.quantifierType
+                && conceptToMatch.referent.quantifierValue === singleConcept.referent.quantifierValue
+                && conceptToMatch.referent.designatorType === singleConcept.referent.designatorType
+                && conceptToMatch.referent.designatorValue === singleConcept.referent.designatorValue) {
+                doesConceptMatch = true;
+            }
+            return doesConceptMatch;
+        })
+    }
+
+    _isSetOneASubsetOfSetTwo(setA: string[], setB: string[]): boolean {
+        let isASubset: boolean = true;
+        for (let i = 0; i < setA.length; i++) {
+            const singeElement = setA[i];
+            if (!setB.includes(singeElement)) {
+                isASubset = false;
+                break;
+            }
+        }
+        return isASubset;
+    }
+
     updateConcept(conceptToUpdate: Concept): Concept {
         this._validateConceptBeforeUpdate(conceptToUpdate);
         this.concepts.forEach((singleConcept) => {

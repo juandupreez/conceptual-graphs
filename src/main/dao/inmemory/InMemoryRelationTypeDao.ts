@@ -87,7 +87,8 @@ export class InMemoryRelationTypeDao implements RelationTypeDao {
                     throw new Error('Could not create relation type with label: ' + newRelationTypeLabel
                         + '. Provided signature: ' + signatureConceptTypeLabels
                         + ' is not a specialization of any parent signature'
-                        + '. Specifically concept type: ' + singleSignatureLabel)
+                        + '. Specifically concept type: ' + singleSignatureLabel
+                        + '. It should be any of these: ' + possibleSignatureConceptTypeLabels)
                 }
             })
         }

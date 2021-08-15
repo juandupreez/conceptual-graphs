@@ -27,6 +27,7 @@ export enum DesignatorType {
     LITERAL = "LITERAL",                        // A syntactic representation of the form of the referent
     CONCEPT_LABEL = "CONCEPT_LABEL",            // Individual Marker: A name of an individual and unique concept in our catalog of concepts
     INDEXICAL = "INDEXICAL",                    // An implementation-defined way of finding the referent
-    THE = "THE",                                 // Indexical: reference to a previously defined concept
-    CONCEPTUAL_GRAPH_LABEL = "CONCEPTUAL_GRAPH_LABEL" // Descriptor: a designator which itself is a conceptual graph
+    THE = "THE",                                // Indexical: reference to a previously defined concept
+    CONCEPTUAL_GRAPH_LABEL = "CONCEPTUAL_GRAPH_LABEL", // Descriptor: a designator which itself is a conceptual graph
+    LAMBDA = "LAMBDA"                           // Used in querying or definitions -> meaning "Any such concept type"
 }

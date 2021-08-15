@@ -27,6 +27,14 @@ export class ConceptualGraph {
         this.relations.push(cloneRelation(relation));
     }
 
+    addConceptOrRelation(conceptOrRelation: Concept | Relation) {
+        if ((conceptOrRelation as any).conceptTypeLabels) {
+            this.addConcept(conceptOrRelation as Concept);
+        } else if ((conceptOrRelation as any).relationTypeLabels) {
+            this.addRelation(conceptOrRelation as Relation);
+        }
+    }
+
     createConcept(label: string, conceptTypeLabels: string | string[], referent?: string | Referent): Concept {
         const newConcept: Concept = new Concept();
         newConcept.label = label;
@@ -40,16 +48,24 @@ export class ConceptualGraph {
         if (!referent) {
             newConcept.referent = {
                 quantifierType: QuantifierType.A_SINGLE,
-                designatorType: DesignatorType.BLANK
+                quantifierValue: undefined,
+                designatorType: DesignatorType.BLANK,
+                designatorValue: undefined
             };
         } else if (typeof referent === "string") {
             newConcept.referent = {
                 quantifierType: QuantifierType.A_SINGLE,
+                quantifierValue: undefined,
                 designatorType: DesignatorType.LITERAL,
                 designatorValue: referent
             };
         } else {
-            newConcept.referent = referent;
+            newConcept.referent = {
+                quantifierType: referent.quantifierType,
+                quantifierValue: referent.quantifierValue,
+                designatorType: referent.designatorType,
+                designatorValue: referent.designatorValue
+            };
         }
         this.concepts.push(newConcept);
         return newConcept;
@@ -84,6 +100,52 @@ export class ConceptualGraph {
         this.concepts = this.concepts.filter((singleConcept) => {
             return (singleConcept.label !== conceptLabelToRemove);
         })
+    }
+
+    getConceptByLabel(conceptLabelToGet: string): Concept {
+        return this.concepts.find((singleConcept) => {
+            return (singleConcept.label === conceptLabelToGet);
+        })
+    }
+
+    getRelationByLabel(relationLabelToGet: string): Relation {
+        return this.relations.find((singleRelation) => {
+            return (singleRelation.label === relationLabelToGet);
+        })
+    }
+
+    getRelationsWhereConceptIsUsed(conceptToBeUsed: Concept, nodesToExclude: (Relation | Concept)[]): Relation[] {
+        return this.relations.filter((singleRelation) => {
+            return (singleRelation.conceptArgumentLabels.includes(conceptToBeUsed.label)
+                && !this._extractRelationsFromNodes(nodesToExclude).includes(singleRelation));
+        })
+    }
+
+    _extractRelationsFromNodes(nodes: (Relation | Concept)[]): Relation[] {
+        const relations: Relation[] = [];
+        nodes?.forEach((singleNode) => {
+            if ((singleNode as any).relationTypeLabels) {
+                relations.push(singleNode as Relation);
+            }
+        })
+        return relations;
+    }
+
+    getConceptsUsedByRelation(relation: Relation, nodesToExclude: (Concept | Relation)[]): Concept[] {
+        return this.concepts.filter((singleConcept) => {
+            return (relation.conceptArgumentLabels.includes(singleConcept.label)
+                && !this._extractConceptsFromNodes(nodesToExclude).includes(singleConcept));
+        })
+    }
+
+    _extractConceptsFromNodes(nodes: (Relation | Concept)[]): Concept[] {
+        const concepts: Concept[] = [];
+        nodes?.forEach((singleNode) => {
+            if ((singleNode as any).conceptTypeLabels) {
+                concepts.push(singleNode as Concept);
+            }
+        })
+        return concepts;
     }
 
 }
