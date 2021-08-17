@@ -72,8 +72,14 @@ export class QueryManager {
 
     private _matchNodesInDB(queryNode: Concept | Relation, previousMatchedNode: Concept | Relation): Concept[] | Relation[] {
         if ((queryNode as any).conceptTypeLabels) {
-            const matchedConcepts = this.conceptDao.getConceptsByExample(queryNode as Concept);
-            return matchedConcepts;
+            const matchedConcepts: Concept[] = this.conceptDao.getConceptsByExample(queryNode as Concept);
+            if (previousMatchedNode) {
+                return matchedConcepts.filter((singleMatchedConcept) => {
+                    return ((previousMatchedNode as Relation).conceptArgumentLabels.includes(singleMatchedConcept.label));
+                }) ?? [];
+            } else {
+                return matchedConcepts;
+            }
         } else {
             const matchedRelations: Relation[] = this.relationDao.getRelationsByExample(queryNode as Relation);
             return matchedRelations.filter((singleMatchedRelation) => {

@@ -72,9 +72,10 @@ export class InMemoryConceptDao implements ConceptDao {
 
     getConceptsByExample(conceptToMatch: Concept) {
         // A concept matches when it has concept types equal to or lower than the concept to match's concept types
+        const possibleConceptTypeLabels: string[] = this._getAllSubConceptTypes(conceptToMatch.conceptTypeLabels);
         return this.concepts.filter((singleConcept) => {
             let doesConceptMatch: boolean = false;
-            let doConceptTypesMatch: boolean = this._isSetOneASubsetOfSetTwo(singleConcept.conceptTypeLabels, conceptToMatch.conceptTypeLabels);
+            let doConceptTypesMatch: boolean = this._isSetOneASubsetOfSetTwo(singleConcept.conceptTypeLabels, possibleConceptTypeLabels);
             if (conceptToMatch.referent?.designatorType === DesignatorType.LAMBDA && doConceptTypesMatch) {
                 doesConceptMatch = true;
             } else if (doConceptTypesMatch
@@ -88,7 +89,14 @@ export class InMemoryConceptDao implements ConceptDao {
         })
     }
 
-    _isSetOneASubsetOfSetTwo(setA: string[], setB: string[]): boolean {
+    private _getAllSubConceptTypes(conceptTypeLabels: string[]): string[] {
+        return conceptTypeLabels.reduce((accumulator: string[], singleConceptTypeLabel) => {
+            accumulator.push(...this.conceptTypeDao.getLabelAndAllSubLabelsOfConcept(singleConceptTypeLabel));
+            return accumulator;
+        }, []);
+    }
+
+    private _isSetOneASubsetOfSetTwo(setA: string[], setB: string[]): boolean {
         let isASubset: boolean = true;
         for (let i = 0; i < setA.length; i++) {
             const singeElement = setA[i];
