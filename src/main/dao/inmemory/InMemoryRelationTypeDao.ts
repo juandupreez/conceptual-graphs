@@ -114,6 +114,23 @@ export class InMemoryRelationTypeDao implements RelationTypeDao {
         })
     }
 
+    getLabelAndAllSubLabelsOfRelation(singleRelationTypeLabel: string): string[] {
+        return this._getLabelAndAllSubLabelsOfRelation(singleRelationTypeLabel, []);
+    }
+
+    private _getLabelAndAllSubLabelsOfRelation(label: string, labelsGottenSoFar: string[]): string[] {
+        if (!labelsGottenSoFar.includes(label)) {
+            const toReturn = [label, ...labelsGottenSoFar];
+            const relationType: RelationType = this.getRelationTypeByLabel(label);
+            relationType.subRelationTypeLabels.forEach((singleSubRelationTypeLabel) => {
+                toReturn.push(...this._getLabelAndAllSubLabelsOfRelation(singleSubRelationTypeLabel, labelsGottenSoFar));
+            })
+            return toReturn;
+        } else {
+            return [];
+        }
+    }
+
     updateRelationType(relationTypeToUpdate: RelationType): RelationType {
         this._validateRelationTypeToUpdate(relationTypeToUpdate);
 

@@ -163,7 +163,7 @@ describe('Query manager: Single Lambda Queries', () => {
         expect(answers[0].getConceptByLabel(yellowConceptLabel)).toBeUndefined();
     })
 
-    it('Match Sub Concepts Types: Exact Concept Types | Exact Relation Types | Match all nodes | Multiple Answers', () => {
+    it('Match Sub Concepts Types: Parent Concept Types | Exact Relation Types | Match all nodes | Multiple Answers', () => {
         const testId: string = IdGenerator.getInstance().getNextUniquTestId();
 
         // Create Conceptual graph: Flynt the bird is yellow and blue
@@ -187,6 +187,47 @@ describe('Query manager: Single Lambda Queries', () => {
         })
         const shadeOfLightInQuery: Concept = whatAnimalIsYellow.createConcept(blueConceptLabel, shadeOfLightConceptTypeLabel, blueConceptLabel);
         whatAnimalIsYellow.createRelation(flyntAttrYellowRelationLabel, attributeRelationTypeLabel, [shadeOfLightInQuery, whatAnimal]);
+
+        // Run query against data
+        const answers: ConceptualGraph[] = queryManager.executeQuery(whatAnimalIsYellow);
+
+        // Expect single answer
+        expect(answers.length).toBe(1);
+
+        // Expect Second answer to be: Blue
+        const answerBlueSavedConcept: Concept = conceptDao.getConceptByLabel(blueConceptLabel);
+        expect(answers[0].getConceptByLabel(blueConceptLabel)).toEqual(answerBlueSavedConcept);
+        const flyntSavedConcept: Concept = conceptDao.getConceptByLabel(flyntConceptLabel);
+        expect(answers[0].getConceptByLabel(flyntConceptLabel)).toEqual(flyntSavedConcept);
+        const flyntAttrBlueSavedRelation: Relation = relationDao.getRelationByLabel(flyntAttrBlueRelationLabel);
+        expect(answers[0].getRelationByLabel(flyntAttrBlueRelationLabel)).toEqual(flyntAttrBlueSavedRelation);
+    })
+
+    it('Match Sub Relation Types: Exact Concept Types | Parent Relation Types | Match all nodes | Multiple Answers', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+
+        // Create Conceptual graph: Flynt the bird is yellow and blue
+        createConcept_flyntTheBirdIsColourYellowAndBlueWithSubRelationTypes(testId);
+        const animalConceptTypeLabel: string = "Animal-" + testId;
+        const birdConceptTypeLabel: string = "Bird-" + testId;
+        const shadeOfLightConceptTypeLabel: string = "ShadeOfLight-" + testId;
+        const colourConceptTypeLabel: string = "Colour-" + testId;
+        const attributeRelationTypeLabel: string = "Attribute-" + testId;
+        const propertyRelationTypeLabel: string = "Property-" + testId;
+        const flyntAttrYellowRelationLabel: string = "flynt-attribute-yellow-" + testId;
+        const flyntAttrBlueRelationLabel: string = "flynt-attribute-blue-" + testId;
+        const flyntConceptLabel: string = "Flynt-" + testId;
+        const yellowConceptLabel: string = "Yellow-" + testId;
+        const blueConceptLabel: string = "Blue-" + testId;
+
+        // Create Query: What colour is the bird Flynt?
+        const whatAnimalIsYellow: ConceptualGraph = new ConceptualGraph();
+        const whatAnimal: Concept = whatAnimalIsYellow.createConcept("WhatAnimal", animalConceptTypeLabel, {
+            quantifierType: QuantifierType.A_SINGLE,
+            designatorType: DesignatorType.LAMBDA
+        })
+        const shadeOfLightInQuery: Concept = whatAnimalIsYellow.createConcept(blueConceptLabel, shadeOfLightConceptTypeLabel, blueConceptLabel);
+        whatAnimalIsYellow.createRelation(flyntAttrYellowRelationLabel, propertyRelationTypeLabel, [shadeOfLightInQuery, whatAnimal]);
 
         // Run query against data
         const answers: ConceptualGraph[] = queryManager.executeQuery(whatAnimalIsYellow);
@@ -269,6 +310,42 @@ function createConcept_flyntTheBirdIsColourYellowAndBlueWithSubConceptTypes(test
     const attributeRelationTypeLabel: string = "Attribute-" + testId;
     const attributeRelationType: RelationType
         = relationTypeDao.createRelationType(attributeRelationTypeLabel, [birdConceptTypeLabel, colourConceptTypeLabel], ["LinkTwo"])
+
+    const flyntConceptLabel: string = "Flynt-" + testId;
+    const flynt: Concept = flyntTheBirdIsYellowAndBlue.createConcept(flyntConceptLabel, birdConceptTypeLabel, flyntConceptLabel);
+    const yellowConceptLabel: string = "Yellow-" + testId;
+    const yellow: Concept = flyntTheBirdIsYellowAndBlue.createConcept(yellowConceptLabel, colourConceptTypeLabel, yellowConceptLabel);
+    const blueConceptLabel: string = "Blue-" + testId;
+    const blue: Concept = flyntTheBirdIsYellowAndBlue.createConcept(blueConceptLabel, colourConceptTypeLabel, blueConceptLabel);
+    const flyntAttrYellowRelationLabel: string = "flynt-attribute-yellow-" + testId;
+    const flyntAttrYellowRelation: Relation
+        = flyntTheBirdIsYellowAndBlue.createRelation(flyntAttrYellowRelationLabel, attributeRelationTypeLabel, [flynt, yellow]);
+    const flyntAttrBlueRelationLabel: string = "flynt-attribute-blue-" + testId;
+    const flyntAttrBlueRelation: Relation
+        = flyntTheBirdIsYellowAndBlue.createRelation(flyntAttrBlueRelationLabel, attributeRelationTypeLabel, [flynt, blue]);
+
+    conceptualGraphDao.createConceptualGraph(flyntTheBirdIsYellowAndBlue);
+}
+
+function createConcept_flyntTheBirdIsColourYellowAndBlueWithSubRelationTypes(testId: string) {
+    const flyntTheBirdIsYellowAndBlue: ConceptualGraph = new ConceptualGraph();
+
+    const animalConceptTypeLabel: string = "Animal-" + testId;
+    conceptTypeDao.createConceptType(animalConceptTypeLabel, ["Entity"]);
+    const birdConceptTypeLabel: string = "Bird-" + testId;
+    conceptTypeDao.createConceptType(birdConceptTypeLabel, [animalConceptTypeLabel]);
+
+    const shadeOfLightConceptTypeLabel: string = "ShadeOfLight-" + testId;
+    conceptTypeDao.createConceptType(shadeOfLightConceptTypeLabel, ["Entity"]);
+    const colourConceptTypeLabel: string = "Colour-" + testId;
+    conceptTypeDao.createConceptType(colourConceptTypeLabel, [shadeOfLightConceptTypeLabel]);
+    
+    const propertyRelationTypeLabel: string = "Property-" + testId;
+    const propertyRelationType: RelationType
+        = relationTypeDao.createRelationType(propertyRelationTypeLabel, [animalConceptTypeLabel, shadeOfLightConceptTypeLabel], ["LinkTwo"]);
+    const attributeRelationTypeLabel: string = "Attribute-" + testId;
+    const attributeRelationType: RelationType
+        = relationTypeDao.createRelationType(attributeRelationTypeLabel, [birdConceptTypeLabel, colourConceptTypeLabel], [propertyRelationTypeLabel]);
 
     const flyntConceptLabel: string = "Flynt-" + testId;
     const flynt: Concept = flyntTheBirdIsYellowAndBlue.createConcept(flyntConceptLabel, birdConceptTypeLabel, flyntConceptLabel);

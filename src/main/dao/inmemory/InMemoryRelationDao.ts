@@ -116,17 +116,25 @@ export class InMemoryRelationDao implements RelationDao {
 
     getRelationsByExample(relationToMatch: Relation) {
         // A relation matches when it has relation types equal to or lower than the relation to match's relation types
+        const possibleRelationTypeLabels: string[] = this._getAllSubRelationTypes(relationToMatch.relationTypeLabels);
         return this.relations.filter((singleRelation) => {
-            let doesConceptMatch: boolean = false;
-            let doConceptTypesMatch: boolean = this._isSetOneASubsetOfSetTwo(singleRelation.relationTypeLabels, relationToMatch.relationTypeLabels);
-            if (doConceptTypesMatch) {
-                doesConceptMatch = true;
+            let doesRelationMatch: boolean = false;
+            let doAllRelationTypesMatchSignature: boolean = this._isSetOneASubsetOfSetTwo(singleRelation.relationTypeLabels, possibleRelationTypeLabels);
+            if (doAllRelationTypesMatchSignature) {
+                doesRelationMatch = true;
             }
-            return doesConceptMatch;
+            return doesRelationMatch;
         })
     }
 
-    _isSetOneASubsetOfSetTwo(setA: string[], setB: string[]): boolean {
+    private _getAllSubRelationTypes(relationTypeLabels: string[]): string[] {
+        return relationTypeLabels.reduce((accumulator: string[], singleRelationTypeLabel) => {
+            accumulator.push(...this.relationTypeDao.getLabelAndAllSubLabelsOfRelation(singleRelationTypeLabel));
+            return accumulator;
+        }, []);
+    }
+
+    private _isSetOneASubsetOfSetTwo(setA: string[], setB: string[]): boolean {
         let isASubset: boolean = true;
         for (let i = 0; i < setA.length; i++) {
             const singeElement = setA[i];
