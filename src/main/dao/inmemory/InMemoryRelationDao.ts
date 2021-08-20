@@ -1,4 +1,5 @@
 import { Concept } from "../../domain/Concept";
+import { ConceptualGraph } from "../../domain/ConceptualGraph";
 import { Relation } from "../../domain/Relation";
 import { RelationType } from "../../domain/RelationType";
 import { hasAnyConceptTypes } from "../../util/ConceptUtil";
@@ -114,13 +115,14 @@ export class InMemoryRelationDao implements RelationDao {
         }))
     }
 
-    getRelationsByExample(relationToMatch: Relation) {
+    getRelationsByExample(relationToMatch: Relation, query?: ConceptualGraph) {
         // A relation matches when it has relation types equal to or lower than the relation to match's relation types
         const possibleRelationTypeLabels: string[] = this._getAllSubRelationTypes(relationToMatch.relationTypeLabels);
         return this.relations.filter((singleRelation) => {
             let doesRelationMatch: boolean = false;
+            let doConceptsMatch: boolean = query ? this._doConceptsMatch(relationToMatch.conceptArgumentLabels, singleRelation.conceptArgumentLabels, query) : true;
             let doAllRelationTypesMatchSignature: boolean = this._isSetOneASubsetOfSetTwo(singleRelation.relationTypeLabels, possibleRelationTypeLabels);
-            if (doAllRelationTypesMatchSignature) {
+            if (doAllRelationTypesMatchSignature && doConceptsMatch) {
                 doesRelationMatch = true;
             }
             return doesRelationMatch;
@@ -132,6 +134,23 @@ export class InMemoryRelationDao implements RelationDao {
             accumulator.push(...this.relationTypeDao.getLabelAndAllSubLabelsOfRelation(singleRelationTypeLabel));
             return accumulator;
         }, []);
+    }
+
+    private _doConceptsMatch(conceptArgumentLabelsToMatch: string[], conceptArgumentLabels: string[], query: ConceptualGraph): boolean {
+        if (!query) {
+            return true;
+        } else if (conceptArgumentLabelsToMatch?.length !== conceptArgumentLabels?.length) {
+            return false;
+        } else {
+            let doAllConceptsMatch: boolean = true;
+            conceptArgumentLabelsToMatch?.forEach((singleConceptLabelToMatch, index) => {
+                const conceptToMatch: Concept = query.getConceptByLabel(singleConceptLabelToMatch);
+                const possibleConceptTypeLabels: string[] = this.conceptTypeDao.getLabelAndAllSubLabelsOfConcept(conceptToMatch.conceptTypeLabels);
+                const potentialConceptTypeLabels: string[] = this.conceptDao.getConceptByLabel(conceptArgumentLabels[index])?.conceptTypeLabels;
+                doAllConceptsMatch = doAllConceptsMatch && this._isSetOneASubsetOfSetTwo(potentialConceptTypeLabels, possibleConceptTypeLabels);
+            })
+            return doAllConceptsMatch;
+        }
     }
 
     private _isSetOneASubsetOfSetTwo(setA: string[], setB: string[]): boolean {

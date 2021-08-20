@@ -14,14 +14,21 @@ export class InMemoryConceptDao implements ConceptDao {
         this.conceptTypeDao = conceptTypeDao;
     }
 
-    createConcept(newConceptLabel: string, conceptTypeLabels: string[], referent: string | Referent): Concept {
+    createConcept(newConceptLabel: string, conceptTypeLabels: string[], referent?: string | Referent): Concept {
         this._validateConceptBeforeCreate(newConceptLabel, conceptTypeLabels, referent);
         const newConcept: Concept = new Concept();
         const generatedId = IdGenerator.getInstance().getNextUniqueConceptId();
         newConcept.id = generatedId;
         newConcept.label = newConceptLabel;
         newConcept.conceptTypeLabels = conceptTypeLabels;
-        if (typeof referent === 'string') {
+        if (!referent) {
+            newConcept.referent = {
+                quantifierType: QuantifierType.A_SINGLE,
+                quantifierValue: undefined,
+                designatorType: DesignatorType.BLANK,
+                designatorValue: undefined
+            };
+        } else if (typeof referent === 'string') {
             newConcept.referent = {
                 quantifierType: QuantifierType.A_SINGLE,
                 designatorType: DesignatorType.LITERAL,

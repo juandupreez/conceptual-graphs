@@ -14,6 +14,14 @@ export class ConceptualGraph {
         this.concepts.push(cloneConcept(concept));
     }
 
+    addConceptsIfNotExist(concepts: Concept[]) {
+        concepts?.forEach((singleConceptToAdd) => {
+            if (!this.getConceptByLabel(singleConceptToAdd.label)) {
+                this.addConcept(singleConceptToAdd);
+            }
+        })
+    }
+
     addRelation(relation: Relation, conceptArgs?: Concept[]) {
         if (conceptArgs) {
             relation.conceptArgumentLabels = [];
@@ -25,6 +33,14 @@ export class ConceptualGraph {
             })
         }
         this.relations.push(cloneRelation(relation));
+    }
+
+    addRelationsIfNotExist(relations: Relation[]) {
+        relations?.forEach((singleRelationToAdd) => {
+            if (!this.getRelationByLabel(singleRelationToAdd.label)) {
+                this.addRelation(singleRelationToAdd);
+            }
+        })
     }
 
     addConceptOrRelation(conceptOrRelation: Concept | Relation) {
@@ -53,12 +69,21 @@ export class ConceptualGraph {
                 designatorValue: undefined
             };
         } else if (typeof referent === "string") {
-            newConcept.referent = {
-                quantifierType: QuantifierType.A_SINGLE,
-                quantifierValue: undefined,
-                designatorType: DesignatorType.LITERAL,
-                designatorValue: referent
-            };
+            if (referent === DesignatorType.LAMBDA) {
+                newConcept.referent = {
+                    quantifierType: QuantifierType.A_SINGLE,
+                    quantifierValue: undefined,
+                    designatorType: DesignatorType.LAMBDA,
+                    designatorValue: undefined
+                };
+            } else {
+                newConcept.referent = {
+                    quantifierType: QuantifierType.A_SINGLE,
+                    quantifierValue: undefined,
+                    designatorType: DesignatorType.LITERAL,
+                    designatorValue: referent
+                };
+            }
         } else {
             newConcept.referent = {
                 quantifierType: referent.quantifierType,

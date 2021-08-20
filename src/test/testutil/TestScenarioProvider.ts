@@ -184,4 +184,145 @@ export class TestScenarioProvider {
 
         this.conceptualGraphDao.createConceptualGraph(flyntTheBirdIsYellowAndBlue);
     }
+
+    createConcept_threeAnimalsWithColourAndAllThreeCute(testId: string) {
+
+        // Set up concept types and relation types
+        this.conceptTypeDao.importHierarchyFromSimpleConceptTypes([{
+            label: "Entity-" + testId,
+            subConceptTypes: [
+                {
+                    label: "Animal-" + testId,
+                    subConceptTypes: [
+                        { label: "Bird-" + testId },
+                        { label: "Cat-" + testId },
+                        { label: "Dog-" + testId }
+                    ]
+                },
+                {
+                    label: "Descriptor-" + testId,
+                    subConceptTypes: [
+                        { label: "Colour-" + testId },
+                        { label: "Cute-" + testId }
+                    ]
+                }
+            ]
+        }]);
+
+        this.relationTypeDao.importHierarchyFromSimpleRelationTypes([
+            {
+                label: "LinkTwo-" + testId,
+                signature: ["Entity-" + testId, "Entity-" + testId],
+                subRelationTypes: [
+                    {
+                        label: "Attribute-" + testId,
+                        signature: ["Entity-" + testId, "Descriptor-" + testId]
+                    }
+                ]
+            }
+        ]);
+
+        // Create Concept Cute
+        const cuteConcept: Concept = this.conceptDao.createConcept("AnyCute-" + testId, ["Cute-" + testId]);
+
+        // Create Concepttual Graph: Flynt Is Yellow and Cute
+        const flyntIsYellowAndCute: ConceptualGraph = new ConceptualGraph();
+        const flyntConcept: Concept = flyntIsYellowAndCute.createConcept("Flynt-" + testId, "Bird-" + testId);
+        const yellowConcept: Concept = flyntIsYellowAndCute.createConcept("Yellow-" + testId, "Colour-" + testId);
+        flyntIsYellowAndCute.createRelation("flynt-attribute-yellow-" + testId, "Attribute-" + testId, [flyntConcept, yellowConcept]);
+        flyntIsYellowAndCute.createRelation("flynt-attribute-cute-" + testId, "Attribute-" + testId, [flyntConcept, cuteConcept]);
+        this.conceptualGraphDao.createConceptualGraph(flyntIsYellowAndCute);
+
+        // Create Concepttual Graph: Rhysand Is Blue and Cute
+        const rhysandIsBlueAndCute: ConceptualGraph = new ConceptualGraph();
+        const rhysandConcept: Concept = rhysandIsBlueAndCute.createConcept("Rhysand-" + testId, "Cat-" + testId);
+        const blueConcept: Concept = rhysandIsBlueAndCute.createConcept("Blue-" + testId, "Colour-" + testId);
+        rhysandIsBlueAndCute.createRelation("rhysand-attribute-blue-" + testId, "Attribute-" + testId, [rhysandConcept, blueConcept]);
+        rhysandIsBlueAndCute.createRelation("rhysand-attribute-cute-" + testId, "Attribute-" + testId, [rhysandConcept, cuteConcept]);
+        this.conceptualGraphDao.createConceptualGraph(rhysandIsBlueAndCute);
+
+        // Create Concepttual Graph: Rusky Is Red and Cute
+        const ruskyIsRedAndCute: ConceptualGraph = new ConceptualGraph();
+        const ruskyConcept: Concept = ruskyIsRedAndCute.createConcept("Rusky-" + testId, "Dog-" + testId);
+        const redConcept: Concept = ruskyIsRedAndCute.createConcept("Red-" + testId, "Colour-" + testId);
+        ruskyIsRedAndCute.createRelation("rusky-attribute-red-" + testId, "Attribute-" + testId, [ruskyConcept, redConcept]);
+        ruskyIsRedAndCute.createRelation("rusky-attribute-cute-" + testId, "Attribute-" + testId, [ruskyConcept, cuteConcept]);
+        this.conceptualGraphDao.createConceptualGraph(ruskyIsRedAndCute);
+    }
+
+    createConcept_yellowHasAttributeYellow(testId: string) {
+        // Set up concept types and relation types
+        this.conceptTypeDao.importHierarchyFromSimpleConceptTypes([{
+            label: "Entity-" + testId,
+            subConceptTypes: [
+                {
+                    label: "Descriptor-" + testId,
+                    subConceptTypes: [
+                        { label: "Colour-" + testId }
+                    ]
+                }
+            ]
+        }]);
+
+        this.relationTypeDao.importHierarchyFromSimpleRelationTypes([
+            {
+                label: "LinkTwo-" + testId,
+                signature: ["Entity-" + testId, "Entity-" + testId],
+                subRelationTypes: [
+                    {
+                        label: "Attribute-" + testId,
+                        signature: ["Entity-" + testId, "Entity-" + testId]
+                    }
+                ]
+            }
+        ]);
+
+        // Create Conceptual Graph: Flynt Is Yellow and Cute
+        const flyntIsYellowAndCute: ConceptualGraph = new ConceptualGraph();
+        const yellowConcept: Concept = flyntIsYellowAndCute.createConcept("Yellow-" + testId, "Colour-" + testId, "Yellow-" + testId);
+        flyntIsYellowAndCute.createRelation("yellow-attribute-yellow-" + testId, "Attribute-" + testId, [yellowConcept, yellowConcept]);
+        this.conceptualGraphDao.createConceptualGraph(flyntIsYellowAndCute);
+    }
+
+    createConcept_flyntHasAttributeYellowHasAttributeFlynt(testId: string) {
+        // Set up concept types and relation types
+        this.conceptTypeDao.importHierarchyFromSimpleConceptTypes([{
+            label: "Entity-" + testId,
+            subConceptTypes: [
+                {
+                    label: "Animal-" + testId,
+                    subConceptTypes: [
+                        { label: "Bird-" + testId }
+                    ]
+                },
+                {
+                    label: "Descriptor-" + testId,
+                    subConceptTypes: [
+                        { label: "Colour-" + testId }
+                    ]
+                }
+            ]
+        }]);
+
+        this.relationTypeDao.importHierarchyFromSimpleRelationTypes([
+            {
+                label: "LinkTwo-" + testId,
+                signature: ["Entity-" + testId, "Entity-" + testId],
+                subRelationTypes: [
+                    {
+                        label: "Attribute-" + testId,
+                        signature: ["Entity-" + testId, "Entity-" + testId]
+                    }
+                ]
+            }
+        ]);
+
+        // Create Conceptual Graph: Flynt Is Yellow and yellow is flynt
+        const flyntIsYellowAndCute: ConceptualGraph = new ConceptualGraph();
+        const flyntConcept: Concept = flyntIsYellowAndCute.createConcept("Flynt-" + testId, "Bird-" + testId, "Flynt-" + testId);
+        const yellowConcept: Concept = flyntIsYellowAndCute.createConcept("Yellow-" + testId, "Colour-" + testId, "Yellow-" + testId);
+        flyntIsYellowAndCute.createRelation("flynt-attribute-yellow-" + testId, "Attribute-" + testId, [flyntConcept, yellowConcept]);
+        flyntIsYellowAndCute.createRelation("yellow-attribute-flynt-" + testId, "Attribute-" + testId, [yellowConcept, flyntConcept]);
+        this.conceptualGraphDao.createConceptualGraph(flyntIsYellowAndCute);
+    }
 }
