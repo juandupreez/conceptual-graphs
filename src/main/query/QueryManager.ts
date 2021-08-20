@@ -26,58 +26,58 @@ export class QueryManager {
     private _recursiveMatchNode(query: ConceptualGraph, queryNode: Concept | Relation, previousQueryNode?: Concept | Relation,
         previousMatchedNode?: Concept | Relation, alreadyProcessedNodes?: (Concept | Relation)[]): ConceptualGraph[] {
         const returnAnswerConceptualGraphs: ConceptualGraph[] = [];
-        const matchedNodes: Concept[] | Relation[] = this._matchNodesInDB(queryNode, previousMatchedNode, query);
+        if (!alreadyProcessedNodes) {
+            alreadyProcessedNodes = [];
+        }
+        const matchedNodes: (Concept | Relation)[] = this._matchNodesInDB(queryNode, previousMatchedNode, query);
         if (this._isLeaf(query, queryNode, previousQueryNode, alreadyProcessedNodes) && matchedNodes?.length > 0) {
             matchedNodes.forEach((singleMatchedNode: Concept | Relation) => {
                 const newPotentailAnswerCG: ConceptualGraph = new ConceptualGraph();
-                newPotentailAnswerCG.addConceptOrRelation(singleMatchedNode);
+                newPotentailAnswerCG.addConceptOrRelationIfNotExist(singleMatchedNode);
                 returnAnswerConceptualGraphs.push(newPotentailAnswerCG);
             })
         } else if (matchedNodes?.length > 0) {
-            // if (!alreadyProcessedNodes) {
-            //     alreadyProcessedNodes = [queryNode];
-            // } else {
-            //     alreadyProcessedNodes.push(queryNode);
-            // }
             matchedNodes.forEach((singleMatchedNode: Concept | Relation) => {
                 let doesMatchAllChildren: boolean = true;
-                let nextQueryNodes: Concept[] | Relation[] = this._getNextQueryNodes(query, queryNode, previousQueryNode);
-                const potentialAnswerCGs: ConceptualGraph[]
-                    = this._recursiveMatchNode(query, nextQueryNodes[0], queryNode, singleMatchedNode, alreadyProcessedNodes);;
-                for (let i = 1; nextQueryNodes && i < nextQueryNodes.length; i++) {
-                    const singleNextQueryNode: Concept | Relation = nextQueryNodes[i];
-                    const subPotientialAnswerCGs: ConceptualGraph[]
-                        = this._recursiveMatchNode(query, singleNextQueryNode, queryNode, singleMatchedNode, alreadyProcessedNodes);
-                    potentialAnswerCGs.forEach((singlePotentialAnswer) => {
-                        subPotientialAnswerCGs.forEach((singleSubPotentialAnswer) => {
-                            singlePotentialAnswer.addConceptsIfNotExist(singleSubPotentialAnswer.concepts);
-                            singlePotentialAnswer.addRelationsIfNotExist(singleSubPotentialAnswer.relations);
+                let nextQueryNodes: (Concept | Relation)[] = this._getNextQueryNodes(query, queryNode, previousQueryNode);
+                if (nextQueryNodes && nextQueryNodes.length > 0) {
+                    const potentialAnswerCGs: ConceptualGraph[]
+                        = this._recursiveMatchNode(query, nextQueryNodes[0], queryNode, singleMatchedNode, [...alreadyProcessedNodes, queryNode]);
+                    for (let i = 1; nextQueryNodes && i < nextQueryNodes.length; i++) {
+                        const singleNextQueryNode: Concept | Relation = nextQueryNodes[i];
+                        const subPotientialAnswerCGs: ConceptualGraph[]
+                            = this._recursiveMatchNode(query, singleNextQueryNode, queryNode, singleMatchedNode, alreadyProcessedNodes);
+                        potentialAnswerCGs.forEach((singlePotentialAnswer) => {
+                            subPotientialAnswerCGs.forEach((singleSubPotentialAnswer) => {
+                                singlePotentialAnswer.addConceptsIfNotExist(singleSubPotentialAnswer.concepts);
+                                singlePotentialAnswer.addRelationsIfNotExist(singleSubPotentialAnswer.relations);
+                            })
                         })
-                    })
-                    if (subPotientialAnswerCGs.length === 0) {
-                        doesMatchAllChildren = false;
-                        break;
+                        if (subPotientialAnswerCGs.length === 0) {
+                            doesMatchAllChildren = false;
+                            break;
+                        }
+                        // potentialAnswerCGs.push(...subPotientialAnswerCGs);
+                        potentialAnswerCGs.forEach((singlePotentialAnswerCG) => {
+                            subPotientialAnswerCGs.forEach((singleSubPotentialAnswerCG) => {
+                                singlePotentialAnswerCG.addConceptsIfNotExist(singleSubPotentialAnswerCG.concepts);
+                                singlePotentialAnswerCG.addRelationsIfNotExist(singleSubPotentialAnswerCG.relations);
+                            })
+                        })
                     }
-                    // potentialAnswerCGs.push(...subPotientialAnswerCGs);
-                    potentialAnswerCGs.forEach((singlePotentialAnswerCG) => {
-                        subPotientialAnswerCGs.forEach((singleSubPotentialAnswerCG) => {
-                            singlePotentialAnswerCG.addConceptsIfNotExist(singleSubPotentialAnswerCG.concepts);
-                            singlePotentialAnswerCG.addRelationsIfNotExist(singleSubPotentialAnswerCG.relations);
-                        })
-                    })
-                }
-                if (doesMatchAllChildren) {
-                    potentialAnswerCGs.forEach((singlePotentialAnswer: ConceptualGraph) => {
-                        singlePotentialAnswer.addConceptOrRelation(singleMatchedNode);
-                        returnAnswerConceptualGraphs.push(singlePotentialAnswer);
-                    });
+                    if (doesMatchAllChildren) {
+                        potentialAnswerCGs.forEach((singlePotentialAnswer: ConceptualGraph) => {
+                            singlePotentialAnswer.addConceptOrRelationIfNotExist(singleMatchedNode);
+                            returnAnswerConceptualGraphs.push(singlePotentialAnswer);
+                        });
+                    }
                 }
             })
         }
         return returnAnswerConceptualGraphs;
     }
 
-    private _matchNodesInDB(queryNode: Concept | Relation, previousMatchedNode: Concept | Relation, query: ConceptualGraph): Concept[] | Relation[] {
+    private _matchNodesInDB(queryNode: Concept | Relation, previousMatchedNode: Concept | Relation, query: ConceptualGraph): (Concept | Relation)[] {
         if ((queryNode as any).conceptTypeLabels) {
             const matchedConcepts: Concept[] = this.conceptDao.getConceptsByExample(queryNode as Concept);
             if (previousMatchedNode) {
@@ -113,11 +113,16 @@ export class QueryManager {
         return isLeaf || hasAlreadyBeenProcessed;
     }
 
-    private _getNextQueryNodes(query: ConceptualGraph, queryNode: Concept | Relation, nodeToExclude: Concept | Relation): Concept[] | Relation[] {
+    private _getNextQueryNodes(query: ConceptualGraph, queryNode: Concept | Relation,
+        nodeToExclude: Concept | Relation): (Concept | Relation)[] {
+        const nextNodesFound: (Concept | Relation)[] = [];
         if ((queryNode as any).conceptTypeLabels) {
-            return query.getRelationsWhereConceptIsUsed(queryNode as Concept, nodeToExclude as Relation);
+            const nextRelations: Relation[] = query.getRelationsWhereConceptIsUsed(queryNode as Concept, nodeToExclude as Relation);
+            nextNodesFound.push(...nextRelations);
         } else {
-            return query.getConceptsUsedByRelation(queryNode as Relation, nodeToExclude as Concept);
+            const nextConcepts: Concept[] = query.getConceptsUsedByRelation(queryNode as Relation, nodeToExclude as Concept);
+            nextNodesFound.push(...nextConcepts);
         }
+        return nextNodesFound;
     }
 }

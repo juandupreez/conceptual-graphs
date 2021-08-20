@@ -1,4 +1,4 @@
-import { cloneConcept } from "../util/ConceptUtil";
+import { cloneConcept, isConcept } from "../util/ConceptUtil";
 import { cloneRelation } from "../util/RelationUtil";
 import { Concept, DesignatorType, QuantifierType, Referent } from "./Concept";
 import { Relation } from "./Relation";
@@ -48,6 +48,18 @@ export class ConceptualGraph {
             this.addConcept(conceptOrRelation as Concept);
         } else if ((conceptOrRelation as any).relationTypeLabels) {
             this.addRelation(conceptOrRelation as Relation);
+        }
+    }
+
+    addConceptOrRelationIfNotExist(conceptOrRelation: Concept | Relation) {
+        if (isConcept(conceptOrRelation)) {
+            if (!this.getConceptByLabel(conceptOrRelation?.label)) {
+                this.addConceptOrRelation(conceptOrRelation);
+            }
+        } else {
+            if (!this.getRelationByLabel(conceptOrRelation?.label)) {
+                this.addConceptOrRelation(conceptOrRelation);
+            }
         }
     }
 

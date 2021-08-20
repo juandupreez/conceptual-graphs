@@ -382,7 +382,7 @@ describe('Query manager: Non Nested Queries', () => {
         expect(yellowAttrYellowRelationInAnswer.conceptArgumentLabels).toContainEqual(answers[0].getConceptByLabel(yellowConceptLabel).label);
     })
 
-    xit('Two level deep cycles: Parent Concept Types | Parent Relation Types | Match all nodes | Single Answer', () => {
+    it('Two level deep cycles: Parent Concept Types | Parent Relation Types | Match all nodes | Single Answer', () => {
         testScenarioProvider.createConcept_flyntHasAttributeYellowHasAttributeFlynt(testId);
         const birdConceptTypeLabel: string = "Bird-" + testId;
         const flyntConceptLabel: string = "Flynt-" + testId;
