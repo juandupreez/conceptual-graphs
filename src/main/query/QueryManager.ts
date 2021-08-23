@@ -30,8 +30,8 @@ export class QueryManager {
         for (let i = 0; i < depth; i++) {
             spacer += "\t";
         }
-        console.log(spacer + "Cur Node: " + queryNode.label);
-        console.log(spacer + "Prev Node: " + previousMatchedNode?.label);
+        // console.log(spacer + "Cur Node: " + queryNode.label);
+        // console.log(spacer + "Prev Node: " + previousMatchedNode?.label);
 
         const returnAnswerConceptualGraphs: ConceptualGraph[] = [];
         if (!alreadyProcessedNodes) {
@@ -39,7 +39,7 @@ export class QueryManager {
         }
         const positionInRelationArguments: number = this._getPositionInRelationArguments(previousQueryNode, queryNode);
         const matchedNodes: (Concept | Relation)[] = this._matchNodesInDB(queryNode, previousMatchedNode, query, positionInRelationArguments);
-        console.log(spacer + "Matched Nodes in DB: " + matchedNodes?.map((singleMatched) => { return singleMatched.label }).join(', '));
+        // console.log(spacer + "Matched Nodes in DB: " + matchedNodes?.map((singleMatched) => { return singleMatched.label }).join(', '));
 
         if (this._isLeaf(query, queryNode, previousQueryNode, alreadyProcessedNodes) && matchedNodes?.length > 0) {
             matchedNodes.forEach((singleMatchedNode: Concept | Relation) => {
@@ -49,10 +49,10 @@ export class QueryManager {
             })
         } else if (matchedNodes?.length > 0) {
             matchedNodes.forEach((singleMatchedNode: Concept | Relation, matchedNodeIndex) => {
-                console.log(spacer + "Current Matched Node: " + singleMatchedNode?.label);
+                // console.log(spacer + "Current Matched Node: " + singleMatchedNode?.label);
                 let doesMatchAllChildren: boolean = true;
                 let nextQueryNodes: (Concept | Relation)[] = this._getNextQueryNodes(query, queryNode, previousQueryNode);
-                console.log(spacer + "Next Query Nodes: " + nextQueryNodes?.map((singleNode) => { return singleNode.label }).join(', '));
+                // console.log(spacer + "Next Query Nodes: " + nextQueryNodes?.map((singleNode) => { return singleNode.label }).join(', '));
                 if (nextQueryNodes && nextQueryNodes.length > 0) {
                     const potentialAnswerCGs: ConceptualGraph[]
                         = this._recursiveMatchNode(query, nextQueryNodes[0], queryNode, singleMatchedNode,
@@ -89,15 +89,15 @@ export class QueryManager {
                 }
             })
         }
-        console.log(spacer + "Returning conceptual graphs of answers with size: " + returnAnswerConceptualGraphs.length);
+        // console.log(spacer + "Returning conceptual graphs of answers with size: " + returnAnswerConceptualGraphs.length);
 
         return returnAnswerConceptualGraphs;
     }
-    private _getPositionInRelationArguments(concept: Concept | Relation, relation: Concept | Relation): number {
-        if (isConcept(concept)) {
-            return (relation as Relation)?.conceptArgumentLabels?.indexOf((concept as Concept).label);
+    private _getPositionInRelationArguments(conceptOrRelation: Concept | Relation, relationOrConcept: Concept | Relation): number {
+        if (isConcept(conceptOrRelation)) {
+            return (relationOrConcept as Relation)?.conceptArgumentLabels?.indexOf((conceptOrRelation as Concept).label);
         } else {
-            return -1;
+            return (conceptOrRelation as Relation)?.conceptArgumentLabels?.indexOf((relationOrConcept as Concept).label);
         }
     }
 
@@ -107,7 +107,13 @@ export class QueryManager {
             const matchedConcepts: Concept[] = this.conceptDao.getConceptsByExample(queryNode as Concept);
             if (previousMatchedNode) {
                 return matchedConcepts.filter((singleMatchedConcept) => {
-                    return ((previousMatchedNode as Relation).conceptArgumentLabels.includes(singleMatchedConcept.label));
+                    const doesPreviousRelationMatch: boolean = positionInRelationArguments !== -1 ?
+                        (previousMatchedNode as Relation).conceptArgumentLabels[positionInRelationArguments] === singleMatchedConcept.label :
+                        ((previousMatchedNode as Relation).conceptArgumentLabels.includes(singleMatchedConcept.label));
+                    // const doesPreviousConceptMatch: boolean = 
+                    //     singleMatchedRelation.conceptArgumentLabels.includes(previousMatchedNode.label);
+                    return doesPreviousRelationMatch;
+                    // return ((previousMatchedNode as Relation).conceptArgumentLabels.includes(singleMatchedConcept.label));
                 }) ?? [];
             } else {
                 return matchedConcepts;

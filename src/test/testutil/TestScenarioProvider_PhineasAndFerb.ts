@@ -18,12 +18,12 @@ export class TestScenarioProvider_PhineasAndFerb {
     candace: Concept;
     lawrence: Concept;
     lindana: Concept;
-    ranjeet: Concept;
-    beaufort: Concept;
+    baljeet: Concept;
+    buford: Concept;
     isabella: Concept;
     perryThePlatypus: Concept;
-    pinkyTheChiuaua: Concept;
-    doofenshmirts: Concept;
+    pinkyTheChihuahua: Concept;
+    doofenshmirtz: Concept;
 
 
 
@@ -69,7 +69,7 @@ export class TestScenarioProvider_PhineasAndFerb {
                         {
                             label: "Dog",
                             subConceptTypes: [
-                                { label: "Chiuaua" }
+                                { label: "Chihuahua" }
                             ]
                         },
                     ]
@@ -165,6 +165,12 @@ export class TestScenarioProvider_PhineasAndFerb {
                         ]
                     }
                 ]
+            }, {
+                label: "FriendOf",
+                signature: ["Human", "Human"]
+            }, {
+                label: "OwnsPet",
+                signature: ["Human", "Animal"]
             }]
         }]);
     }
@@ -177,14 +183,14 @@ export class TestScenarioProvider_PhineasAndFerb {
         this.lawrence = this.conceptDao.createConcept("Lawrence", ["Man"], "Lawrence");
         this.lindana = this.conceptDao.createConcept("Lindana", ["Woman"], "Lindana");
 
-        this.ranjeet = this.conceptDao.createConcept("Ranjeet", ["Boy"], "Ranjeet");
-        this.beaufort = this.conceptDao.createConcept("Beaufort", ["Boy"], "Beaufort");
+        this.baljeet = this.conceptDao.createConcept("Baljeet", ["Boy"], "Baljeet");
+        this.buford = this.conceptDao.createConcept("Buford", ["Boy"], "Buford");
         this.isabella = this.conceptDao.createConcept("Isabella", ["Boy"], "Isabella");
 
         this.perryThePlatypus = this.conceptDao.createConcept("PerryThePlatypus", ["Platypus"], "Perry");
-        this.pinkyTheChiuaua = this.conceptDao.createConcept("PinkyTheChiuaua", ["Chiuaua"], "Pinky");
+        this.pinkyTheChihuahua = this.conceptDao.createConcept("PinkyTheChihuahua", ["Chihuahua"], "Pinky");
 
-        this.doofenshmirts = this.conceptDao.createConcept("Doofenshmirts", ["Man"], "Doofenshmirts");
+        this.doofenshmirtz = this.conceptDao.createConcept("Doofenshmirtz", ["Man"], "Doofenshmirtz");
     }
 
     private _createOtherConcepts() {
@@ -221,10 +227,50 @@ export class TestScenarioProvider_PhineasAndFerb {
     }
 
     private _createFriendRelations() {
-        // throw new Error("Method not implemented.");
+        const friendGroup: ConceptualGraph = new ConceptualGraph();
+
+        // Friends of baljeet
+        friendGroup.createRelation("phineas-friendOf-baljeet", "FriendOf", [this.phineas, this.baljeet]);
+        friendGroup.createRelation("ferb-friendOf-baljeet", "FriendOf", [this.ferb, this.baljeet]);
+        friendGroup.createRelation("buford-friendOf-baljeet", "FriendOf", [this.buford, this.baljeet]);
+        friendGroup.createRelation("isabella-friendOf-baljeet", "FriendOf", [this.isabella, this.baljeet]);
+
+        // Friends of buford
+        friendGroup.createRelation("phineas-friendOf-buford", "FriendOf", [this.phineas, this.buford]);
+        friendGroup.createRelation("ferb-friendOf-buford", "FriendOf", [this.ferb, this.buford]);
+        friendGroup.createRelation("baljeet-friendOf-buford", "FriendOf", [this.baljeet, this.buford]);
+        friendGroup.createRelation("isabella-friendOf-buford", "FriendOf", [this.isabella, this.buford]);
+
+        // Friends of isabella
+        friendGroup.createRelation("phineas-friendOf-isabella", "FriendOf", [this.phineas, this.isabella]);
+        friendGroup.createRelation("ferb-friendOf-isabella", "FriendOf", [this.ferb, this.isabella]);
+        friendGroup.createRelation("baljeet-friendOf-isabella", "FriendOf", [this.baljeet, this.isabella]);
+        friendGroup.createRelation("buford-friendOf-isabella", "FriendOf", [this.buford, this.isabella]);
+
+        // Friends of phineas
+        friendGroup.createRelation("isabella-friendOf-phineas", "FriendOf", [this.isabella, this.phineas]);
+        friendGroup.createRelation("ferb-friendOf-phineas", "FriendOf", [this.ferb, this.phineas]);
+        friendGroup.createRelation("baljeet-friendOf-phineas", "FriendOf", [this.baljeet, this.phineas]);
+        friendGroup.createRelation("buford-friendOf-phineas", "FriendOf", [this.buford, this.phineas]);
+
+        // Friends of ferb
+        friendGroup.createRelation("isabella-friendOf-ferb", "FriendOf", [this.isabella, this.ferb]);
+        friendGroup.createRelation("ferb-friendOf-ferb", "FriendOf", [this.ferb, this.ferb]);
+        friendGroup.createRelation("baljeet-friendOf-ferb", "FriendOf", [this.baljeet, this.ferb]);
+        friendGroup.createRelation("buford-friendOf-ferb", "FriendOf", [this.buford, this.ferb]);
+
+        this.conceptualGraphDao.createConceptualGraph(friendGroup);
     }
 
     private _createOtherRelations() {
+        const petRelations: ConceptualGraph = new ConceptualGraph();
+
+        // Perry the Platypus
+        petRelations.createRelation("phineas-ownsPet-perry", "OwnsPet", [this.phineas, this.perryThePlatypus]);
+        petRelations.createRelation("ferb-ownsPet-perry", "OwnsPet", [this.ferb, this.perryThePlatypus]);
+        petRelations.createRelation("candace-ownsPet-perry", "OwnsPet", [this.candace, this.perryThePlatypus]);
+
+        this.conceptualGraphDao.createConceptualGraph(petRelations);
     }
 
 

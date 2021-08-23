@@ -122,7 +122,7 @@ export class InMemoryRelationTypeDao implements RelationTypeDao {
         if (!labelsGottenSoFar.includes(label)) {
             const toReturn = [label, ...labelsGottenSoFar];
             const relationType: RelationType = this.getRelationTypeByLabel(label);
-            relationType.subRelationTypeLabels.forEach((singleSubRelationTypeLabel) => {
+            relationType?.subRelationTypeLabels?.forEach((singleSubRelationTypeLabel) => {
                 toReturn.push(...this._getLabelAndAllSubLabelsOfRelation(singleSubRelationTypeLabel, labelsGottenSoFar));
             })
             return toReturn;

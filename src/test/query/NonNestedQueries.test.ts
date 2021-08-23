@@ -425,7 +425,6 @@ describe('A more complex scenario. Phineas and Ferb structure', () => {
     })
 
     it('Who are the siblings of Phineas', () => {
-
         const whoAreSiblingsOfPhineas: ConceptualGraph = new ConceptualGraph();
         const who: Concept = whoAreSiblingsOfPhineas.createConcept("Who", "Human", DesignatorType.LAMBDA);
         const phineas: Concept = whoAreSiblingsOfPhineas.createConcept("PhineasInQuery", "Human", "Phineas");
@@ -435,6 +434,81 @@ describe('A more complex scenario. Phineas and Ferb structure', () => {
 
         // Expect answer to be Ferb and Candace
         expect(answers.length).toBe(2);
-
+        expect(answers[0].concepts.length).toBe(2);
+        expect(answers[0].getConceptByLabel("Ferb")).toEqual(testScenarioProvider_PhineasAndFerb.ferb);
+        expect(answers[1].concepts.length).toBe(2);
+        expect(answers[1].getConceptByLabel("Candace")).toEqual(testScenarioProvider_PhineasAndFerb.candace);
     })
+
+    it('Who are the children of Lindana and Lawrence', () => {
+        const whoAreChildrenOfLindanaAndLawrence: ConceptualGraph = new ConceptualGraph();
+        const who: Concept = whoAreChildrenOfLindanaAndLawrence.createConcept("Who", "Human", DesignatorType.LAMBDA);
+        const lindana: Concept = whoAreChildrenOfLindanaAndLawrence.createConcept("LindanaQuery", "Human", "Lindana");
+        const lawrence: Concept = whoAreChildrenOfLindanaAndLawrence.createConcept("LawrenceQuery", "Human", "Lawrence");
+        whoAreChildrenOfLindanaAndLawrence.createRelation("who-childOf-lindana", "ChildOf", [who, lindana]);
+        whoAreChildrenOfLindanaAndLawrence.createRelation("who-childOf-lawrence", "ChildOf", [who, lawrence]);
+
+        const answers: ConceptualGraph[] = queryManager.executeQuery(whoAreChildrenOfLindanaAndLawrence);
+
+        // Expect answer to be Phineas, Ferb and Candace
+        expect(answers.length).toBe(3);
+        expect(answers[0].concepts.length).toBe(3);
+        expect(answers[0].getConceptByLabel("Phineas")).toEqual(testScenarioProvider_PhineasAndFerb.phineas);
+        expect(answers[1].concepts.length).toBe(3);
+        expect(answers[1].getConceptByLabel("Ferb")).toEqual(testScenarioProvider_PhineasAndFerb.ferb);
+        expect(answers[2].concepts.length).toBe(3);
+        expect(answers[2].getConceptByLabel("Candace")).toEqual(testScenarioProvider_PhineasAndFerb.candace);
+    })
+
+    it('Who is the step son of Lawrence', () => {
+        const whoIsTheStepsonOfLawrence: ConceptualGraph = new ConceptualGraph();
+        const who: Concept = whoIsTheStepsonOfLawrence.createConcept("Who", "Human", DesignatorType.LAMBDA);
+        const lawrence: Concept = whoIsTheStepsonOfLawrence.createConcept("LawrenceQuery", "Human", "Lawrence");
+        whoIsTheStepsonOfLawrence.createRelation("who-stepChildOf-lawrence", "StepSonOf", [who, lawrence]);
+
+        const answers: ConceptualGraph[] = queryManager.executeQuery(whoIsTheStepsonOfLawrence);
+
+        // Expect answer to be Phineas
+        expect(answers.length).toBe(1);
+        expect(answers[0].concepts.length).toBe(2);
+        expect(answers[0].getConceptByLabel("Phineas")).toEqual(testScenarioProvider_PhineasAndFerb.phineas);
+    })
+
+    it('Who are the step siblings of Candace', () => {
+        const whoAreStepSiblingsOfCandace: ConceptualGraph = new ConceptualGraph();
+        const who: Concept = whoAreStepSiblingsOfCandace.createConcept("Who", "Human", DesignatorType.LAMBDA);
+        const candace: Concept = whoAreStepSiblingsOfCandace.createConcept("Candace", "Human", "Candace");
+        whoAreStepSiblingsOfCandace.createRelation("who-stepSiblingOf-candace", "StepBrotherOf", [who, candace]);
+
+        const answers: ConceptualGraph[] = queryManager.executeQuery(whoAreStepSiblingsOfCandace);
+
+        // Expect answer to be Ferb
+        expect(answers.length).toBe(1);
+        expect(answers[0].concepts.length).toBe(2);
+        expect(answers[0].getConceptByLabel("Ferb")).toEqual(testScenarioProvider_PhineasAndFerb.ferb);
+    })
+
+    it('Who have a mom and a dad and a pet platypus and a friend named baljeet', () => {
+        const whoHaveMomAndDadAndPetPlatypusAndFriendBaljeet: ConceptualGraph = new ConceptualGraph();
+        const who: Concept = whoHaveMomAndDadAndPetPlatypusAndFriendBaljeet.createConcept("Who", "Human", DesignatorType.LAMBDA);
+        const someMom: Concept = whoHaveMomAndDadAndPetPlatypusAndFriendBaljeet.createConcept("SomeMom", "Human", DesignatorType.LAMBDA);
+        const someDad: Concept = whoHaveMomAndDadAndPetPlatypusAndFriendBaljeet.createConcept("SomeDad", "Human", DesignatorType.LAMBDA);
+        const somePlatypus: Concept = whoHaveMomAndDadAndPetPlatypusAndFriendBaljeet.createConcept("SomePlatypus", "Platypus", DesignatorType.LAMBDA);
+        const baljeet: Concept = whoHaveMomAndDadAndPetPlatypusAndFriendBaljeet.createConcept("BaljeetInQuery", "Boy", "Baljeet");
+        whoHaveMomAndDadAndPetPlatypusAndFriendBaljeet.createRelation("somemom-motherOf-who", "MotherOf", [someMom, who]);
+        whoHaveMomAndDadAndPetPlatypusAndFriendBaljeet.createRelation("somedad-fatherOf-who", "FatherOf", [someDad, who]);
+        whoHaveMomAndDadAndPetPlatypusAndFriendBaljeet.createRelation("who-ownsPet-platypus", "OwnsPet", [who, somePlatypus]);
+        whoHaveMomAndDadAndPetPlatypusAndFriendBaljeet.createRelation("who-friendOf-baljeet", "FriendOf", [who, baljeet]);
+
+        const answers: ConceptualGraph[] = queryManager.executeQuery(whoHaveMomAndDadAndPetPlatypusAndFriendBaljeet);
+
+        // Expect answer to be Ferb and Phineas
+        expect(answers.length).toBe(2);
+        expect(answers[0].concepts.length).toBe(5);
+        expect(answers[0].getConceptByLabel("Phineas")).toEqual(testScenarioProvider_PhineasAndFerb.phineas);
+        expect(answers[1].concepts.length).toBe(5);
+        expect(answers[1].getConceptByLabel("Ferb")).toEqual(testScenarioProvider_PhineasAndFerb.ferb);
+    })
+
+
 })
