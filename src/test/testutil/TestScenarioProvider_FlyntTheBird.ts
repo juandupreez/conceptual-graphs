@@ -8,7 +8,7 @@ import { ConceptualGraph } from "../../main/domain/ConceptualGraph";
 import { Relation } from "../../main/domain/Relation";
 import { RelationType } from "../../main/domain/RelationType";
 
-export class TestScenarioProvider {
+export class TestScenarioProvider_FlyntTheBird {
     conceptDao: ConceptDao;
     relationDao: RelationDao;
     conceptTypeDao: ConceptTypeDao;
@@ -27,15 +27,24 @@ export class TestScenarioProvider {
 
 
     createConcept_flyntTheBirdIsColourYellow(testId: string) {
+        this.conceptTypeDao.importHierarchyFromSimpleConceptTypes([{
+            label: "Entity-" + testId
+        }]);
+
+        this.relationTypeDao.importHierarchyFromSimpleRelationTypes([{
+            label: "LinkTwo-" + testId,
+            signature: ["Entity-" + testId, "Entity-" + testId]
+        }]);
+
         const flyntTheBirdIsYellow: ConceptualGraph = new ConceptualGraph();
 
         const birdConceptTypeLabel: string = "Bird-" + testId;
-        this.conceptTypeDao.createConceptType(birdConceptTypeLabel, ["Entity"]);
+        this.conceptTypeDao.createConceptType(birdConceptTypeLabel, ["Entity-" + testId]);
         const colourConceptTypeLabel: string = "Colour-" + testId;
-        this.conceptTypeDao.createConceptType(colourConceptTypeLabel, ["Entity"]);
+        this.conceptTypeDao.createConceptType(colourConceptTypeLabel, ["Entity-" + testId]);
         const attributeRelationTypeLabel: string = "Attribute-" + testId;
         const attributeRelationType: RelationType
-            = this.relationTypeDao.createRelationType(attributeRelationTypeLabel, [birdConceptTypeLabel, colourConceptTypeLabel], ["LinkTwo"])
+            = this.relationTypeDao.createRelationType(attributeRelationTypeLabel, [birdConceptTypeLabel, colourConceptTypeLabel], ["LinkTwo-" + testId])
 
         const flyntConceptLabel: string = "Flynt-" + testId;
         const flynt: Concept = flyntTheBirdIsYellow.createConcept(flyntConceptLabel, birdConceptTypeLabel, flyntConceptLabel);
@@ -49,15 +58,24 @@ export class TestScenarioProvider {
     }
 
     createConcept_flyntTheBirdIsColourYellowAndBlue(testId: string) {
+        this.conceptTypeDao.importHierarchyFromSimpleConceptTypes([{
+            label: "Entity-" + testId
+        }]);
+
+        this.relationTypeDao.importHierarchyFromSimpleRelationTypes([{
+            label: "LinkTwo-" + testId,
+            signature: ["Entity-" + testId, "Entity-" + testId]
+        }]);
+
         const flyntTheBirdIsYellowAndBlue: ConceptualGraph = new ConceptualGraph();
 
         const birdConceptTypeLabel: string = "Bird-" + testId;
-        this.conceptTypeDao.createConceptType(birdConceptTypeLabel, ["Entity"]);
+        this.conceptTypeDao.createConceptType(birdConceptTypeLabel, ["Entity-" + testId]);
         const colourConceptTypeLabel: string = "Colour-" + testId;
-        this.conceptTypeDao.createConceptType(colourConceptTypeLabel, ["Entity"]);
+        this.conceptTypeDao.createConceptType(colourConceptTypeLabel, ["Entity-" + testId]);
         const attributeRelationTypeLabel: string = "Attribute-" + testId;
         const attributeRelationType: RelationType
-            = this.relationTypeDao.createRelationType(attributeRelationTypeLabel, [birdConceptTypeLabel, colourConceptTypeLabel], ["LinkTwo"])
+            = this.relationTypeDao.createRelationType(attributeRelationTypeLabel, [birdConceptTypeLabel, colourConceptTypeLabel], ["LinkTwo-" + testId])
 
         const flyntConceptLabel: string = "Flynt-" + testId;
         const flynt: Concept = flyntTheBirdIsYellowAndBlue.createConcept(flyntConceptLabel, birdConceptTypeLabel, flyntConceptLabel);
@@ -76,20 +94,29 @@ export class TestScenarioProvider {
     }
 
     createConcept_flyntTheBirdIsColourYellowAndBlueWithSubConceptTypes(testId: string) {
+        this.conceptTypeDao.importHierarchyFromSimpleConceptTypes([{
+            label: "Entity-" + testId
+        }]);
+
+        this.relationTypeDao.importHierarchyFromSimpleRelationTypes([{
+            label: "LinkTwo-" + testId,
+            signature: ["Entity-" + testId, "Entity-" + testId]
+        }]);
+
         const flyntTheBirdIsYellowAndBlue: ConceptualGraph = new ConceptualGraph();
 
         const animalConceptTypeLabel: string = "Animal-" + testId;
-        this.conceptTypeDao.createConceptType(animalConceptTypeLabel, ["Entity"]);
+        this.conceptTypeDao.createConceptType(animalConceptTypeLabel, ["Entity-" + testId]);
         const birdConceptTypeLabel: string = "Bird-" + testId;
         this.conceptTypeDao.createConceptType(birdConceptTypeLabel, [animalConceptTypeLabel]);
 
         const shadeOfLightConceptTypeLabel: string = "ShadeOfLight-" + testId;
-        this.conceptTypeDao.createConceptType(shadeOfLightConceptTypeLabel, ["Entity"]);
+        this.conceptTypeDao.createConceptType(shadeOfLightConceptTypeLabel, ["Entity-" + testId]);
         const colourConceptTypeLabel: string = "Colour-" + testId;
         this.conceptTypeDao.createConceptType(colourConceptTypeLabel, [shadeOfLightConceptTypeLabel]);
         const attributeRelationTypeLabel: string = "Attribute-" + testId;
         const attributeRelationType: RelationType
-            = this.relationTypeDao.createRelationType(attributeRelationTypeLabel, [birdConceptTypeLabel, colourConceptTypeLabel], ["LinkTwo"])
+            = this.relationTypeDao.createRelationType(attributeRelationTypeLabel, [birdConceptTypeLabel, colourConceptTypeLabel], ["LinkTwo-" + testId])
 
         const flyntConceptLabel: string = "Flynt-" + testId;
         const flynt: Concept = flyntTheBirdIsYellowAndBlue.createConcept(flyntConceptLabel, birdConceptTypeLabel, flyntConceptLabel);
@@ -108,21 +135,30 @@ export class TestScenarioProvider {
     }
 
     createConcept_flyntTheBirdIsColourYellowAndBlueWithSubRelationTypes(testId: string) {
+        this.conceptTypeDao.importHierarchyFromSimpleConceptTypes([{
+            label: "Entity-" + testId
+        }]);
+
+        this.relationTypeDao.importHierarchyFromSimpleRelationTypes([{
+            label: "LinkTwo-" + testId,
+            signature: ["Entity-" + testId, "Entity-" + testId]
+        }]);
+
         const flyntTheBirdIsYellowAndBlue: ConceptualGraph = new ConceptualGraph();
 
         const animalConceptTypeLabel: string = "Animal-" + testId;
-        this.conceptTypeDao.createConceptType(animalConceptTypeLabel, ["Entity"]);
+        this.conceptTypeDao.createConceptType(animalConceptTypeLabel, ["Entity-" + testId]);
         const birdConceptTypeLabel: string = "Bird-" + testId;
         this.conceptTypeDao.createConceptType(birdConceptTypeLabel, [animalConceptTypeLabel]);
 
         const shadeOfLightConceptTypeLabel: string = "ShadeOfLight-" + testId;
-        this.conceptTypeDao.createConceptType(shadeOfLightConceptTypeLabel, ["Entity"]);
+        this.conceptTypeDao.createConceptType(shadeOfLightConceptTypeLabel, ["Entity-" + testId]);
         const colourConceptTypeLabel: string = "Colour-" + testId;
         this.conceptTypeDao.createConceptType(colourConceptTypeLabel, [shadeOfLightConceptTypeLabel]);
 
         const propertyRelationTypeLabel: string = "Property-" + testId;
         const propertyRelationType: RelationType
-            = this.relationTypeDao.createRelationType(propertyRelationTypeLabel, [animalConceptTypeLabel, shadeOfLightConceptTypeLabel], ["LinkTwo"]);
+            = this.relationTypeDao.createRelationType(propertyRelationTypeLabel, [animalConceptTypeLabel, shadeOfLightConceptTypeLabel], ["LinkTwo-" + testId]);
         const attributeRelationTypeLabel: string = "Attribute-" + testId;
         const attributeRelationType: RelationType
             = this.relationTypeDao.createRelationType(attributeRelationTypeLabel, [birdConceptTypeLabel, colourConceptTypeLabel], [propertyRelationTypeLabel]);
@@ -144,27 +180,36 @@ export class TestScenarioProvider {
     }
 
     createConcept_flyntTheBirdIsColourYellowAndBlueWithReverseRelation(testId: string) {
+        this.conceptTypeDao.importHierarchyFromSimpleConceptTypes([{
+            label: "Entity-" + testId
+        }]);
+
+        this.relationTypeDao.importHierarchyFromSimpleRelationTypes([{
+            label: "LinkTwo-" + testId,
+            signature: ["Entity-" + testId, "Entity-" + testId]
+        }]);
+
         const flyntTheBirdIsYellowAndBlue: ConceptualGraph = new ConceptualGraph();
 
         const animalConceptTypeLabel: string = "Animal-" + testId;
-        this.conceptTypeDao.createConceptType(animalConceptTypeLabel, ["Entity"]);
+        this.conceptTypeDao.createConceptType(animalConceptTypeLabel, ["Entity-" + testId]);
         const birdConceptTypeLabel: string = "Bird-" + testId;
         this.conceptTypeDao.createConceptType(birdConceptTypeLabel, [animalConceptTypeLabel]);
 
         const shadeOfLightConceptTypeLabel: string = "ShadeOfLight-" + testId;
-        this.conceptTypeDao.createConceptType(shadeOfLightConceptTypeLabel, ["Entity"]);
+        this.conceptTypeDao.createConceptType(shadeOfLightConceptTypeLabel, ["Entity-" + testId]);
         const colourConceptTypeLabel: string = "Colour-" + testId;
         this.conceptTypeDao.createConceptType(colourConceptTypeLabel, [shadeOfLightConceptTypeLabel]);
 
         const propertyRelationTypeLabel: string = "Property-" + testId;
         const propertyRelationType: RelationType
-            = this.relationTypeDao.createRelationType(propertyRelationTypeLabel, [animalConceptTypeLabel, shadeOfLightConceptTypeLabel], ["LinkTwo"]);
+            = this.relationTypeDao.createRelationType(propertyRelationTypeLabel, [animalConceptTypeLabel, shadeOfLightConceptTypeLabel], ["LinkTwo-" + testId]);
         const attributeRelationTypeLabel: string = "Attribute-" + testId;
         const attributeRelationType: RelationType
             = this.relationTypeDao.createRelationType(attributeRelationTypeLabel, [birdConceptTypeLabel, colourConceptTypeLabel], [propertyRelationTypeLabel]);
         const reverseAttributeRelationTypeLabel: string = "ReverseAttribute-" + testId;
         const reverseAttributeRelationType: RelationType
-            = this.relationTypeDao.createRelationType(reverseAttributeRelationTypeLabel, [colourConceptTypeLabel, birdConceptTypeLabel], ["LinkTwo"]);
+            = this.relationTypeDao.createRelationType(reverseAttributeRelationTypeLabel, [colourConceptTypeLabel, birdConceptTypeLabel], ["LinkTwo-" + testId]);
 
         const flyntConceptLabel: string = "Flynt-" + testId;
         const flynt: Concept = flyntTheBirdIsYellowAndBlue.createConcept(flyntConceptLabel, birdConceptTypeLabel, flyntConceptLabel);

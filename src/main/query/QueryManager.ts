@@ -5,6 +5,7 @@ import { RelationTypeDao } from "../dao/RelationTypeDao";
 import { Concept } from "../domain/Concept";
 import { ConceptualGraph } from "../domain/ConceptualGraph";
 import { Relation } from "../domain/Relation";
+import { isConcept } from "../util/ConceptUtil";
 
 export class QueryManager {
     conceptDao: ConceptDao;
@@ -24,12 +25,22 @@ export class QueryManager {
     }
 
     private _recursiveMatchNode(query: ConceptualGraph, queryNode: Concept | Relation, previousQueryNode?: Concept | Relation,
-        previousMatchedNode?: Concept | Relation, alreadyProcessedNodes?: (Concept | Relation)[]): ConceptualGraph[] {
+        previousMatchedNode?: Concept | Relation, alreadyProcessedNodes?: (Concept | Relation)[], depth?: number): ConceptualGraph[] {
+        let spacer: string = "";
+        for (let i = 0; i < depth; i++) {
+            spacer += "\t";
+        }
+        console.log(spacer + "Cur Node: " + queryNode.label);
+        console.log(spacer + "Prev Node: " + previousMatchedNode?.label);
+
         const returnAnswerConceptualGraphs: ConceptualGraph[] = [];
         if (!alreadyProcessedNodes) {
             alreadyProcessedNodes = [];
         }
-        const matchedNodes: (Concept | Relation)[] = this._matchNodesInDB(queryNode, previousMatchedNode, query);
+        const positionInRelationArguments: number = this._getPositionInRelationArguments(previousQueryNode, queryNode);
+        const matchedNodes: (Concept | Relation)[] = this._matchNodesInDB(queryNode, previousMatchedNode, query, positionInRelationArguments);
+        console.log(spacer + "Matched Nodes in DB: " + matchedNodes?.map((singleMatched) => { return singleMatched.label }).join(', '));
+
         if (this._isLeaf(query, queryNode, previousQueryNode, alreadyProcessedNodes) && matchedNodes?.length > 0) {
             matchedNodes.forEach((singleMatchedNode: Concept | Relation) => {
                 const newPotentailAnswerCG: ConceptualGraph = new ConceptualGraph();
@@ -37,16 +48,20 @@ export class QueryManager {
                 returnAnswerConceptualGraphs.push(newPotentailAnswerCG);
             })
         } else if (matchedNodes?.length > 0) {
-            matchedNodes.forEach((singleMatchedNode: Concept | Relation) => {
+            matchedNodes.forEach((singleMatchedNode: Concept | Relation, matchedNodeIndex) => {
+                console.log(spacer + "Current Matched Node: " + singleMatchedNode?.label);
                 let doesMatchAllChildren: boolean = true;
                 let nextQueryNodes: (Concept | Relation)[] = this._getNextQueryNodes(query, queryNode, previousQueryNode);
+                console.log(spacer + "Next Query Nodes: " + nextQueryNodes?.map((singleNode) => { return singleNode.label }).join(', '));
                 if (nextQueryNodes && nextQueryNodes.length > 0) {
                     const potentialAnswerCGs: ConceptualGraph[]
-                        = this._recursiveMatchNode(query, nextQueryNodes[0], queryNode, singleMatchedNode, [...alreadyProcessedNodes, queryNode]);
+                        = this._recursiveMatchNode(query, nextQueryNodes[0], queryNode, singleMatchedNode,
+                            [...alreadyProcessedNodes, queryNode], depth ? depth + 1 : 1);
                     for (let i = 1; nextQueryNodes && i < nextQueryNodes.length; i++) {
                         const singleNextQueryNode: Concept | Relation = nextQueryNodes[i];
                         const subPotientialAnswerCGs: ConceptualGraph[]
-                            = this._recursiveMatchNode(query, singleNextQueryNode, queryNode, singleMatchedNode, alreadyProcessedNodes);
+                            = this._recursiveMatchNode(query, singleNextQueryNode, queryNode, singleMatchedNode,
+                                alreadyProcessedNodes, depth ? depth + 1 : 1);
                         potentialAnswerCGs.forEach((singlePotentialAnswer) => {
                             subPotientialAnswerCGs.forEach((singleSubPotentialAnswer) => {
                                 singlePotentialAnswer.addConceptsIfNotExist(singleSubPotentialAnswer.concepts);
@@ -74,10 +89,20 @@ export class QueryManager {
                 }
             })
         }
+        console.log(spacer + "Returning conceptual graphs of answers with size: " + returnAnswerConceptualGraphs.length);
+
         return returnAnswerConceptualGraphs;
     }
+    private _getPositionInRelationArguments(concept: Concept | Relation, relation: Concept | Relation): number {
+        if (isConcept(concept)) {
+            return (relation as Relation)?.conceptArgumentLabels?.indexOf((concept as Concept).label);
+        } else {
+            return -1;
+        }
+    }
 
-    private _matchNodesInDB(queryNode: Concept | Relation, previousMatchedNode: Concept | Relation, query: ConceptualGraph): (Concept | Relation)[] {
+    private _matchNodesInDB(queryNode: Concept | Relation, previousMatchedNode: Concept | Relation, query: ConceptualGraph,
+        positionInRelationArguments: number): (Concept | Relation)[] {
         if ((queryNode as any).conceptTypeLabels) {
             const matchedConcepts: Concept[] = this.conceptDao.getConceptsByExample(queryNode as Concept);
             if (previousMatchedNode) {
@@ -90,7 +115,12 @@ export class QueryManager {
         } else {
             const matchedRelations: Relation[] = this.relationDao.getRelationsByExample(queryNode as Relation, query);
             return matchedRelations.filter((singleMatchedRelation) => {
-                return (singleMatchedRelation.conceptArgumentLabels.includes(previousMatchedNode.label));
+                const doesPreviousConceptMatch: boolean = positionInRelationArguments !== -1 ?
+                    singleMatchedRelation.conceptArgumentLabels[positionInRelationArguments] === previousMatchedNode.label :
+                    singleMatchedRelation.conceptArgumentLabels.includes(previousMatchedNode.label);
+                // const doesPreviousConceptMatch: boolean = 
+                //     singleMatchedRelation.conceptArgumentLabels.includes(previousMatchedNode.label);
+                return doesPreviousConceptMatch;
             }) ?? [];
         }
     }

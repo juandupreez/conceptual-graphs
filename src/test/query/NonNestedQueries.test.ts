@@ -14,14 +14,16 @@ import { Relation } from "../../main/domain/Relation";
 import { RelationType } from "../../main/domain/RelationType";
 import { QueryManager } from "../../main/query/QueryManager";
 import { IdGenerator } from "../../main/util/IdGenerator";
-import { TestScenarioProvider } from "../testutil/TestScenarioProvider";
+import { TestScenarioProvider_FlyntTheBird } from "../testutil/TestScenarioProvider_FlyntTheBird";
+import { TestScenarioProvider_PhineasAndFerb } from "../testutil/TestScenarioProvider_PhineasAndFerb";
 
 const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
 const relationTypeDao: RelationTypeDao = new InMemoryRelationTypeDao(conceptTypeDao);
 const conceptDao: ConceptDao = new InMemoryConceptDao(conceptTypeDao);
 const relationDao: RelationDao = new InMemoryRelationDao(conceptDao, conceptTypeDao, relationTypeDao);
 const conceptualGraphDao: ConceptualGraphDao = new InMemoryConceptualGraphDao(conceptDao, relationDao);
-const testScenarioProvider: TestScenarioProvider = new TestScenarioProvider(conceptDao, relationDao, conceptTypeDao, relationTypeDao, conceptualGraphDao);
+const testScenarioProvider_FlyntTheBird: TestScenarioProvider_FlyntTheBird = new TestScenarioProvider_FlyntTheBird(conceptDao, relationDao, conceptTypeDao, relationTypeDao, conceptualGraphDao);
+const testScenarioProvider_PhineasAndFerb: TestScenarioProvider_PhineasAndFerb = new TestScenarioProvider_PhineasAndFerb(conceptDao, relationDao, conceptTypeDao, relationTypeDao, conceptualGraphDao);
 
 const queryManager: QueryManager = new QueryManager(conceptDao, conceptTypeDao, relationDao, relationTypeDao);
 
@@ -33,29 +35,17 @@ let testId: string = "";
 //  3. Match all nodes | Extract only answer nodes
 //  4. Single Answer | Multiple Answers
 
-describe('Query manager: Non Nested Queries', () => {
-
-    beforeAll(() => {
-        const conceptTypeHierarchy: SimpleConceptType[] = [{
-            label: "Entity"
-        }];
-        conceptTypeDao.importHierarchyFromSimpleConceptTypes(conceptTypeHierarchy);
-
-        const relationTypeHierarchy: SimpleRelationType[] = [{
-            label: "LinkTwo",
-            signature: ["Entity", "Entity"]
-        }];
-        relationTypeDao.importHierarchyFromSimpleRelationTypes(relationTypeHierarchy);
-    })
+describe('Simple queries', () => {
 
     beforeEach(() => {
         testId = IdGenerator.getInstance().getNextUniquTestId();
+        global.console = require('console');
     })
 
     it('Simple Query with one relation and two concepts: Exact Concept Types | Exact Relation Types | Match all nodes | Single Answer', () => {
 
         // Create Conceptual graph: Flynt the bird is yellow
-        testScenarioProvider.createConcept_flyntTheBirdIsColourYellow(testId);
+        testScenarioProvider_FlyntTheBird.createConcept_flyntTheBirdIsColourYellow(testId);
         const birdConceptTypeLabel: string = "Bird-" + testId;
         const colourConceptTypeLabel: string = "Colour-" + testId;
         const attributeRelationTypeLabel: string = "Attribute-" + testId;
@@ -89,7 +79,7 @@ describe('Query manager: Non Nested Queries', () => {
 
     it('Query with two relations and three concepts: Exact Concept Types | Exact Relation Types | Match all nodes | Multiple Answers', () => {
         // Create Conceptual graph: Flynt the bird is yellow and blue
-        testScenarioProvider.createConcept_flyntTheBirdIsColourYellowAndBlue(testId);
+        testScenarioProvider_FlyntTheBird.createConcept_flyntTheBirdIsColourYellowAndBlue(testId);
         const birdConceptTypeLabel: string = "Bird-" + testId;
         const colourConceptTypeLabel: string = "Colour-" + testId;
         const attributeRelationTypeLabel: string = "Attribute-" + testId;
@@ -132,7 +122,7 @@ describe('Query manager: Non Nested Queries', () => {
 
     it('Project answer nodes without returning whole: Exact Concept Types | Exact Relation Types | Extract only answer nodes | Single Answer', () => {
         // Create Conceptual graph: Flynt the bird is yellow and blue
-        testScenarioProvider.createConcept_flyntTheBirdIsColourYellowAndBlue(testId);
+        testScenarioProvider_FlyntTheBird.createConcept_flyntTheBirdIsColourYellowAndBlue(testId);
         const birdConceptTypeLabel: string = "Bird-" + testId;
         const colourConceptTypeLabel: string = "Colour-" + testId;
         const attributeRelationTypeLabel: string = "Attribute-" + testId;
@@ -168,7 +158,7 @@ describe('Query manager: Non Nested Queries', () => {
 
     it('Match Sub Concepts Types: Parent Concept Types | Exact Relation Types | Match all nodes | Single Answer', () => {
         // Create Conceptual graph: Flynt the bird is yellow and blue
-        testScenarioProvider.createConcept_flyntTheBirdIsColourYellowAndBlueWithSubConceptTypes(testId);
+        testScenarioProvider_FlyntTheBird.createConcept_flyntTheBirdIsColourYellowAndBlueWithSubConceptTypes(testId);
         const animalConceptTypeLabel: string = "Animal-" + testId;
         const birdConceptTypeLabel: string = "Bird-" + testId;
         const shadeOfLightConceptTypeLabel: string = "ShadeOfLight-" + testId;
@@ -206,7 +196,7 @@ describe('Query manager: Non Nested Queries', () => {
 
     it('Match Sub Relation Types: Parent Concept Types | Parent Relation Types | Match all nodes | Single Answer', () => {
         // Create Conceptual graph: Flynt the bird is yellow and blue
-        testScenarioProvider.createConcept_flyntTheBirdIsColourYellowAndBlueWithSubRelationTypes(testId);
+        testScenarioProvider_FlyntTheBird.createConcept_flyntTheBirdIsColourYellowAndBlueWithSubRelationTypes(testId);
         const animalConceptTypeLabel: string = "Animal-" + testId;
         const birdConceptTypeLabel: string = "Bird-" + testId;
         const shadeOfLightConceptTypeLabel: string = "ShadeOfLight-" + testId;
@@ -245,7 +235,7 @@ describe('Query manager: Non Nested Queries', () => {
 
     it('Matching relations should match concepts exactly: Parent Concept Types | Parent Relation Types | Match all nodes | Single Answer', () => {
         // Create Conceptual graph: Flynt the bird is yellow and blue
-        testScenarioProvider.createConcept_flyntTheBirdIsColourYellowAndBlueWithReverseRelation(testId);
+        testScenarioProvider_FlyntTheBird.createConcept_flyntTheBirdIsColourYellowAndBlueWithReverseRelation(testId);
         const animalConceptTypeLabel: string = "Animal-" + testId;
         const birdConceptTypeLabel: string = "Bird-" + testId;
         const shadeOfLightConceptTypeLabel: string = "ShadeOfLight-" + testId;
@@ -287,7 +277,7 @@ describe('Query manager: Non Nested Queries', () => {
     })
 
     it('Match 3 Lambdas: Parent Concept Types | Parent Relation Types | Match all nodes | Single Answer', () => {
-        testScenarioProvider.createConcept_threeAnimalsWithColourAndAllThreeCute(testId);
+        testScenarioProvider_FlyntTheBird.createConcept_threeAnimalsWithColourAndAllThreeCute(testId);
         const animalConceptTypeLabel: string = "Animal-" + testId;
         const colourConceptTypeLabel: string = "Colour-" + testId;
         const cuteConceptTypeLabel: string = "Cute-" + testId;
@@ -355,7 +345,7 @@ describe('Query manager: Non Nested Queries', () => {
     })
 
     it('Direct Cycles: Parent Concept Types | Parent Relation Types | Match all nodes | Single Answer', () => {
-        testScenarioProvider.createConcept_yellowHasAttributeYellow(testId);
+        testScenarioProvider_FlyntTheBird.createConcept_yellowHasAttributeYellow(testId);
         const yellowConceptLabel: string = "Yellow-" + testId;
         const colourConceptTypeLabel: string = "Colour-" + testId;
         const attributeRelationTypeLabel: string = "Attribute-" + testId;
@@ -383,7 +373,7 @@ describe('Query manager: Non Nested Queries', () => {
     })
 
     it('Two level deep cycles: Parent Concept Types | Parent Relation Types | Match all nodes | Single Answer', () => {
-        testScenarioProvider.createConcept_flyntHasAttributeYellowHasAttributeFlynt(testId);
+        testScenarioProvider_FlyntTheBird.createConcept_flyntHasAttributeYellowHasAttributeFlynt(testId);
         const birdConceptTypeLabel: string = "Bird-" + testId;
         const flyntConceptLabel: string = "Flynt-" + testId;
         const yellowConceptLabel: string = "Yellow-" + testId;
@@ -421,7 +411,30 @@ describe('Query manager: Non Nested Queries', () => {
         expect(yellowAttrFlyntRelationInAnswer.conceptArgumentLabels[1]).toEqual(answers[0].getConceptByLabel(flyntConceptLabel).label);
     })
 
-    xit('Complex Structure: Parent Concept Types | Parent Relation Types | Match all nodes | Single Answer', () => {
+})
+
+describe('A more complex scenario. Phineas and Ferb structure', () => {
+
+    beforeAll(() => {
+        testScenarioProvider_PhineasAndFerb.createPhineasAndFerbStructure();
     })
 
+    beforeEach(() => {
+        testId = IdGenerator.getInstance().getNextUniquTestId();
+        global.console = require('console');
+    })
+
+    it('Who are the siblings of Phineas', () => {
+
+        const whoAreSiblingsOfPhineas: ConceptualGraph = new ConceptualGraph();
+        const who: Concept = whoAreSiblingsOfPhineas.createConcept("Who", "Human", DesignatorType.LAMBDA);
+        const phineas: Concept = whoAreSiblingsOfPhineas.createConcept("PhineasInQuery", "Human", "Phineas");
+        whoAreSiblingsOfPhineas.createRelation("who-siblingOf-phineas", "SiblingOf", [who, phineas]);
+
+        const answers: ConceptualGraph[] = queryManager.executeQuery(whoAreSiblingsOfPhineas);
+
+        // Expect answer to be Ferb and Candace
+        expect(answers.length).toBe(2);
+
+    })
 })

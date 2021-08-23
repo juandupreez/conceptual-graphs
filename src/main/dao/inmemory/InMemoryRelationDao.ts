@@ -1,4 +1,4 @@
-import { Concept } from "../../domain/Concept";
+import { Concept, DesignatorType } from "../../domain/Concept";
 import { ConceptualGraph } from "../../domain/ConceptualGraph";
 import { Relation } from "../../domain/Relation";
 import { RelationType } from "../../domain/RelationType";
@@ -145,9 +145,23 @@ export class InMemoryRelationDao implements RelationDao {
             let doAllConceptsMatch: boolean = true;
             conceptArgumentLabelsToMatch?.forEach((singleConceptLabelToMatch, index) => {
                 const conceptToMatch: Concept = query.getConceptByLabel(singleConceptLabelToMatch);
+                const potentialConcept: Concept = this.conceptDao.getConceptByLabel(conceptArgumentLabels[index]);
                 const possibleConceptTypeLabels: string[] = this.conceptTypeDao.getLabelAndAllSubLabelsOfConcept(conceptToMatch.conceptTypeLabels);
-                const potentialConceptTypeLabels: string[] = this.conceptDao.getConceptByLabel(conceptArgumentLabels[index])?.conceptTypeLabels;
-                doAllConceptsMatch = doAllConceptsMatch && this._isSetOneASubsetOfSetTwo(potentialConceptTypeLabels, possibleConceptTypeLabels);
+                const potentialConceptTypeLabels: string[] = potentialConcept?.conceptTypeLabels ?? [];
+                const doConceptTypesMatch: boolean = doAllConceptsMatch && this._isSetOneASubsetOfSetTwo(potentialConceptTypeLabels, possibleConceptTypeLabels);
+
+                if (conceptToMatch.referent?.designatorType === DesignatorType.LAMBDA && doConceptTypesMatch) {
+                    doAllConceptsMatch = doAllConceptsMatch && true;
+                } else if (doConceptTypesMatch
+                    && conceptToMatch.referent.quantifierType === potentialConcept.referent.quantifierType
+                    && conceptToMatch.referent.quantifierValue === potentialConcept.referent.quantifierValue
+                    && conceptToMatch.referent.designatorType === potentialConcept.referent.designatorType
+                    && conceptToMatch.referent.designatorValue === potentialConcept.referent.designatorValue) {
+                    doAllConceptsMatch = doAllConceptsMatch && true;
+                } else {
+                    doAllConceptsMatch = false
+                }
+
             })
             return doAllConceptsMatch;
         }
