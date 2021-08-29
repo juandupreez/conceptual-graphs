@@ -25,6 +25,8 @@ export class TestScenarioProvider_PhineasAndFerb {
     pinkyTheChihuahua: Concept;
     doofenshmirtz: Concept;
 
+    nerdy: Concept;
+
 
 
     constructor(conceptDao: ConceptDao, relationDao: RelationDao,
@@ -60,6 +62,7 @@ export class TestScenarioProvider_PhineasAndFerb {
                         { label: "Woman" },
                         { label: "Boy" },
                         { label: "Girl" },
+                        { label: "Bully" },
                     ]
                 },
                 {
@@ -73,6 +76,9 @@ export class TestScenarioProvider_PhineasAndFerb {
                             ]
                         },
                     ]
+                },
+                {
+                    label: "Property"
                 }
             ]
         }]);
@@ -80,6 +86,13 @@ export class TestScenarioProvider_PhineasAndFerb {
 
     private _createRelationTypes() {
         this.relationTypeDao.importHierarchyFromSimpleRelationTypes([{
+            label: "LinkOne",
+            signature: ["Entity"],
+            subRelationTypes: [{
+                label: "Not",
+                signature: ["Entity"]
+            }]
+        }, {
             label: "LinkTwo",
             signature: ["Entity", "Entity"],
             subRelationTypes: [{
@@ -171,6 +184,16 @@ export class TestScenarioProvider_PhineasAndFerb {
             }, {
                 label: "OwnsPet",
                 signature: ["Human", "Animal"]
+            },{
+                label: "Attribute",
+                signature: ["Entity", "Property"]
+            }]
+        }, {
+            label: "LinkThree",
+            signature: ["Entity", "Entity", "Entity"],
+            subRelationTypes: [{
+                label: "Between",
+                signature: ["Human", "Human", "Human"]
             }]
         }]);
     }
@@ -184,7 +207,7 @@ export class TestScenarioProvider_PhineasAndFerb {
         this.lindana = this.conceptDao.createConcept("Lindana", ["Woman"], "Lindana");
 
         this.baljeet = this.conceptDao.createConcept("Baljeet", ["Boy"], "Baljeet");
-        this.buford = this.conceptDao.createConcept("Buford", ["Boy"], "Buford");
+        this.buford = this.conceptDao.createConcept("Buford", ["Boy", "Bully"], "Buford");
         this.isabella = this.conceptDao.createConcept("Isabella", ["Boy"], "Isabella");
 
         this.perryThePlatypus = this.conceptDao.createConcept("PerryThePlatypus", ["Platypus"], "Perry");
@@ -194,6 +217,7 @@ export class TestScenarioProvider_PhineasAndFerb {
     }
 
     private _createOtherConcepts() {
+        this.nerdy = this.conceptDao.createConcept("Nerdy", ["Property"], "Nerdy");
     }
 
     private _createFamilyRelations() {
@@ -270,7 +294,26 @@ export class TestScenarioProvider_PhineasAndFerb {
         petRelations.createRelation("ferb-ownsPet-perry", "OwnsPet", [this.ferb, this.perryThePlatypus]);
         petRelations.createRelation("candace-ownsPet-perry", "OwnsPet", [this.candace, this.perryThePlatypus]);
 
+        // Pinky the Chihuahua
+        petRelations.createRelation("isabella-ownsPet-pinky", "OwnsPet", [this.isabella, this.pinkyTheChihuahua]);
+
         this.conceptualGraphDao.createConceptualGraph(petRelations);
+
+        // Buford not a nerd
+        const bufordNotNerdy: ConceptualGraph = new ConceptualGraph();
+        bufordNotNerdy.addConcept(this.buford);
+        bufordNotNerdy.addConcept(this.nerdy);
+        bufordNotNerdy.createRelation("buford-attr-nerdy", "Attribute", [this.buford, this.nerdy]);
+        bufordNotNerdy.createRelation("not-nerdy", "Not", [this.nerdy]);
+        this.conceptualGraphDao.createConceptualGraph(bufordNotNerdy);
+
+        // Between
+        const isabellaBetweenPhineasAndFerb: ConceptualGraph = new ConceptualGraph();
+        isabellaBetweenPhineasAndFerb.addConcept(this.isabella);
+        isabellaBetweenPhineasAndFerb.addConcept(this.phineas);
+        isabellaBetweenPhineasAndFerb.addConcept(this.ferb);
+        isabellaBetweenPhineasAndFerb.createRelation("isabella-between-phineas-and-ferb", "Between", [this.isabella, this.phineas, this.ferb]);
+        this.conceptualGraphDao.createConceptualGraph(isabellaBetweenPhineasAndFerb);
     }
 
 

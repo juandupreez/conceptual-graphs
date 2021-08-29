@@ -510,5 +510,69 @@ describe('A more complex scenario. Phineas and Ferb structure', () => {
         expect(answers[1].getConceptByLabel("Ferb")).toEqual(testScenarioProvider_PhineasAndFerb.ferb);
     })
 
+    it('Which animals are pets to children who are friends with buford', () => {
+        const whichAnimalIsPetToChildFriendOfBuford: ConceptualGraph = new ConceptualGraph();
+        const whichAnimal: Concept = whichAnimalIsPetToChildFriendOfBuford.createConcept("WhichAnimal", "Animal", DesignatorType.LAMBDA);
+        const someChild: Concept = whichAnimalIsPetToChildFriendOfBuford.createConcept("SomeChild", "Human", DesignatorType.LAMBDA);
+        const buford: Concept = whichAnimalIsPetToChildFriendOfBuford.createConcept("BufordInQuery", "Human", "Buford");
+        whichAnimalIsPetToChildFriendOfBuford.createRelation("somechild-ownsPet-whichanimal", "OwnsPet", [someChild, whichAnimal]);
+        whichAnimalIsPetToChildFriendOfBuford.createRelation("somechild-friendOf-buford", "FriendOf", [someChild, buford]);
+
+        const answers: ConceptualGraph[] = queryManager.executeQuery(whichAnimalIsPetToChildFriendOfBuford);
+
+        // Expect answer to be Perry and Pinky
+        expect(answers.length).toBe(3);
+        expect(answers[0].concepts.length).toBe(3);
+        expect(answers[0].getConceptByLabel("PerryThePlatypus")).toEqual(testScenarioProvider_PhineasAndFerb.perryThePlatypus);
+        expect(answers[1].concepts.length).toBe(3);
+        expect(answers[1].getConceptByLabel("PerryThePlatypus")).toEqual(testScenarioProvider_PhineasAndFerb.perryThePlatypus);
+        expect(answers[2].concepts.length).toBe(3);
+        expect(answers[2].getConceptByLabel("PinkyTheChihuahua")).toEqual(testScenarioProvider_PhineasAndFerb.pinkyTheChihuahua);
+    })
+
+    it('Who is not nerdy', () => {
+        const whoIsNotANerd: ConceptualGraph = new ConceptualGraph();
+        const who: Concept = whoIsNotANerd.createConcept("Who", "Human", DesignatorType.LAMBDA);
+        const nerdy: Concept = whoIsNotANerd.createConcept("Nerdy", "Property", "Nerdy");
+        whoIsNotANerd.createRelation("who-attr-nerdy", "Attribute", [who, nerdy]);
+        whoIsNotANerd.createRelation("not-nerdy", "Not", [nerdy]);
+
+        const answers: ConceptualGraph[] = queryManager.executeQuery(whoIsNotANerd);
+
+        // Expect answer to be Buford
+        expect(answers.length).toBe(1);
+        expect(answers[0].concepts.length).toBe(2);
+        expect(answers[0].getConceptByLabel("Buford")).toEqual(testScenarioProvider_PhineasAndFerb.buford);
+        expect(answers[0].getConceptByLabel("Nerdy")).toEqual(testScenarioProvider_PhineasAndFerb.nerdy);
+        expect(answers[0].getRelationsWhereConceptIsUsed(answers[0].getConceptByLabel("Nerdy"))[0]).toEqual(relationDao.getRelationByLabel("not-nerdy"));
+    })
+
+    it('Who is between phineas and ferb', () => {
+        const whoIsNotANerd: ConceptualGraph = new ConceptualGraph();
+        const who: Concept = whoIsNotANerd.createConcept("Who", "Human", DesignatorType.LAMBDA);
+        const phineas: Concept = whoIsNotANerd.createConcept("Phineas", "Human", "Phineas");
+        const ferb: Concept = whoIsNotANerd.createConcept("Ferb", "Human", "Ferb");
+        whoIsNotANerd.createRelation("who-between-phineas-and-ferb", "Between", [who, phineas, ferb]);
+
+        const answers: ConceptualGraph[] = queryManager.executeQuery(whoIsNotANerd);
+
+        // Expect answer to be Isabella
+        expect(answers.length).toBe(1);
+        expect(answers[0].concepts.length).toBe(3);
+        expect(answers[0].getConceptByLabel("Isabella")).toEqual(testScenarioProvider_PhineasAndFerb.isabella);
+    })
+
+    xit('Who is a bully and a boy', () => {
+        const whoIsABullyAndABoy: ConceptualGraph = new ConceptualGraph();
+        const who: Concept = whoIsABullyAndABoy.createConcept("Who", ["Bully", "Boy"], DesignatorType.LAMBDA);
+
+        const answers: ConceptualGraph[] = queryManager.executeQuery(whoIsABullyAndABoy);
+
+        // Expect answer to be Buford
+        expect(answers.length).toBe(1);
+        expect(answers[0].concepts.length).toBe(1);
+        expect(answers[0].getConceptByLabel("Buford")).toEqual(testScenarioProvider_PhineasAndFerb.buford);
+    })
+
 
 })

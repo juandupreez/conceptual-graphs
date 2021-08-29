@@ -151,11 +151,15 @@ export class ConceptualGraph {
         })
     }
 
-    getRelationsWhereConceptIsUsed(conceptToBeUsed: Concept, relationToExclude: Relation): Relation[] {
-        return this.relations.filter((singleRelation) => {
-            return (singleRelation.conceptArgumentLabels.includes(conceptToBeUsed.label)
-                && singleRelation !== relationToExclude);
-        })
+    getRelationsWhereConceptIsUsed(conceptToBeUsed: Concept, relationToExclude?: Relation): Relation[] {
+        if (conceptToBeUsed) {
+            return this.relations.filter((singleRelation) => {
+                return (singleRelation.conceptArgumentLabels.includes(conceptToBeUsed.label)
+                    && singleRelation !== relationToExclude);
+            })
+        } else {
+            return [];
+        }
     }
 
     getConceptsUsedByRelation(relation: Relation, conceptToExclude: Concept): Concept[] {
