@@ -129,15 +129,15 @@ export class QueryManager {
 
 }
 
-interface MatchedConcept extends Concept {
-    matchedConceptLabel: string;
+export interface MatchedConcept extends Concept {
+    templateConceptLabelWhichWasMatched: string;
 }
 
-interface MatchedRelation extends Relation {
-    matchedRelationLabel: string;
+export interface MatchedRelation extends Relation {
+    templateRelationLabelWhichWasMatched: string;
 }
 
-class MatchedConceptualGraph extends ConceptualGraph {
+export class MatchedConceptualGraph extends ConceptualGraph {
     concepts: MatchedConcept[];
     relations: MatchedRelation[];
 }
