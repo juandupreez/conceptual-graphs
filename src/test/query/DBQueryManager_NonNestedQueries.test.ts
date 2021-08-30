@@ -1,5 +1,5 @@
 import { ConceptDao } from "../../main/dao/ConceptDao";
-import { ConceptTypeDao, SimpleConceptType } from "../../main/dao/ConceptTypeDao"
+import { ConceptTypeDao } from "../../main/dao/ConceptTypeDao"
 import { ConceptualGraphDao } from "../../main/dao/ConceptualGraphDao";
 import { InMemoryConceptDao } from "../../main/dao/inmemory/InMemoryConceptDao"
 import { InMemoryConceptTypeDao } from "../../main/dao/inmemory/InMemoryConceptTypeDao"
@@ -7,11 +7,11 @@ import { InMemoryConceptualGraphDao } from "../../main/dao/inmemory/InMemoryConc
 import { InMemoryRelationDao } from "../../main/dao/inmemory/InMemoryRelationDao";
 import { InMemoryRelationTypeDao } from "../../main/dao/inmemory/InMemoryRelationTypeDao";
 import { RelationDao } from "../../main/dao/RelationDao";
-import { RelationTypeDao, SimpleRelationType } from "../../main/dao/RelationTypeDao";
+import { RelationTypeDao } from "../../main/dao/RelationTypeDao";
 import { Concept, DesignatorType, QuantifierType } from "../../main/domain/Concept";
 import { ConceptualGraph } from "../../main/domain/ConceptualGraph";
 import { Relation } from "../../main/domain/Relation";
-import { RelationType } from "../../main/domain/RelationType";
+import { DatabaseQueryManager } from "../../main/query/DatabaseQueryManager";
 import { QueryManager } from "../../main/query/QueryManager";
 import { IdGenerator } from "../../main/util/IdGenerator";
 import { TestScenarioProvider_FlyntTheBird } from "../testutil/TestScenarioProvider_FlyntTheBird";
@@ -25,7 +25,7 @@ const conceptualGraphDao: ConceptualGraphDao = new InMemoryConceptualGraphDao(co
 const testScenarioProvider_FlyntTheBird: TestScenarioProvider_FlyntTheBird = new TestScenarioProvider_FlyntTheBird(conceptDao, relationDao, conceptTypeDao, relationTypeDao, conceptualGraphDao);
 const testScenarioProvider_PhineasAndFerb: TestScenarioProvider_PhineasAndFerb = new TestScenarioProvider_PhineasAndFerb(conceptDao, relationDao, conceptTypeDao, relationTypeDao, conceptualGraphDao);
 
-const queryManager: QueryManager = new QueryManager(conceptDao, conceptTypeDao, relationDao, relationTypeDao);
+const queryManager: QueryManager = new DatabaseQueryManager(conceptDao, relationDao);
 
 let testId: string = "";
 

@@ -1,22 +1,11 @@
-import { ConceptDao } from "../dao/ConceptDao";
-import { ConceptTypeDao } from "../dao/ConceptTypeDao";
-import { RelationDao } from "../dao/RelationDao";
-import { RelationTypeDao } from "../dao/RelationTypeDao";
 import { Concept } from "../domain/Concept";
 import { ConceptualGraph } from "../domain/ConceptualGraph";
 import { Relation } from "../domain/Relation";
 import { isConcept } from "../util/ConceptUtil";
 
-export class QueryManager {
-    conceptDao: ConceptDao;
-    relationDao: RelationDao;
+export class QueryManager {    
 
-    constructor(conceptDao: ConceptDao, conceptTypeDao: ConceptTypeDao, relationDao: RelationDao, relationTypeDao: RelationTypeDao) {
-        this.conceptDao = conceptDao;
-        this.relationDao = relationDao;
-    }
-
-    executeQuery(queryCoceptualGraph: ConceptualGraph): ConceptualGraph[] {
+    executeQuery(queryCoceptualGraph: ConceptualGraph): MatchedConceptualGraph[] {
         if (queryCoceptualGraph.concepts.length > 0) {
             return this._recursiveMatchNode(queryCoceptualGraph, queryCoceptualGraph.concepts[0])
         } else {
@@ -25,7 +14,7 @@ export class QueryManager {
     }
 
     private _recursiveMatchNode(query: ConceptualGraph, queryNode: Concept | Relation, previousQueryNode?: Concept | Relation,
-        previousMatchedNode?: Concept | Relation, alreadyProcessedNodes?: (Concept | Relation)[], depth?: number): ConceptualGraph[] {
+        previousMatchedNode?: Concept | Relation, alreadyProcessedNodes?: (Concept | Relation)[], depth?: number): MatchedConceptualGraph[] {
         let spacer: string = "";
         for (let i = 0; i < depth; i++) {
             spacer += "\t";
@@ -33,17 +22,17 @@ export class QueryManager {
         // console.log(spacer + "Cur Node: " + queryNode.label);
         // console.log(spacer + "Prev Node: " + previousMatchedNode?.label);
 
-        const returnAnswerConceptualGraphs: ConceptualGraph[] = [];
+        const returnAnswerConceptualGraphs: MatchedConceptualGraph[] = [];
         if (!alreadyProcessedNodes) {
             alreadyProcessedNodes = [];
         }
         const positionInRelationArguments: number = this._getPositionInRelationArguments(previousQueryNode, queryNode);
-        const matchedNodes: (Concept | Relation)[] = this._matchNodesInDB(queryNode, previousMatchedNode, query, positionInRelationArguments);
+        const matchedNodes: (Concept | Relation)[] = this._matchNodes(queryNode, previousMatchedNode, query, positionInRelationArguments);
         // console.log(spacer + "Matched Nodes in DB: " + matchedNodes?.map((singleMatched) => { return singleMatched.label }).join(', '));
 
         if (this._isLeaf(query, queryNode, previousQueryNode, alreadyProcessedNodes) && matchedNodes?.length > 0) {
             matchedNodes.forEach((singleMatchedNode: Concept | Relation) => {
-                const newPotentailAnswerCG: ConceptualGraph = new ConceptualGraph();
+                const newPotentailAnswerCG: MatchedConceptualGraph = new MatchedConceptualGraph();
                 newPotentailAnswerCG.addConceptOrRelationIfNotExist(singleMatchedNode);
                 returnAnswerConceptualGraphs.push(newPotentailAnswerCG);
             })
@@ -54,12 +43,12 @@ export class QueryManager {
                 let nextQueryNodes: (Concept | Relation)[] = this._getNextQueryNodes(query, queryNode, previousQueryNode);
                 // console.log(spacer + "Next Query Nodes: " + nextQueryNodes?.map((singleNode) => { return singleNode.label }).join(', '));
                 if (nextQueryNodes && nextQueryNodes.length > 0) {
-                    const potentialAnswerCGs: ConceptualGraph[]
+                    const potentialAnswerCGs: MatchedConceptualGraph[]
                         = this._recursiveMatchNode(query, nextQueryNodes[0], queryNode, singleMatchedNode,
                             [...alreadyProcessedNodes, queryNode], depth ? depth + 1 : 1);
                     for (let i = 1; nextQueryNodes && i < nextQueryNodes.length; i++) {
                         const singleNextQueryNode: Concept | Relation = nextQueryNodes[i];
-                        const subPotientialAnswerCGs: ConceptualGraph[]
+                        const subPotientialAnswerCGs: MatchedConceptualGraph[]
                             = this._recursiveMatchNode(query, singleNextQueryNode, queryNode, singleMatchedNode,
                                 alreadyProcessedNodes, depth ? depth + 1 : 1);
                         potentialAnswerCGs.forEach((singlePotentialAnswer) => {
@@ -81,7 +70,7 @@ export class QueryManager {
                         })
                     }
                     if (doesMatchAllChildren) {
-                        potentialAnswerCGs.forEach((singlePotentialAnswer: ConceptualGraph) => {
+                        potentialAnswerCGs.forEach((singlePotentialAnswer: MatchedConceptualGraph) => {
                             singlePotentialAnswer.addConceptOrRelationIfNotExist(singleMatchedNode);
                             returnAnswerConceptualGraphs.push(singlePotentialAnswer);
                         });
@@ -93,6 +82,7 @@ export class QueryManager {
 
         return returnAnswerConceptualGraphs;
     }
+    
     private _getPositionInRelationArguments(conceptOrRelation: Concept | Relation, relationOrConcept: Concept | Relation): number {
         if (isConcept(conceptOrRelation)) {
             return (relationOrConcept as Relation)?.conceptArgumentLabels?.indexOf((conceptOrRelation as Concept).label);
@@ -101,34 +91,9 @@ export class QueryManager {
         }
     }
 
-    private _matchNodesInDB(queryNode: Concept | Relation, previousMatchedNode: Concept | Relation, query: ConceptualGraph,
+    protected _matchNodes(queryNode: Concept | Relation, previousMatchedNode: Concept | Relation, query: ConceptualGraph,
         positionInRelationArguments: number): (Concept | Relation)[] {
-        if ((queryNode as any).conceptTypeLabels) {
-            const matchedConcepts: Concept[] = this.conceptDao.getConceptsByExample(queryNode as Concept);
-            if (previousMatchedNode) {
-                return matchedConcepts.filter((singleMatchedConcept) => {
-                    const doesPreviousRelationMatch: boolean = positionInRelationArguments !== -1 ?
-                        (previousMatchedNode as Relation).conceptArgumentLabels[positionInRelationArguments] === singleMatchedConcept.label :
-                        ((previousMatchedNode as Relation).conceptArgumentLabels.includes(singleMatchedConcept.label));
-                    // const doesPreviousConceptMatch: boolean = 
-                    //     singleMatchedRelation.conceptArgumentLabels.includes(previousMatchedNode.label);
-                    return doesPreviousRelationMatch;
-                    // return ((previousMatchedNode as Relation).conceptArgumentLabels.includes(singleMatchedConcept.label));
-                }) ?? [];
-            } else {
-                return matchedConcepts;
-            }
-        } else {
-            const matchedRelations: Relation[] = this.relationDao.getRelationsByExample(queryNode as Relation, query);
-            return matchedRelations.filter((singleMatchedRelation) => {
-                const doesPreviousConceptMatch: boolean = positionInRelationArguments !== -1 ?
-                    singleMatchedRelation.conceptArgumentLabels[positionInRelationArguments] === previousMatchedNode.label :
-                    singleMatchedRelation.conceptArgumentLabels.includes(previousMatchedNode.label);
-                // const doesPreviousConceptMatch: boolean = 
-                //     singleMatchedRelation.conceptArgumentLabels.includes(previousMatchedNode.label);
-                return doesPreviousConceptMatch;
-            }) ?? [];
-        }
+        return [];
     }
 
     private _isLeaf(query: ConceptualGraph, queryNode: Concept | Relation, nodeToExclude: Concept | Relation, alreadyProcessedNodes?: (Concept | Relation)[]): boolean {
@@ -161,4 +126,18 @@ export class QueryManager {
         }
         return nextNodesFound;
     }
+
+}
+
+interface MatchedConcept extends Concept {
+    matchedConceptLabel: string;
+}
+
+interface MatchedRelation extends Relation {
+    matchedRelationLabel: string;
+}
+
+class MatchedConceptualGraph extends ConceptualGraph {
+    concepts: MatchedConcept[];
+    relations: MatchedRelation[];
 }
