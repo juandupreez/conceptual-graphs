@@ -169,4 +169,14 @@ export class ConceptualGraph {
         })
     }
 
+    clone(): ConceptualGraph {
+        const clonedConceptualGraph: ConceptualGraph = new ConceptualGraph();
+        clonedConceptualGraph.concepts = this.concepts.map((singleConcept) => {
+            return cloneConcept(singleConcept);
+        })
+        clonedConceptualGraph.relations = this.relations.map((singleRelation) => {
+            return cloneRelation(singleRelation);
+        })
+        return clonedConceptualGraph;
+    }
 }

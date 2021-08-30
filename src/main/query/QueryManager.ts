@@ -93,6 +93,7 @@ export class QueryManager {
 
     protected _matchNodes(queryNode: Concept | Relation, previousMatchedNode: Concept | Relation, query: ConceptualGraph,
         positionInRelationArguments: number): (Concept | Relation)[] {
+            // To be implemented in sub-classes
         return [];
     }
 
@@ -140,4 +141,16 @@ export interface MatchedRelation extends Relation {
 export class MatchedConceptualGraph extends ConceptualGraph {
     concepts: MatchedConcept[];
     relations: MatchedRelation[];
+    
+    getRelationByTemplateMatchedLabel(templateLabel: string): Relation {
+        return this.relations.find((singleRelation) => {
+            return singleRelation.templateRelationLabelWhichWasMatched === templateLabel;
+        })
+    }
+    
+    getConceptByTemplateMatchedLabel(templateLabel: string): Concept {
+        return this.concepts.find((singleConcept) => {
+            return singleConcept.templateConceptLabelWhichWasMatched === templateLabel;
+        })
+    }
 }

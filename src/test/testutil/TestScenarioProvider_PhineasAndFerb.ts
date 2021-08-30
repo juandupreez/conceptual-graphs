@@ -315,6 +315,14 @@ export class TestScenarioProvider_PhineasAndFerb {
         isabellaBetweenPhineasAndFerb.createRelation("isabella-between-phineas-and-ferb", "Between", [this.isabella, this.phineas, this.ferb]);
         this.conceptualGraphDao.createConceptualGraph(isabellaBetweenPhineasAndFerb);
     }
+    
+    getPhineasAndCandaceCG(): ConceptualGraph {
+        const fletcherFamily: ConceptualGraph = new ConceptualGraph();
+        fletcherFamily.addConcept(this.phineas);
+        fletcherFamily.addConcept(this.candace);
+        fletcherFamily.createRelation("phineas-broOf-candace", "BrotherOf", [this.phineas, this.candace]);
+        return fletcherFamily;
+    }
 
 
 
