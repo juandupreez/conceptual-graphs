@@ -3,8 +3,9 @@ import { ConceptualGraph } from "../domain/ConceptualGraph";
 import { Relation } from "../domain/Relation";
 import { ConceptualGraphQueryManager } from "../query/ConceptualGraphQueryManager";
 import { MatchedConceptualGraph } from "../query/QueryManager";
-import { isConcept } from "../util/ConceptUtil";
+import { cloneConcept, isConcept } from "../util/ConceptUtil";
 import { IdGenerator } from "../util/IdGenerator";
+import { cloneRelation } from "../util/RelationUtil";
 import { Rule, RuleType } from "./Rule"
 
 export class SaturationRule extends Rule {
@@ -56,29 +57,30 @@ export class SaturationRule extends Rule {
     private _addNewNodeToAppliedCGIfNotExists(appliedConceptualGraph: ConceptualGraph, matchedConceptualGraph: MatchedConceptualGraph,
         curConclusionNode: Concept | Relation) {
         if (isConcept(curConclusionNode)) {
-
+            this._addNewConceptToAppliedCGIfNotExists(appliedConceptualGraph, matchedConceptualGraph, curConclusionNode as Concept);
         } else {
             this._addNewRelationToAppliedCGIfNotExists(appliedConceptualGraph, matchedConceptualGraph, curConclusionNode as Relation);
         }
+    }
+    private _addNewConceptToAppliedCGIfNotExists(appliedConceptualGraph: ConceptualGraph, matchedConceptualGraph: MatchedConceptualGraph, 
+        curConclusionConcept: Concept) {
+            const matchedConcept: Concept = matchedConceptualGraph.getConceptByTemplateMatchedLabel(curConclusionConcept.label);
+            if (!matchedConcept) {
+                const newConcept: Concept = cloneConcept(curConclusionConcept);
+                appliedConceptualGraph.addConcept(newConcept);
+            }
     }
 
     private _addNewRelationToAppliedCGIfNotExists(appliedConceptualGraph: ConceptualGraph, matchedConceptualGraph: MatchedConceptualGraph,
         curConclusionRelation: Relation) {
         const matchedRelation: Relation = matchedConceptualGraph.getRelationByTemplateMatchedLabel(curConclusionRelation.label);
         if (!matchedRelation) {
-            const newRelation: Relation = new Relation();
-            newRelation.label = this._getNewRelationLabel(curConclusionRelation);
-            newRelation.relationTypeLabels = [...curConclusionRelation.relationTypeLabels];
-            newRelation.conceptArgumentLabels = this._getNewRelationConceptArgumentLabels(curConclusionRelation, matchedConceptualGraph);
+            const newRelation: Relation = {
+                ...cloneRelation(curConclusionRelation),
+                conceptArgumentLabels: this._getNewRelationConceptArgumentLabels(curConclusionRelation, matchedConceptualGraph)
+            };
             appliedConceptualGraph.addRelation(newRelation);
         }
-    }
-
-    private _getNewRelationLabel(relationTemplate: Relation): string {
-        return relationTemplate.conceptArgumentLabels[0]
-            + "-" + relationTemplate.relationTypeLabels.join("-")
-            + "-" + [...relationTemplate.conceptArgumentLabels].splice(1).join("-")
-            + "-" + IdGenerator.getInstance().getNextUniqueRelationLabelId();
     }
 
     private _getNewRelationConceptArgumentLabels(conclusionRelation: Relation, matchedConceptualGraph: MatchedConceptualGraph): string[] {
@@ -87,6 +89,8 @@ export class SaturationRule extends Rule {
             const conceptInMatchedCG: Concept = matchedConceptualGraph?.getConceptByTemplateMatchedLabel(singleConclusionLabel);
             if (conceptInMatchedCG) {
                 newArgumentLabels.push(conceptInMatchedCG.label);
+            } else {
+                newArgumentLabels.push(singleConclusionLabel);
             }
         })
         return newArgumentLabels;

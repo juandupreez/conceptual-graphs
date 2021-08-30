@@ -5,7 +5,6 @@ export class IdGenerator {
     curRelationTypeId: number = 1;
     curConceptId: number = 1;
     curRelationId: number = 1;
-    curRelationLabelId: number = 1;
     curConceptualGraphId: number = 1;
     curTestId: number = 1;
 
@@ -34,11 +33,6 @@ export class IdGenerator {
     getNextUniqueRelationId() {
         const curRelationId: number = this.curRelationId++;
         return curRelationId.toString();
-    }
-
-    getNextUniqueRelationLabelId() {
-        const curRelationLabelId: number = this.curRelationLabelId++;
-        return curRelationLabelId.toString();
     }
     
     getNextUniqueConceptualGraphId(): string {
