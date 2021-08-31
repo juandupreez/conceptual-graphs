@@ -1,5 +1,5 @@
-import { cloneConcept, isConcept } from "../util/ConceptUtil";
-import { cloneRelation } from "../util/RelationUtil";
+import { cloneConcept, conceptToString, isConcept } from "../util/ConceptUtil";
+import { cloneRelation, relationToString } from "../util/RelationUtil";
 import { Concept, DesignatorType, QuantifierType, Referent } from "./Concept";
 import { Relation } from "./Relation";
 
@@ -178,5 +178,58 @@ export class ConceptualGraph {
             return cloneRelation(singleRelation);
         })
         return clonedConceptualGraph;
+    }
+
+    toString(): string {
+        if (this.concepts && this.concepts.length > 0) {
+            return this._generateStringForNode(this.concepts[0]);
+        } else {
+            return "Empty Conceptual Graph";
+        }
+    }
+
+    private _generateStringForNode(curNode: Concept | Relation, prevNode?: Relation | Concept, curDepth?: number): string {
+        let leftPadding: string = "";
+        for (let i = 0; i < (curDepth ?? 1); i++) {
+            leftPadding += "\t";
+        }
+
+        let curNodeString: string = "";
+        if (isConcept(curNode)) {
+            curNodeString = conceptToString(curNode as Concept);
+        } else {
+            curNodeString = relationToString(curNode as Relation);
+        }
+
+        let subNodesString: string = "";
+
+        const nextNodes: (Concept | Relation)[] = this._getNextNodes(curNode, prevNode);
+
+        if (nextNodes?.length > 0) {
+            curNodeString += "->";
+        }
+        if (isConcept(curNode) && prevNode) {
+            curNodeString = "-" + curNodeString;
+        }
+        if (!isConcept(curNode) && prevNode) {
+            curNodeString = "-" + curNodeString;
+        }
+
+        nextNodes?.forEach((singleNextNode) => {
+            subNodesString += '\n' + leftPadding + this._generateStringForNode(singleNextNode, curNode, curDepth ? curDepth + 1 : 2)
+        })
+        return curNodeString + subNodesString;
+    }
+
+    private _getNextNodes(curNode: Relation | Concept, nodeToExclude: Relation | Concept): (Relation | Concept)[] {
+        const nextNodesFound: (Concept | Relation)[] = [];
+        if ((curNode as any).conceptTypeLabels) {
+            const nextRelations: Relation[] = this.getRelationsWhereConceptIsUsed(curNode as Concept, nodeToExclude as Relation);
+            nextNodesFound.push(...nextRelations);
+        } else {
+            const nextConcepts: Concept[] = this.getConceptsUsedByRelation(curNode as Relation, nodeToExclude as Concept);
+            nextNodesFound.push(...nextConcepts);
+        }
+        return nextNodesFound;
     }
 }

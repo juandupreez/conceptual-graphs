@@ -109,4 +109,17 @@ describe('ConceptualGraph', () => {
         // // conceptualGraph.addRelation(onRelation, [catConcept, matConcept]);
     })
 
+
+    fit('Test to string', () => {
+        const cg: ConceptualGraph = new ConceptualGraph();
+        
+        const flynt: Concept = cg.createConcept('Flynt', 'Bird', 'Flynt');
+        const cute: Concept = cg.createConcept('Cute', 'Cute');
+        const yellow: Concept = cg.createConcept('Yellow', 'Colour', 'Yellow');
+        cg.createRelation('flynt-attr-yellow', "Attribute", [flynt, yellow]);
+        cg.createRelation('flynt-attr-cute', "Attribute", [flynt, cute]);
+
+        console.log(cg.toString());
+    })
+
 })

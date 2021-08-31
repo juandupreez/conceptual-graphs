@@ -8,3 +8,11 @@ export function cloneRelation(relationToClone: Relation): Relation {
         conceptArgumentLabels: [...relationToClone.conceptArgumentLabels]
     } : relationToClone;
 }
+
+
+export function relationToString(relation: Relation): string {
+    let conceptString: string = "("
+        + relation.relationTypeLabels.join("/")
+        + ")";
+    return conceptString
+}

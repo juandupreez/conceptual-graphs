@@ -1,4 +1,4 @@
-import { Concept } from "../domain/Concept";
+import { Concept, DesignatorType } from "../domain/Concept";
 import { Relation } from "../domain/Relation";
 
 export function hasAnyConceptTypes(concept: Concept, possibleConceptTypeLabels: string[]): boolean {
@@ -15,7 +15,7 @@ export function hasConceptType(concept: Concept, possibleConceptTypeLabel: strin
     return concept.conceptTypeLabels.includes(possibleConceptTypeLabel);
 }
 
-export function cloneConcept(conceptToClone: Concept) {
+export function cloneConcept(conceptToClone: Concept): Concept {
     return conceptToClone ? {
         ...conceptToClone,
         id: conceptToClone.id,
@@ -23,6 +23,18 @@ export function cloneConcept(conceptToClone: Concept) {
     } : conceptToClone;
 }
 
-export function isConcept(conceptOrRelation: Concept | Relation) {
+export function isConcept(conceptOrRelation: Concept | Relation): boolean {
     return ((conceptOrRelation as Concept)?.conceptTypeLabels) ? true : false;
+}
+
+export function conceptToString(concept: Concept): string {
+    let conceptString: string = "["
+        + concept.conceptTypeLabels.join("/");
+    if (concept.referent.designatorType === DesignatorType.LAMBDA) {
+        conceptString += ": ?" + concept.referent.designatorValue;
+    } else if (concept.referent.designatorType !== DesignatorType.BLANK) {
+        conceptString += ": " + concept.referent.designatorValue;
+    }
+    conceptString += "]";
+    return conceptString;
 }

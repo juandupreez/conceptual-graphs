@@ -93,6 +93,10 @@ describe('Example ', () => {
         relationTypeDao.importHierarchyFromSimpleRelationTypes(relationTypeHierarchy);
     })
 
+    beforeEach(() => {
+        global.console = require('console');
+    })
+
     it('Conceptual graphs', () => {
         const conceptualGraph: ConceptualGraph = new ConceptualGraph();
         const graphConcept: Concept = conceptualGraph.createConcept("Graphs", "Graph", {
@@ -103,6 +107,7 @@ describe('Example ', () => {
         conceptualGraph.createRelation("graph-attr-conceptual", "Attribute", [graphConcept, conceptualConcept]);
 
         conceptualGraphDao.createConceptualGraph(conceptualGraph);
+        console.log(conceptualGraph.toString());
     })
 
     it('Say "Nightie-night"', () => {
@@ -112,6 +117,7 @@ describe('Example ', () => {
         conceptualGraph.createRelation("say-theme-phrase", "Theme", [sayConcept, phraseConcept]);
 
         conceptualGraphDao.createConceptualGraph(conceptualGraph);
+        console.log(conceptualGraph.toString());
     })
 
     it('God', () => {
@@ -119,6 +125,7 @@ describe('Example ', () => {
         const godConcept: Concept = conceptualGraph.createConcept("God", "God");
 
         conceptualGraphDao.createConceptualGraph(conceptualGraph);
+        console.log(conceptualGraph.toString());
     })
 
     it('There is a bird in a sycamore tree', () => {
@@ -128,6 +135,7 @@ describe('Example ', () => {
         conceptualGraph.createRelation("abird-in-sycamoretree", "In", [aBirdConcept, aSycamoreTreeConcept]);
 
         conceptualGraphDao.createConceptualGraph(conceptualGraph);
+        console.log(conceptualGraph.toString());
     })
 
     it('A cat is on a mat', () => {
@@ -137,6 +145,7 @@ describe('Example ', () => {
         conceptualGraph.createRelation("acat-on-ammat", "On", [aCatConcept, aMatConcept]);
 
         conceptualGraphDao.createConceptualGraph(conceptualGraph);
+        console.log(conceptualGraph.toString());
     })
 
     it('A cat is fat', () => {
@@ -146,6 +155,7 @@ describe('Example ', () => {
         conceptualGraph.createRelation("acat-attr-fat", "Attribute", [aCatConcept, fatConcept]);
 
         conceptualGraphDao.createConceptualGraph(conceptualGraph);
+        console.log(conceptualGraph.toString());
     })
 
     it('A bird is singing', () => {
@@ -155,6 +165,7 @@ describe('Example ', () => {
         conceptualGraph.createRelation("abird-agnt-sing", "Agent", [aBirdConcept, singConcept]);
 
         conceptualGraphDao.createConceptualGraph(conceptualGraph);
+        console.log(conceptualGraph.toString());
     })
 
     it('John is going to Aalborg', () => {
@@ -167,6 +178,7 @@ describe('Example ', () => {
         conceptualGraph.createRelation("go-dest-city", "Destination", [going, aalborg]);
 
         conceptualGraphDao.createConceptualGraph(conceptualGraph);
+        console.log(conceptualGraph.toString());
     })
 
     it('A book is on a table', () => {
@@ -176,6 +188,7 @@ describe('Example ', () => {
         conceptualGraph.createRelation("abook-on-atable", "Agent", [aBook, aTable]);
 
         conceptualGraphDao.createConceptualGraph(conceptualGraph);
+        console.log(conceptualGraph.toString());
     })
 
     it('There exists a person whose name is John', () => {
@@ -187,6 +200,7 @@ describe('Example ', () => {
         });
 
         conceptualGraphDao.createConceptualGraph(conceptualGraph);
+        console.log(conceptualGraph.toString());
     })
 
     it('There exists a bus', () => {
@@ -197,6 +211,7 @@ describe('Example ', () => {
         });
 
         conceptualGraphDao.createConceptualGraph(conceptualGraph);
+        console.log(conceptualGraph.toString());
     })
 
     it('Julia is between Tom and Brad', () => {
@@ -208,6 +223,7 @@ describe('Example ', () => {
         const juliaBetweenTomAndBradRelation: Relation = conceptualGraph.createRelation("julia-between-tom-and-brad", "Between", [julia, tom, brad]);
 
         conceptualGraphDao.createConceptualGraph(conceptualGraph);
+        console.log(conceptualGraph.toString());
     })
 
     it('In the past, there was this situation: A bird was singing', () => {
@@ -225,6 +241,7 @@ describe('Example ', () => {
             designatorValue: birdSingingConceptualGraph.label
         })
         birdSangConceptualGraph.createRelation("abird-sang", "Past", [situationConcept]);
+        console.log(birdSangConceptualGraph.toString());
     })
 
     it('It is possible that a bird is singing', () => {
@@ -242,6 +259,7 @@ describe('Example ', () => {
             designatorValue: birdSingingConceptualGraph.label
         })
         birdSangConceptualGraph.createRelation("abird-could-be-singing", "PossibleSituation", [situationConcept]);
+        console.log(birdSingingConceptualGraph.toString());
     })
 
 })
