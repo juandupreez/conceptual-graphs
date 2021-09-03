@@ -151,21 +151,21 @@ export class ConceptualGraph {
         })
     }
 
-    getRelationsWhereConceptIsUsed(conceptToBeUsed: Concept, relationToExclude?: Relation): Relation[] {
+    getRelationsWhereConceptIsUsed(conceptToBeUsed: Concept, nodesToExclude?: (Relation | Concept)[]): Relation[] {
         if (conceptToBeUsed) {
             return this.relations.filter((singleRelation) => {
                 return (singleRelation.conceptArgumentLabels.includes(conceptToBeUsed.label)
-                    && singleRelation !== relationToExclude);
+                    && !nodesToExclude?.includes(singleRelation));
             })
         } else {
             return [];
         }
     }
 
-    getConceptsUsedByRelation(relation: Relation, conceptToExclude: Concept): Concept[] {
+    getConceptsUsedByRelation(relation: Relation, conceptsToExclude: (Concept | Relation)[]): Concept[] {
         return this.concepts.filter((singleConcept) => {
             return (relation.conceptArgumentLabels.includes(singleConcept.label)
-                && singleConcept !== conceptToExclude);
+                && !conceptsToExclude?.includes(singleConcept));
         })
     }
 
@@ -188,7 +188,8 @@ export class ConceptualGraph {
         }
     }
 
-    private _generateStringForNode(curNode: Concept | Relation, prevNode?: Relation | Concept, curDepth?: number): string {
+    private _generateStringForNode(curNode: Concept | Relation, prevNode?: Relation | Concept, 
+        alreadyProcessedNodesInThisPath?: (Concept | Relation)[], curDepth?: number): string {
         let leftPadding: string = "";
         for (let i = 0; i < (curDepth ?? 1); i++) {
             leftPadding += "\t";
@@ -202,32 +203,35 @@ export class ConceptualGraph {
         }
 
         let subNodesString: string = "";
-
-        const nextNodes: (Concept | Relation)[] = this._getNextNodes(curNode, prevNode);
-
-        if (nextNodes?.length > 0) {
-            curNodeString += "->";
-        }
         if (isConcept(curNode) && prevNode) {
             curNodeString = "-" + curNodeString;
         }
         if (!isConcept(curNode) && prevNode) {
             curNodeString = "-" + curNodeString;
         }
+        if ((alreadyProcessedNodesInThisPath ?? []).includes(curNode)) {
+            return curNodeString;
+        }
+
+        const nextNodes: (Concept | Relation)[] = this._getNextNodes(curNode, [prevNode]);
+
+        if (nextNodes?.length > 0) {
+            curNodeString += "->";
+        }
 
         nextNodes?.forEach((singleNextNode) => {
-            subNodesString += '\n' + leftPadding + this._generateStringForNode(singleNextNode, curNode, curDepth ? curDepth + 1 : 2)
+            subNodesString += '\n' + leftPadding + this._generateStringForNode(singleNextNode, curNode, [...(alreadyProcessedNodesInThisPath ?? []), curNode], curDepth ? curDepth + 1 : 2)
         })
         return curNodeString + subNodesString;
     }
 
-    private _getNextNodes(curNode: Relation | Concept, nodeToExclude: Relation | Concept): (Relation | Concept)[] {
+    private _getNextNodes(curNode: Relation | Concept, nodesToExclude: (Relation | Concept)[]): (Relation | Concept)[] {
         const nextNodesFound: (Concept | Relation)[] = [];
         if ((curNode as any).conceptTypeLabels) {
-            const nextRelations: Relation[] = this.getRelationsWhereConceptIsUsed(curNode as Concept, nodeToExclude as Relation);
+            const nextRelations: Relation[] = this.getRelationsWhereConceptIsUsed(curNode as Concept, nodesToExclude);
             nextNodesFound.push(...nextRelations);
         } else {
-            const nextConcepts: Concept[] = this.getConceptsUsedByRelation(curNode as Relation, nodeToExclude as Concept);
+            const nextConcepts: Concept[] = this.getConceptsUsedByRelation(curNode as Relation, nodesToExclude);
             nextNodesFound.push(...nextConcepts);
         }
         return nextNodesFound;

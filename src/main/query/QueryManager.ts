@@ -101,12 +101,12 @@ export class QueryManager {
         let isLeaf: boolean = true;
         const hasAlreadyBeenProcessed: boolean = alreadyProcessedNodes?.includes(queryNode);
         if ((queryNode as any).conceptTypeLabels) {
-            const relationsWhereConceptIsUsed: Relation[] = query.getRelationsWhereConceptIsUsed(queryNode as Concept, nodeToExclude as Relation);
+            const relationsWhereConceptIsUsed: Relation[] = query.getRelationsWhereConceptIsUsed(queryNode as Concept, [nodeToExclude as Relation]);
             if (relationsWhereConceptIsUsed.length > 0) {
                 isLeaf = false;
             }
         } else {
-            const conceptsUsedByRelation: Concept[] = query.getConceptsUsedByRelation(queryNode as Relation, nodeToExclude as Concept);
+            const conceptsUsedByRelation: Concept[] = query.getConceptsUsedByRelation(queryNode as Relation, [nodeToExclude as Concept]);
             if (conceptsUsedByRelation.length > 0) {
                 isLeaf = false;
             }
@@ -119,10 +119,10 @@ export class QueryManager {
         nodeToExclude: Concept | Relation): (Concept | Relation)[] {
         const nextNodesFound: (Concept | Relation)[] = [];
         if ((queryNode as any).conceptTypeLabels) {
-            const nextRelations: Relation[] = query.getRelationsWhereConceptIsUsed(queryNode as Concept, nodeToExclude as Relation);
+            const nextRelations: Relation[] = query.getRelationsWhereConceptIsUsed(queryNode as Concept, [nodeToExclude as Relation]);
             nextNodesFound.push(...nextRelations);
         } else {
-            const nextConcepts: Concept[] = query.getConceptsUsedByRelation(queryNode as Relation, nodeToExclude as Concept);
+            const nextConcepts: Concept[] = query.getConceptsUsedByRelation(queryNode as Relation, [nodeToExclude as Concept]);
             nextNodesFound.push(...nextConcepts);
         }
         return nextNodesFound;

@@ -62,13 +62,13 @@ export class SaturationRule extends Rule {
             this._addNewRelationToAppliedCGIfNotExists(appliedConceptualGraph, matchedConceptualGraph, curConclusionNode as Relation);
         }
     }
-    private _addNewConceptToAppliedCGIfNotExists(appliedConceptualGraph: ConceptualGraph, matchedConceptualGraph: MatchedConceptualGraph, 
+    private _addNewConceptToAppliedCGIfNotExists(appliedConceptualGraph: ConceptualGraph, matchedConceptualGraph: MatchedConceptualGraph,
         curConclusionConcept: Concept) {
-            const matchedConcept: Concept = matchedConceptualGraph.getConceptByTemplateMatchedLabel(curConclusionConcept.label);
-            if (!matchedConcept) {
-                const newConcept: Concept = cloneConcept(curConclusionConcept);
-                appliedConceptualGraph.addConcept(newConcept);
-            }
+        const matchedConcept: Concept = matchedConceptualGraph.getConceptByTemplateMatchedLabel(curConclusionConcept.label);
+        if (!matchedConcept) {
+            const newConcept: Concept = cloneConcept(curConclusionConcept);
+            appliedConceptualGraph.addConcept(newConcept);
+        }
     }
 
     private _addNewRelationToAppliedCGIfNotExists(appliedConceptualGraph: ConceptualGraph, matchedConceptualGraph: MatchedConceptualGraph,
@@ -95,17 +95,17 @@ export class SaturationRule extends Rule {
         })
         return newArgumentLabels;
     }
-    
+
     private _isLeaf(conclusionNode: Concept | Relation, nodeToExclude: Relation | Concept) {
         let isLeaf: boolean = true;
         if (isConcept(conclusionNode)) {
-            const relationsWhereConceptIsUsed: Relation[] = 
-            this.conclusion.getRelationsWhereConceptIsUsed(conclusionNode as Concept, nodeToExclude as Relation);
+            const relationsWhereConceptIsUsed: Relation[] =
+                this.conclusion.getRelationsWhereConceptIsUsed(conclusionNode as Concept, [nodeToExclude as Relation]);
             if (relationsWhereConceptIsUsed.length > 0) {
                 isLeaf = false;
             }
         } else {
-            const conceptsUsedByRelation: Concept[] = this.conclusion.getConceptsUsedByRelation(conclusionNode as Relation, nodeToExclude as Concept);
+            const conceptsUsedByRelation: Concept[] = this.conclusion.getConceptsUsedByRelation(conclusionNode as Relation, [nodeToExclude as Concept]);
             if (conceptsUsedByRelation.length > 0) {
                 isLeaf = false;
             }
@@ -117,13 +117,20 @@ export class SaturationRule extends Rule {
     private _getNextNodes(conclusionNode: Concept | Relation, nodeToExclude: Relation | Concept): (Concept | Relation)[] {
         const nextNodesFound: (Concept | Relation)[] = [];
         if (isConcept(conclusionNode)) {
-            const nextRelations: Relation[] = this.conclusion.getRelationsWhereConceptIsUsed(conclusionNode as Concept, nodeToExclude as Relation);
+            const nextRelations: Relation[] = this.conclusion.getRelationsWhereConceptIsUsed(conclusionNode as Concept, [nodeToExclude as Relation]);
             nextNodesFound.push(...nextRelations);
         } else {
-            const nextConcepts: Concept[] = this.conclusion.getConceptsUsedByRelation(conclusionNode as Relation, nodeToExclude as Concept);
+            const nextConcepts: Concept[] = this.conclusion.getConceptsUsedByRelation(conclusionNode as Relation, [nodeToExclude as Concept]);
             nextNodesFound.push(...nextConcepts);
         }
         return nextNodesFound;
+    }
+
+    toString(): string {
+        return "Hypothesis:\n----------\n"
+            + this.hypothesis.toString()
+            + "\n\nConclusion:\n----------\n"
+            + this.conclusion.toString()
     }
 
 }

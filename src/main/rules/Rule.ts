@@ -12,6 +12,11 @@ export class Rule {
         return new ConceptualGraph();
     }
 
+    toString(): string {
+        return "Hypothesis:\n----------\n"
+            + this.hypothesis.toString();
+    }
+
 }
 
 export enum RuleType {

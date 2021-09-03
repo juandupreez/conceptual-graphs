@@ -31,7 +31,7 @@ export function conceptToString(concept: Concept): string {
     let conceptString: string = "["
         + concept.conceptTypeLabels.join("/");
     if (concept.referent.designatorType === DesignatorType.LAMBDA) {
-        conceptString += ": ?" + concept.referent.designatorValue;
+        conceptString += ": ?" + concept.label;
     } else if (concept.referent.designatorType !== DesignatorType.BLANK) {
         conceptString += ": " + concept.referent.designatorValue;
     }

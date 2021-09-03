@@ -13,12 +13,11 @@ module.exports = {
 
         "**/test/domain/ConceptualGraph.test.ts",
         "**/test/examples/tutorial.test.ts",
-        // "**/test/examples/cogui-tutorial.test.ts",
         
         "**/test/query/DBQueryManager_NonNestedQueries.test.ts",
         "**/test/query/CGQueryManager_NonNestedQueries.test.ts",
 
-        "**/test/rules/SaturationRule.test.ts",
+        // "**/test/rules/SaturationRule.test.ts",
         
     ],
     "transform": {
