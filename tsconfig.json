@@ -1,17 +1,19 @@
 {
     "compilerOptions": {
         "esModuleInterop": true,
-        // "outDir": "build",
-        "outFile": "build/index.js",
+        "outDir": "build",
+        // "outFile": "build/conceptual-graphs.js",
         "declaration": true,
         // "declarationDir": "./types",
         // "module": "amd",
-        "module": "system",
+        // "module": "amd",
         "moduleResolution": "node",
         // "composite": true,
-        "sourceMap": true
+        // "sourceMap": true,
+        "rootDir": "src/main"
     },
     "include": [
-        "src/**/*"
+        // "conceptual-graphs.ts",
+        "src/main/**/*"
     ]
 }

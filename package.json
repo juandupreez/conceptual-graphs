@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "main": "./build/conceptual-graphs.js",
+  "types": "./build/conceptual-graphs.d.ts",
   "scripts": {
     "test": "jest",
     "build": "tsc"
