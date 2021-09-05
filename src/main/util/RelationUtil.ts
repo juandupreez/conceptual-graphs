@@ -13,6 +13,7 @@ export function cloneRelation(relationToClone: Relation): Relation {
 export function relationToString(relation: Relation): string {
     let conceptString: string = "("
         + relation.relationTypeLabels.join("/")
+        + " - \"" + relation.label + "\""
         + ")";
     return conceptString
 }

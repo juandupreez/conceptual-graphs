@@ -20,6 +20,12 @@ export class SaturationRule extends Rule {
     applyRule(inputConceptualGraph: ConceptualGraph): ConceptualGraph {
         const appliedConceptualGraph: ConceptualGraph = inputConceptualGraph.clone();
         const matchedConceptualGraphs: MatchedConceptualGraph[] = this._getAllConceptualGraphsWhichMatchHypothesis(inputConceptualGraph);
+        // console.log("\n\nMatched Conceptual Graphs (" + (matchedConceptualGraphs?.length ?? 0) + ")\n------------\n");
+        matchedConceptualGraphs?.forEach((singleMatchedCocneptualGraph, index) => {
+            // console.log("\nMatched Graph: " + (index + 1) + "\n" + singleMatchedCocneptualGraph.toString());
+
+        })
+
         this._applyConclusionToMatchedGraphs(appliedConceptualGraph, matchedConceptualGraphs);
         return appliedConceptualGraph;
     }
@@ -40,15 +46,16 @@ export class SaturationRule extends Rule {
     }
 
     private _recursivelyApplyConclusionNode(appliedConceptualGraph: ConceptualGraph, matchedConceptualGraph: MatchedConceptualGraph,
-        curConclusionNode: Concept | Relation, prevConclusionNode?: Relation | Concept) {
+        curConclusionNode: Concept | Relation, prevConclusionNode?: Relation | Concept, alreadyProcessedNodesInThisPath?: (Concept | Relation)[]) {
         if (!appliedConceptualGraph || !matchedConceptualGraph || !curConclusionNode) {
             return;
         }
         this._addNewNodeToAppliedCGIfNotExists(appliedConceptualGraph, matchedConceptualGraph, curConclusionNode);
-        if (!this._isLeaf(curConclusionNode, prevConclusionNode)) {
+        if (!this._isLeaf(curConclusionNode, [...(alreadyProcessedNodesInThisPath ?? []), prevConclusionNode])) {
             const nextConclusionNodes: (Concept | Relation)[] = this._getNextNodes(curConclusionNode, prevConclusionNode);
             nextConclusionNodes?.forEach((singleNextConclusionNode) => {
-                this._recursivelyApplyConclusionNode(appliedConceptualGraph, matchedConceptualGraph, singleNextConclusionNode, curConclusionNode);
+                this._recursivelyApplyConclusionNode(appliedConceptualGraph, matchedConceptualGraph, singleNextConclusionNode, curConclusionNode,
+                    alreadyProcessedNodesInThisPath ? [...alreadyProcessedNodesInThisPath, curConclusionNode] : [curConclusionNode]);
             })
         }
 
@@ -67,7 +74,7 @@ export class SaturationRule extends Rule {
         const matchedConcept: Concept = matchedConceptualGraph.getConceptByTemplateMatchedLabel(curConclusionConcept.label);
         if (!matchedConcept) {
             const newConcept: Concept = cloneConcept(curConclusionConcept);
-            appliedConceptualGraph.addConcept(newConcept);
+            appliedConceptualGraph.addConceptIfNotExist(newConcept);
         }
     }
 
@@ -77,10 +84,27 @@ export class SaturationRule extends Rule {
         if (!matchedRelation) {
             const newRelation: Relation = {
                 ...cloneRelation(curConclusionRelation),
+                label: this._getNewRelationLabel(curConclusionRelation, matchedConceptualGraph),
                 conceptArgumentLabels: this._getNewRelationConceptArgumentLabels(curConclusionRelation, matchedConceptualGraph)
             };
-            appliedConceptualGraph.addRelation(newRelation);
+            appliedConceptualGraph.addRelationIfNotExist(newRelation);
         }
+    }
+
+    private _getNewRelationLabel(conclusionRelation: Relation, matchedConceptualGraph: MatchedConceptualGraph): string {
+        let newRelationLabel: string = "";
+        const firstConceptArgumentLabel: string =
+            matchedConceptualGraph?.getConceptByTemplateMatchedLabel(conclusionRelation?.conceptArgumentLabels[0])?.label ??
+            conclusionRelation?.conceptArgumentLabels[0];
+        newRelationLabel = firstConceptArgumentLabel + "-";
+        newRelationLabel += conclusionRelation?.relationTypeLabels?.join('_');
+        for (let i = 1; i < conclusionRelation?.conceptArgumentLabels?.length; i++) {
+            const singleArgumentLabel = conclusionRelation.conceptArgumentLabels[i];
+            newRelationLabel += "-" + (matchedConceptualGraph?.getConceptByTemplateMatchedLabel(singleArgumentLabel)?.label ??
+                singleArgumentLabel);
+
+        }
+        return newRelationLabel;
     }
 
     private _getNewRelationConceptArgumentLabels(conclusionRelation: Relation, matchedConceptualGraph: MatchedConceptualGraph): string[] {
@@ -96,16 +120,16 @@ export class SaturationRule extends Rule {
         return newArgumentLabels;
     }
 
-    private _isLeaf(conclusionNode: Concept | Relation, nodeToExclude: Relation | Concept) {
+    private _isLeaf(conclusionNode: Concept | Relation, nodesToExclude: (Relation | Concept)[]) {
         let isLeaf: boolean = true;
         if (isConcept(conclusionNode)) {
             const relationsWhereConceptIsUsed: Relation[] =
-                this.conclusion.getRelationsWhereConceptIsUsed(conclusionNode as Concept, [nodeToExclude as Relation]);
+                this.conclusion.getRelationsWhereConceptIsUsed(conclusionNode as Concept, nodesToExclude);
             if (relationsWhereConceptIsUsed.length > 0) {
                 isLeaf = false;
             }
         } else {
-            const conceptsUsedByRelation: Concept[] = this.conclusion.getConceptsUsedByRelation(conclusionNode as Relation, [nodeToExclude as Concept]);
+            const conceptsUsedByRelation: Concept[] = this.conclusion.getConceptsUsedByRelation(conclusionNode as Relation, nodesToExclude);
             if (conceptsUsedByRelation.length > 0) {
                 isLeaf = false;
             }

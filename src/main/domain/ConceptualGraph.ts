@@ -16,10 +16,14 @@ export class ConceptualGraph {
 
     addConceptsIfNotExist(concepts: Concept[]) {
         concepts?.forEach((singleConceptToAdd) => {
-            if (!this.getConceptByLabel(singleConceptToAdd.label)) {
-                this.addConcept(singleConceptToAdd);
-            }
+            this.addConceptIfNotExist(singleConceptToAdd);
         })
+    }
+
+    addConceptIfNotExist(concept: Concept) {
+        if (!this.getConceptByLabel(concept.label)) {
+            this.addConcept(concept);
+        }
     }
 
     addRelation(relation: Relation, conceptArgs?: Concept[]) {
@@ -37,10 +41,13 @@ export class ConceptualGraph {
 
     addRelationsIfNotExist(relations: Relation[]) {
         relations?.forEach((singleRelationToAdd) => {
-            if (!this.getRelationByLabel(singleRelationToAdd.label)) {
-                this.addRelation(singleRelationToAdd);
-            }
+            this.addRelationIfNotExist(singleRelationToAdd);
         })
+    }
+    addRelationIfNotExist(relation: Relation) {
+        if (!this.getRelationByLabel(relation.label)) {
+            this.addRelation(relation);
+        }
     }
 
     addConceptOrRelation(conceptOrRelation: Concept | Relation) {
@@ -189,7 +196,7 @@ export class ConceptualGraph {
     }
 
     private _generateStringForNode(curNode: Concept | Relation, prevNode?: Relation | Concept, 
-        alreadyProcessedNodesInThisPath?: (Concept | Relation)[], curDepth?: number): string {
+        alreadyProcessedNodes?: (Concept | Relation)[], curDepth?: number): string {
         let leftPadding: string = "";
         for (let i = 0; i < (curDepth ?? 1); i++) {
             leftPadding += "\t";
@@ -209,8 +216,14 @@ export class ConceptualGraph {
         if (!isConcept(curNode) && prevNode) {
             curNodeString = "-" + curNodeString;
         }
-        if ((alreadyProcessedNodesInThisPath ?? []).includes(curNode)) {
+        if ((alreadyProcessedNodes ?? []).includes(curNode)) {
             return curNodeString;
+        }
+        if (alreadyProcessedNodes) {
+            alreadyProcessedNodes.push(curNode);
+        } else {
+            
+            alreadyProcessedNodes = [curNode];
         }
 
         const nextNodes: (Concept | Relation)[] = this._getNextNodes(curNode, [prevNode]);
@@ -220,7 +233,7 @@ export class ConceptualGraph {
         }
 
         nextNodes?.forEach((singleNextNode) => {
-            subNodesString += '\n' + leftPadding + this._generateStringForNode(singleNextNode, curNode, [...(alreadyProcessedNodesInThisPath ?? []), curNode], curDepth ? curDepth + 1 : 2)
+            subNodesString += '\n' + leftPadding + this._generateStringForNode(singleNextNode, curNode, alreadyProcessedNodes, curDepth ? curDepth + 1 : 2)
         })
         return curNodeString + subNodesString;
     }

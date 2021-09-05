@@ -19,7 +19,7 @@ const conceptDao: ConceptDao = new InMemoryConceptDao(conceptTypeDao);
 
 describe('ConceptualGraph', () => {
 
-    it('Add single concept', () => {
+    xit('Add single concept', () => {
         // const conceptualGraph: ConceptualGraph = new ConceptualGraph();
         // conceptTypeDao.createConceptType("Entity");
         // const singleConcept: Concept = conceptDao.createConcept("NewConcept", ["Entity"], "Referent");
@@ -80,7 +80,7 @@ describe('ConceptualGraph', () => {
         // conceptualGraph.addRelation(onRelation, [catConcept, matConcept]);
     })
 
-    it('The cat is on the mat 2', () => {
+    xit('The cat is on the mat 2', () => {
         // const conceptualGraph: ConceptualGraph = new ConceptualGraph();
         // const conceptTypeHierarchy: SimpleConceptType[] = [{
         //     label: "Entity",
@@ -110,7 +110,7 @@ describe('ConceptualGraph', () => {
     })
 
 
-    fit('Test to string', () => {
+    xit('Test to string', () => {
         const cg: ConceptualGraph = new ConceptualGraph();
         
         const flynt: Concept = cg.createConcept('Flynt', 'Bird', 'Flynt');
@@ -119,7 +119,7 @@ describe('ConceptualGraph', () => {
         cg.createRelation('flynt-attr-yellow', "Attribute", [flynt, yellow]);
         cg.createRelation('flynt-attr-cute', "Attribute", [flynt, cute]);
 
-        console.log(cg.toString());
+        // console.log(cg.toString());
     })
 
 })
