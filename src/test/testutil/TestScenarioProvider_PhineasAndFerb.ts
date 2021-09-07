@@ -350,5 +350,18 @@ export class TestScenarioProvider_PhineasAndFerb {
 
         return phineasFerbAndFriends;
     }
+    
+    getBaljeetFriendsOfPhineasAndFerbCG(): ConceptualGraph {
+        const baljeetFriendsOfPhineasAndFerb: ConceptualGraph = new ConceptualGraph();
+
+        const phineas: Concept = baljeetFriendsOfPhineasAndFerb.createConcept("Phineas", "Boy", "Phineas");
+        const ferb: Concept = baljeetFriendsOfPhineasAndFerb.createConcept("Ferb", "Boy", "Ferb");
+        
+        const baljeet: Concept = baljeetFriendsOfPhineasAndFerb.createConcept("Baljeet", "Boy", "Baljeet");
+        baljeetFriendsOfPhineasAndFerb.createRelation("baljeet-friendOf-phineas", "FriendOf", [baljeet, phineas]);
+        baljeetFriendsOfPhineasAndFerb.createRelation("baljeet-friendOf-ferb", "FriendOf", [baljeet, ferb]);
+        
+        return baljeetFriendsOfPhineasAndFerb;
+    }
 
 }

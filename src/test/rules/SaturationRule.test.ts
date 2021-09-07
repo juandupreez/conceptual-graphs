@@ -284,4 +284,75 @@ describe('Simple saturation', () => {
 
     })
 
+    fit('Concepts with the same Concept Types are identified via label', () => {
+        // RUle: If Baljeet is friends with Phineas and Ferb
+        //  then Phineas is sibling of Ferb
+        //  and Ferb is friendly
+        // Create Rule: If Human A is friends with Human B and Human C, 
+        //  then Human B is sibling of Human C 
+        //  and Human C is friendly
+        // Rule: If Phineas is brother of Candace, then Ferb is brother of Candace
+        // Create rule: if boy is brother of girl then ferb is brother of girl
+        const queryManager: ConceptualGraphQueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
+        const ifHumanAIsFriendsWithHumanBAndC: Rule = new SaturationRule(queryManager);
+
+        // Create Hypothesis: If Human A is friends with Human B and Human C
+        const humanFriendsOfHumansHypothesis: ConceptualGraph = new ConceptualGraph();
+        const someHumanA: Concept = humanFriendsOfHumansHypothesis.createConcept("SomeHumanA", "Human", DesignatorType.LAMBDA);
+        const someHumanB: Concept = humanFriendsOfHumansHypothesis.createConcept("SomeHumanB", "Human", DesignatorType.LAMBDA);
+        const someHumanC: Concept = humanFriendsOfHumansHypothesis.createConcept("SomeHumanC", "Human", DesignatorType.LAMBDA);
+        humanFriendsOfHumansHypothesis.createRelation("humana-friendof-humanb", "FriendOf", [someHumanA, someHumanB]);
+        humanFriendsOfHumansHypothesis.createRelation("humana-friendof-humanC", "FriendOf", [someHumanA, someHumanC]);
+        ifHumanAIsFriendsWithHumanBAndC.hypothesis = humanFriendsOfHumansHypothesis;
+
+        // Create Conclusion: then Human B is sibling of Human C 
+        //  and Human C is friendly
+        const siblingAndFriendlyConclusion: ConceptualGraph = new ConceptualGraph();
+        siblingAndFriendlyConclusion.addConcept(someHumanB);
+        siblingAndFriendlyConclusion.addConcept(someHumanC);
+        const friendly: Concept = siblingAndFriendlyConclusion.createConcept("Friendly", "Property");
+        siblingAndFriendlyConclusion.createRelation("humanb-siblingof-humanc", "SiblingOf", [someHumanB, someHumanC]);
+        siblingAndFriendlyConclusion.createRelation("humanc-attr-friendly", "Attribute", [someHumanC, friendly]);
+        ifHumanAIsFriendsWithHumanBAndC.conclusion = siblingAndFriendlyConclusion;
+
+        // Create Phineas and Candace Conceptual Graph
+        const phineasAndCandaceCG: ConceptualGraph = testScenarioProvider_PhineasAndFerb.getBaljeetFriendsOfPhineasAndFerbCG();
+
+        // Apply Rule
+        const saturatedBaljeetCG: ConceptualGraph = ifHumanAIsFriendsWithHumanBAndC.applyRule(phineasAndCandaceCG);
+
+        // Expect Phineas to be sibling of Ferb
+        expect(saturatedBaljeetCG.getRelationByLabel("Phineas-SiblingOf-Ferb")).toEqual({
+            id: undefined,
+            label: "Phineas-SiblingOf-Ferb",
+            relationTypeLabels: ["SiblingOf"],
+            conceptArgumentLabels: ["Phineas", "Ferb"]
+        });
+
+        // Expect Ferb to be sibling of Phineas
+        expect(saturatedBaljeetCG.getRelationByLabel("Ferb-SiblingOf-Phineas")).toEqual({
+            id: undefined,
+            label: "Ferb-SiblingOf-Phineas",
+            relationTypeLabels: ["SiblingOf"],
+            conceptArgumentLabels: ["Ferb", "Phineas"]
+        });
+
+        // Expect Phineas to be friendly
+        expect(saturatedBaljeetCG.getRelationByLabel("Phineas-Attribute-Friendly")).toEqual({
+            id: undefined,
+            label: "Phineas-Attribute-Friendly",
+            relationTypeLabels: ["Attribute"],
+            conceptArgumentLabels: ["Phineas", "Friendly"]
+        });
+
+        // Expect Ferb to be friendly
+        expect(saturatedBaljeetCG.getRelationByLabel("Ferb-Attribute-Friendly")).toEqual({
+            id: undefined,
+            label: "Ferb-Attribute-Friendly",
+            relationTypeLabels: ["Attribute"],
+            conceptArgumentLabels: ["Ferb", "Friendly"]
+        });
+
+    })
+
 })
