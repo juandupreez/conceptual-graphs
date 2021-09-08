@@ -19,6 +19,7 @@ import { SaturationRule } from "../../main/rules/SaturationRule";
 import { IdGenerator } from "../../main/util/IdGenerator";
 import { TestScenarioProvider_FlyntTheBird } from "../testutil/TestScenarioProvider_FlyntTheBird";
 import { TestScenarioProvider_PhineasAndFerb } from "../testutil/TestScenarioProvider_PhineasAndFerb";
+import { doesConceptualGraphAContainAllNodesOfConceptualGraphB } from "../../main/util/ConceptualGraphUtil";
 
 const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
 const relationTypeDao: RelationTypeDao = new InMemoryRelationTypeDao(conceptTypeDao);
@@ -284,7 +285,58 @@ describe('Simple saturation', () => {
 
     })
 
-    fit('Concepts with the same Concept Types are identified via label', () => {
+    it('Saturated graph should contain all nodes of the original graph', () => {
+        // Rule: If Human is friend of Phineas and friend of Ferb, 
+        //  then that Human is friend of Candace 
+        //      and Candace is friend of that Human
+        //      and Human is Friend of Perry the Platypus owned by Phineas and Ferb and Candace
+        //      and that Human is friendly
+        const queryManager: ConceptualGraphQueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
+        const ifHumanIsFriendOfPhineasAndFerb: Rule = new SaturationRule(queryManager);
+
+        // Create Hypothesis: If Human is friend of Phineas and friend of Ferb
+        const boyBroOfGirlHypothesis: ConceptualGraph = new ConceptualGraph();
+        const someHuman: Concept = boyBroOfGirlHypothesis.createConcept("SomeHuman", "Human", DesignatorType.LAMBDA);
+        const phineas: Concept = boyBroOfGirlHypothesis.createConcept("Phineas", "Boy", "Phineas");
+        const ferb: Concept = boyBroOfGirlHypothesis.createConcept("Ferb", "Boy", "Ferb");
+        boyBroOfGirlHypothesis.createRelation("somehuman-friendof-phineas", "FriendOf", [someHuman, phineas]);
+        boyBroOfGirlHypothesis.createRelation("somehuman-friendof-ferb", "FriendOf", [someHuman, ferb]);
+        ifHumanIsFriendOfPhineasAndFerb.hypothesis = boyBroOfGirlHypothesis;
+
+        // Create Conclusion: then that Human is friend of Candace 
+        //  and Candace is friend of that Human
+        //  and Human is friend of Perry the Platypus owned by Phineas and Ferb and Candace
+        //  and Human is friendly
+        const friendOfCandaceAndPerryConclusion: ConceptualGraph = new ConceptualGraph();
+        friendOfCandaceAndPerryConclusion.addConcept(someHuman);
+        friendOfCandaceAndPerryConclusion.addConcept(phineas);
+        friendOfCandaceAndPerryConclusion.addConcept(ferb);
+        const candace: Concept = friendOfCandaceAndPerryConclusion.createConcept("Candace", "Girl", "Candace");
+        const perry: Concept = friendOfCandaceAndPerryConclusion.createConcept("PerryThePlatypus", "Platypus", "Perry");
+        const friendly: Concept = friendOfCandaceAndPerryConclusion.createConcept("Friendly", "Property", "Friendly");
+        friendOfCandaceAndPerryConclusion.createRelation("human-friendOf-candace", "FriendOf", [someHuman, candace]);
+        friendOfCandaceAndPerryConclusion.createRelation("candace-friendOf-human", "FriendOf", [candace, someHuman]);
+        friendOfCandaceAndPerryConclusion.createRelation("human-friendOf-perry", "FriendOf", [someHuman, perry]);
+        friendOfCandaceAndPerryConclusion.createRelation("phineas-ownsPet-perry", "OwnsPet", [phineas, perry]);
+        friendOfCandaceAndPerryConclusion.createRelation("ferb-ownsPet-perry", "OwnsPet", [ferb, perry]);
+        friendOfCandaceAndPerryConclusion.createRelation("candace-ownsPet-perry", "OwnsPet", [candace, perry]);
+        friendOfCandaceAndPerryConclusion.createRelation("human-attr-friendly", "Attribute", [someHuman, friendly]);
+        ifHumanIsFriendOfPhineasAndFerb.conclusion = friendOfCandaceAndPerryConclusion;
+
+        // Create Phineas and Ferb Friends Conceptual Graph
+        const phineasFerbAndFriendsCG: ConceptualGraph = testScenarioProvider_PhineasAndFerb.getPhineasFerbAndFriendsCG();
+
+        // Apply Rule
+        const saturatedFriendsCG: ConceptualGraph = ifHumanIsFriendOfPhineasAndFerb.applyRule(phineasFerbAndFriendsCG);
+
+        // Saturated graph must still have all nodes of previous graph
+        expect(doesConceptualGraphAContainAllNodesOfConceptualGraphB(
+            phineasFerbAndFriendsCG,
+            saturatedFriendsCG
+        )).toBe(true);
+    })
+
+    it('Concepts with the same Concept Types are identified via label', () => {
         // RUle: If Baljeet is friends with Phineas and Ferb
         //  then Phineas is sibling of Ferb
         //  and Ferb is friendly
