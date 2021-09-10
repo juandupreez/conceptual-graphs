@@ -455,4 +455,40 @@ describe('Simple saturation', () => {
         expect(saturatedPhineasAndCandaceCG.concepts[2]).toEqual(testScenarioProvider_PhineasAndFerb.ferb);
     })
 
+    it('Must create a copy and not adjust the original', () => {
+        // Rule: If Phineas is brother of Candace, then Ferb is brother of Candace
+        // Create rule: if boy is brother of girl then ferb is brother of girl
+        const queryManager: ConceptualGraphQueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
+        const ifBoyBroOfGirlThenOtherBoyBroOfGirlRule: Rule = new SaturationRule(queryManager);
+
+        // Create Hypothesis: if boy is brother of girl
+        const boyBroOfGirlHypothesis: ConceptualGraph = new ConceptualGraph();
+        const someBoy: Concept = boyBroOfGirlHypothesis.createConcept("SomeBoy", "Boy", DesignatorType.LAMBDA);
+        const someGirl: Concept = boyBroOfGirlHypothesis.createConcept("SomeGirl", "Girl", DesignatorType.LAMBDA);
+        boyBroOfGirlHypothesis.createRelation("someboy-broof-somegirl", "BrotherOf", [someBoy, someGirl]);
+        ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.hypothesis = boyBroOfGirlHypothesis;
+
+        // Create Conclusion: then Ferb is brother of girl
+        const girlBroOfBoyConclusion: ConceptualGraph = new ConceptualGraph();
+        girlBroOfBoyConclusion.addConcept(someGirl);
+        girlBroOfBoyConclusion.addConcept(testScenarioProvider_PhineasAndFerb.ferb);
+        girlBroOfBoyConclusion.createRelation("ferb-broof-somegirl", "BrotherOf", [testScenarioProvider_PhineasAndFerb.ferb, someGirl]);
+        ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.conclusion = girlBroOfBoyConclusion;
+
+        // Create Phineas and Candace Conceptual Graph
+        const originalPhineasAndCandaceCG: ConceptualGraph = testScenarioProvider_PhineasAndFerb.getPhineasAndCandaceCG();
+        const clonePhineasAndCandaceCG: ConceptualGraph = originalPhineasAndCandaceCG.clone();
+
+        // Apply Rule
+        const saturatedPhineasAndCandaceCG: ConceptualGraph = ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.applyRule(originalPhineasAndCandaceCG);
+
+        // Expect original to be the same
+        expect(originalPhineasAndCandaceCG).toEqual(clonePhineasAndCandaceCG);
+        expect(originalPhineasAndCandaceCG).not.toEqual(saturatedPhineasAndCandaceCG);
+
+        // Expect addition of concept to saturated graph not to reflect in original graph
+        saturatedPhineasAndCandaceCG.createConcept("ShouldNotBeInOriginal", "Unwanted");
+        expect(originalPhineasAndCandaceCG.getConceptByLabel("ShouldNotBeInOriginal")).toBeUndefined();
+    })
+
 })
