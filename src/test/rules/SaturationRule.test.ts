@@ -407,4 +407,52 @@ describe('Simple saturation', () => {
 
     })
 
+    it('If a concept or relation already exists, do not create a new one', () => {
+        // Rule: If Phineas is brother of Candace, then Ferb is brother of Candace
+        // Create rule: if boy is brother of girl then ferb is brother of girl
+        const queryManager: ConceptualGraphQueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
+        const ifBoyBroOfGirlThenOtherBoyBroOfGirlRule: Rule = new SaturationRule(queryManager);
+
+        // Create Hypothesis: if boy is brother of girl
+        const boyBroOfGirlHypothesis: ConceptualGraph = new ConceptualGraph();
+        const someBoy: Concept = boyBroOfGirlHypothesis.createConcept("SomeBoy", "Boy", DesignatorType.LAMBDA);
+        const someGirl: Concept = boyBroOfGirlHypothesis.createConcept("SomeGirl", "Girl", DesignatorType.LAMBDA);
+        boyBroOfGirlHypothesis.createRelation("someboy-broof-somegirl", "BrotherOf", [someBoy, someGirl]);
+        ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.hypothesis = boyBroOfGirlHypothesis;
+
+        // Create Conclusion: then Ferb is brother of girl
+        const girlBroOfBoyConclusion: ConceptualGraph = new ConceptualGraph();
+        girlBroOfBoyConclusion.addConcept(someGirl);
+        girlBroOfBoyConclusion.addConcept(testScenarioProvider_PhineasAndFerb.ferb);
+        girlBroOfBoyConclusion.createRelation("ferb-broof-somegirl", "BrotherOf", [testScenarioProvider_PhineasAndFerb.ferb, someGirl]);
+        ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.conclusion = girlBroOfBoyConclusion;
+
+        // Create Phineas and Candace Conceptual Graph WITH Conclusion Already In Place
+        const phineasAndCandaceCG: ConceptualGraph = testScenarioProvider_PhineasAndFerb.getPhineasAndCandaceCG();
+        phineasAndCandaceCG.addConcept(testScenarioProvider_PhineasAndFerb.ferb);
+        phineasAndCandaceCG.createRelation("Ferb-BrotherOf-Candace", "BrotherOf", [testScenarioProvider_PhineasAndFerb.ferb, testScenarioProvider_PhineasAndFerb.candace])
+
+        // Apply Rule
+        const saturatedPhineasAndCandaceCG: ConceptualGraph = ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.applyRule(phineasAndCandaceCG);
+
+        // Expect there to be two brother relations
+        expect(saturatedPhineasAndCandaceCG.relations.length).toBe(2);
+        expect(saturatedPhineasAndCandaceCG.relations[0]).toEqual({
+            ...relationDao.getRelationByLabel("phineas-broOf-candace"),
+            id: undefined,
+        });
+        expect(saturatedPhineasAndCandaceCG.relations[1]).toEqual({
+            id: undefined,
+            label: "Ferb-BrotherOf-Candace",
+            relationTypeLabels: ["BrotherOf"],
+            conceptArgumentLabels: ["Ferb", "Candace"]
+        });
+
+        // Expect ferb to have been added
+        expect(saturatedPhineasAndCandaceCG.concepts.length).toBe(3);
+        expect(saturatedPhineasAndCandaceCG.concepts[0]).toEqual(testScenarioProvider_PhineasAndFerb.phineas);
+        expect(saturatedPhineasAndCandaceCG.concepts[1]).toEqual(testScenarioProvider_PhineasAndFerb.candace);
+        expect(saturatedPhineasAndCandaceCG.concepts[2]).toEqual(testScenarioProvider_PhineasAndFerb.ferb);
+    })
+
 })
