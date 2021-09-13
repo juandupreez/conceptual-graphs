@@ -1,6 +1,6 @@
 {
   "name": "conceptual-graphs",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Conceptual Graph common structure and functions as a subclass of Knowledge Graphs",
   "main": "./build/conceptual-graphs.js",
   "types": "./build/conceptual-graphs.d.ts",
