@@ -8,7 +8,22 @@
     "test": "jest",
     "build": "tsc"
   },
-  "author": "",
+  "keywords": [
+    "conceptual-graphs",
+    "conceptual-graph",
+    "conceptual graphs",
+    "conceptual graph",
+    "conceptual",
+    "concept type",
+    "concept types",
+    "relation type",
+    "relation types",
+    "concept",
+    "concepts",
+    "relation",
+    "relations"
+  ],
+  "author": "juan.dupreez82@gmail.com",
   "license": "ISC",
   "devDependencies": {
     "@types/jest": "^26.0.24",
