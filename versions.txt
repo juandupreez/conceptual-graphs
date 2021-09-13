@@ -3,6 +3,13 @@
 -    0.1.0
 -
 --------------
+Remove dependencies from published package
+
+--------------
+-
+-    0.1.0
+-
+--------------
 Initial Release
 Features:
 - A simple strucuture for conceptual graphs
