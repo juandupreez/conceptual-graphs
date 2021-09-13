@@ -8,7 +8,6 @@ before_deploy:
   - git config --local user.email "juan.du.preez@advance.io"
   - export TRAVIS_TAG=conceptual-graphs-$(node -e 'process.stdout.write(require("./package.json").version)')
   - git tag $TRAVIS_TAG
-  - git push --tags
 
 deploy:
   provider: npm
