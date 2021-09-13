@@ -1,0 +1,20 @@
+--------------
+-
+-    0.1.0
+-
+--------------
+Initial Release
+Features:
+- A simple strucuture for conceptual graphs
+    - Concept Type
+    - Relation Type
+    - Concepts
+    - Relations
+    - Conceptual graphs
+- In Memory DB Daos for all items
+- Search Queries
+    - For DB
+    - For Conceptual Graph Objects
+- Rules
+    - Saturation rule which adds new nodes if any matches to hypothesis
+
