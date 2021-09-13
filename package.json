@@ -1,6 +1,6 @@
 {
   "name": "conceptual-graphs",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "",
   "main": "./build/conceptual-graphs.js",
   "types": "./build/conceptual-graphs.d.ts",
