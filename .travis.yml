@@ -15,6 +15,6 @@ deploy:
   on:
     branch: master
   skip_cleanup: true
-  tag: lastest
+  tag: latest
   api_key:
     secure: f02SW8bSLCOaeSleiOivrhgIhEqoOlDm023b/DvcBGf8W4cdac7EHJbmKtKm+i1UVGrmRJPoAxGOxbrKUhp2g2E8rYRjHgoTQC3uKCiRxt9Zl9NV+Mk+BGFATxJ6/f11bIJCL8fLLN0OjD2CFnhshncAgaxNInz1vfsnXr4+r0sKqcPRyffglmjtdUy4x8mlyenFxIHUOBLbFMk/GkBtRBcQFioz6oSUD6aO1G9yy+F/EEW7rCnnxt6RvHThkHGerEe3CiiZbm7cKTJuhdVkZJBTIA5Pg/mDWLaNdQZ58c2Rq/qa/Ljofw2j6BnYH5AFrFccxQM43A/RIdDhW/zauf/JM0j56aMCvfD+IGyTJD96y9IU0kmdnxysa4hOGplrzjBLL81Rx//T6mpsg/95pSeOHwGGJnIYAqh6SaSa9sxAB8DQRgLlHEdx30jM7xkmNe1FVC3TOn6zlcpQuMMmqTp7J/UUHd55Z2Ge7lQ3jT+jW7zLdzVAEz+Ar5LwYvK7vYLMkm5LyKJFvr5tHEd0hja2D5bhBgCQQKh8CyHxHjuBAooyZKgPeTAsMWfUbuHuU7BwemOrFDHp8IRY8+9oxNZHgiILG56YoUKmKpNPAEoSIG851FloaxRPyGnS+9lvWpunyxDLG+LHbS4Zv58lwJIrmLyXGbAk9mL6HgjpVbI=
