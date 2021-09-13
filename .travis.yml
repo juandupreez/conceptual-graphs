@@ -1,7 +1,20 @@
 language: node_js
 node_js:
 - 12
-before_deploy: npm run build
+
+before_install:
+  - export TRAVIS_TAG=conceptual-graphs-$(node -e 'process.stdout.write(require("./package.json").version)')
+  # - export TRAVIS_TAG=${conceptual-graphs-$(date +'%Y%m%d%H%M%S')-$(git log --format=%h -1)}
+  - echo $TRAVIS_TAG
+
+before_deploy: 
+  - npm run build      
+  - git config --local user.name "juandupreez"
+  - git config --local user.email "juan.du.preez@advance.io"
+  - export TRAVIS_TAG=${conceptual-graphs-$(npm run version)}
+  - git tag $TRAVIS_TAG
+  - git push --tags
+
 deploy:
   provider: npm
   email: juan.dupreez82@gmail.com
