@@ -1,13 +1,13 @@
 // Domain
-import { ConceptType } from "./domain/ConceptType";;
-import { RelationType } from "./domain/RelationType";
-import { Concept, Referent, QuantifierType, DesignatorType } from "./domain/Concept";
-import { Relation } from "./domain/Relation";
+import { ConceptType, SimpleConceptType } from "./domain/ConceptType";;
+import { RelationType, SimpleRelationType } from "./domain/RelationType";
+import { Concept, SimpleConcept, Referent, QuantifierType, DesignatorType } from "./domain/Concept";
+import { Relation, SimpleRelation } from "./domain/Relation";
 import { ConceptualGraph } from "./domain/ConceptualGraph";
 
 // Dao Interfaces
-import { ConceptTypeDao, SimpleConceptType, NoSuchConceptTypeError, UniqueConceptTypeViolationError } from "./dao/ConceptTypeDao";
-import { RelationTypeDao, SimpleRelationType, NoSuchRelationTypeError, UniqueRelationTypeViolationError } from "./dao/RelationTypeDao";
+import { ConceptTypeDao, NoSuchConceptTypeError, UniqueConceptTypeViolationError } from "./dao/ConceptTypeDao";
+import { RelationTypeDao, NoSuchRelationTypeError, UniqueRelationTypeViolationError } from "./dao/RelationTypeDao";
 import { ConceptDao } from "./dao/ConceptDao";
 import { RelationDao } from "./dao/RelationDao";
 import { ConceptualGraphDao } from "./dao/ConceptualGraphDao";
@@ -32,13 +32,13 @@ import { ConceptualGraphQueryManager } from "./query/ConceptualGraphQueryManager
 import { Rule, RuleType } from "./rules/Rule";
 import { SaturationRule } from "./rules/SaturationRule";
 
-export { ConceptType };
-export { RelationType };
-export { Concept, Referent, QuantifierType, DesignatorType };
-export { Relation };
+export { ConceptType, SimpleConceptType };
+export { RelationType, SimpleRelationType };
+export { Concept, SimpleConcept, Referent, QuantifierType, DesignatorType };
+export { Relation, SimpleRelation };
 export { ConceptualGraph };
-export { ConceptTypeDao, SimpleConceptType, NoSuchConceptTypeError, UniqueConceptTypeViolationError };
-export { RelationTypeDao, SimpleRelationType, NoSuchRelationTypeError, UniqueRelationTypeViolationError };
+export { ConceptTypeDao, NoSuchConceptTypeError, UniqueConceptTypeViolationError };
+export { RelationTypeDao, NoSuchRelationTypeError, UniqueRelationTypeViolationError };
 export { ConceptDao };
 export { RelationDao };
 export { ConceptualGraphDao };
