@@ -1,9 +1,4 @@
-import { ConceptType } from "../domain/ConceptType";
-
-export interface SimpleConceptType {
-    label: string;
-    subConceptTypes?: SimpleConceptType[]
-}
+import { ConceptType, SimpleConceptType } from "../domain/ConceptType";
 export interface ConceptTypeDao {
     createConceptType(newLabel: string, parentLabels?: string[]): ConceptType;
     getConceptTypeById(conceptTypeId: string): ConceptType;

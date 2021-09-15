@@ -1,6 +1,6 @@
 import { ConceptDao } from "../../main/dao/ConceptDao";
-import { ConceptTypeDao, SimpleConceptType } from "../../main/dao/ConceptTypeDao";
-import { RelationTypeDao, SimpleRelationType } from "../../main/dao/RelationTypeDao";
+import { ConceptTypeDao } from "../../main/dao/ConceptTypeDao";
+import { RelationTypeDao } from "../../main/dao/RelationTypeDao";
 import { InMemoryConceptDao } from "../../main/dao/inmemory/InMemoryConceptDao";
 import { InMemoryConceptTypeDao } from "../../main/dao/inmemory/InMemoryConceptTypeDao";
 import { InMemoryRelationTypeDao } from "../../main/dao/inmemory/InMemoryRelationTypeDao";
@@ -112,7 +112,7 @@ describe('ConceptualGraph', () => {
 
     xit('Test to string', () => {
         const cg: ConceptualGraph = new ConceptualGraph();
-        
+
         const flynt: Concept = cg.createConcept('Flynt', 'Bird', 'Flynt');
         const cute: Concept = cg.createConcept('Cute', 'Cute');
         const yellow: Concept = cg.createConcept('Yellow', 'Colour', 'Yellow');

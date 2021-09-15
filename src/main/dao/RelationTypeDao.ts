@@ -1,10 +1,5 @@
-import { RelationType } from "../domain/RelationType";
+import { RelationType, SimpleRelationType } from "../domain/RelationType";
 
-export interface SimpleRelationType {
-    label: string;
-    signature: string[];
-    subRelationTypes?: SimpleRelationType[];
-}
 export interface RelationTypeDao {
     createRelationType(newLabel: string, signatureConceptTypeLabels: string[], parentLabels?: string[]): RelationType;
     getRelationTypeById(relationTypeId: string): RelationType;

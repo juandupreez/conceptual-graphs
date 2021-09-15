@@ -1,6 +1,6 @@
-import { ConceptType } from "../../domain/ConceptType";
+import { ConceptType, SimpleConceptType } from "../../domain/ConceptType";
 import { IdGenerator } from "../../util/IdGenerator";
-import { ConceptTypeDao, SimpleConceptType, NoSuchConceptTypeError, UniqueConceptTypeViolationError } from "../ConceptTypeDao";
+import { ConceptTypeDao, NoSuchConceptTypeError, UniqueConceptTypeViolationError } from "../ConceptTypeDao";
 import { Store } from "./store/Store";
 
 export class InMemoryConceptTypeDao implements ConceptTypeDao {

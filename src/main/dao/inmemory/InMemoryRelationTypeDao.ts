@@ -1,9 +1,9 @@
 import { ConceptType } from "../../domain/ConceptType";
-import { RelationType } from "../../domain/RelationType";
+import { RelationType, SimpleRelationType } from "../../domain/RelationType";
 import { IdGenerator } from "../../util/IdGenerator";
 import { ConceptTypeDao, NoSuchConceptTypeError } from "../ConceptTypeDao";
 import { NoSuchRelationTypeError, UniqueRelationTypeViolationError } from "../RelationTypeDao";
-import { RelationTypeDao, SimpleRelationType } from "../RelationTypeDao";
+import { RelationTypeDao } from "../RelationTypeDao";
 import { Store } from "./store/Store";
 
 export class InMemoryRelationTypeDao implements RelationTypeDao {
@@ -63,9 +63,9 @@ export class InMemoryRelationTypeDao implements RelationTypeDao {
                 }
                 if (signatureConceptTypeLabels.length !== parentRelationType.signature.length) {
                     throw new Error('Could not create relation type with label: '
-                    +   newRelationTypeLabel
-                    + '. Signature needs the same number of concept types as parent'
-                    + parentRelationTypeLabel + '" (Signature: ' + parentRelationType.signature + ')');
+                        + newRelationTypeLabel
+                        + '. Signature needs the same number of concept types as parent'
+                        + parentRelationTypeLabel + '" (Signature: ' + parentRelationType.signature + ')');
                 }
             })
         }

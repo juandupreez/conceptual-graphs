@@ -1,9 +1,9 @@
 import { ConceptDao } from "../../main/dao/ConceptDao";
-import { ConceptTypeDao, SimpleConceptType } from "../../main/dao/ConceptTypeDao";
+import { ConceptTypeDao } from "../../main/dao/ConceptTypeDao";
 import { InMemoryConceptDao } from "../../main/dao/inmemory/InMemoryConceptDao";
 import { InMemoryConceptTypeDao } from "../../main/dao/inmemory/InMemoryConceptTypeDao";
 import { InMemoryRelationTypeDao } from "../../main/dao/inmemory/InMemoryRelationTypeDao";
-import { RelationTypeDao, SimpleRelationType } from "../../main/dao/RelationTypeDao";
+import { RelationTypeDao } from "../../main/dao/RelationTypeDao";
 import { RelationDao } from "../../main/dao/RelationDao";
 import { InMemoryRelationDao } from "../../main/dao/inmemory/InMemoryRelationDao";
 import { ConceptualGraph } from "../../main/domain/ConceptualGraph";
@@ -12,6 +12,8 @@ import { Relation } from "../../main/domain/Relation";
 import { ConceptualGraphDao } from "../../main/dao/ConceptualGraphDao";
 import { InMemoryConceptualGraphDao } from "../../main/dao/inmemory/InMemoryConceptualGraphDao";
 import { IdGenerator } from "../../main/util/IdGenerator";
+import { SimpleRelationType } from "../../main/domain/RelationType";
+import { SimpleConceptType } from "../../main/domain/ConceptType";
 
 const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
 const relationTypeDao: RelationTypeDao = new InMemoryRelationTypeDao(conceptTypeDao);

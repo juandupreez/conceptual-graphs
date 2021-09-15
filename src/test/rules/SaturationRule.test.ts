@@ -1,5 +1,5 @@
 import { ConceptDao } from "../../main/dao/ConceptDao";
-import { ConceptTypeDao, SimpleConceptType } from "../../main/dao/ConceptTypeDao"
+import { ConceptTypeDao } from "../../main/dao/ConceptTypeDao"
 import { ConceptualGraphDao } from "../../main/dao/ConceptualGraphDao";
 import { InMemoryConceptDao } from "../../main/dao/inmemory/InMemoryConceptDao"
 import { InMemoryConceptTypeDao } from "../../main/dao/inmemory/InMemoryConceptTypeDao"
@@ -7,7 +7,7 @@ import { InMemoryConceptualGraphDao } from "../../main/dao/inmemory/InMemoryConc
 import { InMemoryRelationDao } from "../../main/dao/inmemory/InMemoryRelationDao";
 import { InMemoryRelationTypeDao } from "../../main/dao/inmemory/InMemoryRelationTypeDao";
 import { RelationDao } from "../../main/dao/RelationDao";
-import { RelationTypeDao, SimpleRelationType } from "../../main/dao/RelationTypeDao";
+import { RelationTypeDao } from "../../main/dao/RelationTypeDao";
 import { Concept, DesignatorType, QuantifierType } from "../../main/domain/Concept";
 import { ConceptualGraph } from "../../main/domain/ConceptualGraph";
 import { Relation } from "../../main/domain/Relation";

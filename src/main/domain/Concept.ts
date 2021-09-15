@@ -1,5 +1,8 @@
-import { ConceptType } from "./ConceptType";
-
+export interface SimpleConcept {
+    label: string;
+    conceptTypeLabels: string[];
+    referent: Referent | string;
+}
 export class Concept {
     id: string;
     label: string;

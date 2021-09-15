@@ -1,5 +1,5 @@
-import { ConceptType } from "../../main/domain/ConceptType";
-import { ConceptTypeDao, SimpleConceptType } from "../../main/dao/ConceptTypeDao";
+import { ConceptType, SimpleConceptType } from "../../main/domain/ConceptType";
+import { ConceptTypeDao } from "../../main/dao/ConceptTypeDao";
 import { InMemoryConceptTypeDao } from "../../main/dao/inmemory/InMemoryConceptTypeDao";
 import { IdGenerator } from "../../main/util/IdGenerator";
 

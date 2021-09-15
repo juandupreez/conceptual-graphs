@@ -1,3 +1,10 @@
+
+export interface SimpleRelationType {
+    label: string;
+    signature: string[];
+    subRelationTypes?: SimpleRelationType[];
+}
+
 export class RelationType {
     id: string;
     label: string;
