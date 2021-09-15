@@ -491,4 +491,35 @@ describe('Simple saturation', () => {
         expect(originalPhineasAndCandaceCG.getConceptByLabel("ShouldNotBeInOriginal")).toBeUndefined();
     })
 
+    it('When no matches for hypothesis, return a copy of the original graph', () => {
+        // Rule: If Phineas is brother of Candace, then Ferb is brother of Candace
+        // Create rule: if boy is brother of girl then ferb is brother of girl
+        const queryManager: ConceptualGraphQueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
+        const ifBoyBroOfGirlThenOtherBoyBroOfGirlRule: Rule = new SaturationRule(queryManager);
+
+        // Create Hypothesis: if boy is brother of girl
+        const boyBroOfGirlHypothesis: ConceptualGraph = new ConceptualGraph();
+        const someBoy: Concept = boyBroOfGirlHypothesis.createConcept("SomeBoy", "Boy", DesignatorType.LAMBDA);
+        const someGirl: Concept = boyBroOfGirlHypothesis.createConcept("SomeGirl", "Girl", DesignatorType.LAMBDA);
+        boyBroOfGirlHypothesis.createRelation("someboy-broof-somegirl", "BrotherOf", [someBoy, someGirl]);
+        ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.hypothesis = boyBroOfGirlHypothesis;
+
+        // Create Conclusion: then Ferb is brother of girl
+        const girlBroOfBoyConclusion: ConceptualGraph = new ConceptualGraph();
+        girlBroOfBoyConclusion.addConcept(someGirl);
+        girlBroOfBoyConclusion.addConcept(testScenarioProvider_PhineasAndFerb.ferb);
+        girlBroOfBoyConclusion.createRelation("ferb-broof-somegirl", "BrotherOf", [testScenarioProvider_PhineasAndFerb.ferb, someGirl]);
+        ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.conclusion = girlBroOfBoyConclusion;
+
+        // Create flynt is yellow
+        const flyntIsYellowCG: ConceptualGraph = testScenarioProvider_FlyntTheBird.getConcept_flyntTheBirdIsColourYellow(testId);
+
+        // Apply Rule
+        const saturatedFlyntIsYellowCG: ConceptualGraph = ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.applyRule(flyntIsYellowCG);
+
+        // Expect original to be the same as saturated
+        expect(flyntIsYellowCG).toEqual(saturatedFlyntIsYellowCG);
+        
+    })
+
 })

@@ -21,10 +21,9 @@ export class SaturationRule extends Rule {
         const appliedConceptualGraph: ConceptualGraph = inputConceptualGraph.clone();
         const matchedConceptualGraphs: MatchedConceptualGraph[] = this._getAllConceptualGraphsWhichMatchHypothesis(inputConceptualGraph);
         // console.log("\n\nMatched Conceptual Graphs (" + (matchedConceptualGraphs?.length ?? 0) + ")\n------------\n");
-        matchedConceptualGraphs?.forEach((singleMatchedCocneptualGraph, index) => {
-            // console.log("\nMatched Graph: " + (index + 1) + "\n" + singleMatchedCocneptualGraph.toString());
-
-        })
+        // matchedConceptualGraphs?.forEach((singleMatchedCocneptualGraph, index) => {
+        //     console.log("\nMatched Graph: " + (index + 1) + "\n" + singleMatchedCocneptualGraph.toString());
+        // })
 
         this._applyConclusionToMatchedGraphs(appliedConceptualGraph, matchedConceptualGraphs);
         return appliedConceptualGraph;
