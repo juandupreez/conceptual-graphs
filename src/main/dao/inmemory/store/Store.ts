@@ -1,8 +1,8 @@
+import { SimpleConceptualGraph } from "../../../conceptual-graphs";
 import { Concept } from "../../../domain/Concept";
 import { ConceptType } from "../../../domain/ConceptType";
 import { Relation } from "../../../domain/Relation";
 import { RelationType } from "../../../domain/RelationType";
-import { SimpleConceptualGraph } from "../InMemoryConceptualGraphDao";
 
 class ConceptualGraphState {
     conceptTypes: ConceptType[] = [];

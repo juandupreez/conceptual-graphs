@@ -1,5 +1,5 @@
 import { Concept } from "../../domain/Concept";
-import { ConceptualGraph } from "../../domain/ConceptualGraph";
+import { ConceptualGraph, SimpleConceptualGraph } from "../../domain/ConceptualGraph";
 import { Relation } from "../../domain/Relation";
 import { IdGenerator } from "../../util/IdGenerator";
 import { ConceptDao } from "../ConceptDao";
@@ -7,12 +7,6 @@ import { ConceptualGraphDao } from "../ConceptualGraphDao";
 import { RelationDao } from "../RelationDao";
 import { Store } from "./store/Store";
 
-export class SimpleConceptualGraph {
-    id?: string;
-    label: string;
-    conceptLabels: string[] = [];
-    relationLabels: string[] = [];
-}
 export class InMemoryConceptualGraphDao implements ConceptualGraphDao {
     conceptDao: ConceptDao;
     relationDao: RelationDao;

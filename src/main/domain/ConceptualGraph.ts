@@ -3,6 +3,13 @@ import { cloneRelation, relationToString } from "../util/RelationUtil";
 import { Concept, DesignatorType, QuantifierType, Referent } from "./Concept";
 import { Relation } from "./Relation";
 
+export class SimpleConceptualGraph {
+    id?: string;
+    label: string;
+    conceptLabels: string[] = [];
+    relationLabels: string[] = [];
+}
+
 export class ConceptualGraph {
 
     concepts: Concept[] = [];
