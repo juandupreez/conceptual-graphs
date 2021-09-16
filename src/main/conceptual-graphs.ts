@@ -31,6 +31,7 @@ import { ConceptualGraphQueryManager } from "./query/ConceptualGraphQueryManager
 // Rule
 import { Rule, RuleType } from "./rules/Rule";
 import { SaturationRule } from "./rules/SaturationRule";
+import { ExtractionRule } from "./rules/ExtractionRule";
 
 export { ConceptType, SimpleConceptType };
 export { RelationType, SimpleRelationType };
@@ -54,3 +55,4 @@ export { DatabaseQueryManager };
 export { ConceptualGraphQueryManager };
 export { Rule, RuleType };
 export { SaturationRule };
+export { ExtractionRule };

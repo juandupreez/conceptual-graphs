@@ -1,4 +1,5 @@
 import { Relation } from "../domain/Relation";
+import { MatchedRelation } from "../query/QueryManager";
 
 export function cloneRelation(relationToClone: Relation): Relation {
     return relationToClone ? {
@@ -16,4 +17,10 @@ export function relationToString(relation: Relation): string {
         + " - \"" + relation.label + "\""
         + ")";
     return conceptString
+}
+
+export function matchedRelationToRelation(matchedRelation: MatchedRelation): Relation {
+    const matchedRelationClone: MatchedRelation = (cloneRelation(matchedRelation) as MatchedRelation);
+    delete matchedRelationClone.templateRelationLabelWhichWasMatched;
+    return matchedRelationClone;
 }

@@ -1,5 +1,6 @@
 import { Concept, DesignatorType } from "../domain/Concept";
 import { Relation } from "../domain/Relation";
+import { MatchedConcept } from "../query/QueryManager";
 
 export function hasAnyConceptTypes(concept: Concept, possibleConceptTypeLabels: string[]): boolean {
     for (let i = 0; i < possibleConceptTypeLabels.length; i++) {
@@ -37,4 +38,10 @@ export function conceptToString(concept: Concept): string {
     }
     conceptString += "]";
     return conceptString;
+}
+
+export function matchedConceptToConcept(matchedConcept: MatchedConcept): Concept {
+    const matchedConceptClone: MatchedConcept = (cloneConcept(matchedConcept) as MatchedConcept);
+    delete matchedConceptClone.templateConceptLabelWhichWasMatched;
+    return matchedConceptClone;
 }
