@@ -265,241 +265,200 @@ describe('Simple extraction', () => {
 
     })
 
-    // it('extracted graph should contain all nodes of the original graph', () => {
-    //     // Rule: If Human is friend of Phineas and friend of Ferb, 
-    //     //  then that Human is friend of Candace 
-    //     //      and Candace is friend of that Human
-    //     //      and Human is Friend of Perry the Platypus owned by Phineas and Ferb and Candace
-    //     //      and that Human is friendly
-    //     const queryManager: ConceptualGraphQueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
-    //     const ifHumanIsFriendOfPhineasAndFerb: Rule = new ExtractionRule(queryManager);
+    it('Extracted graph should contain no nodes of the original graph unless they are in conclusion', () => {
+        // Rule: If Human is friend of Phineas and friend of Ferb, 
+        //  then that Human is friend of Candace 
+        //      and Candace is friend of that Human
+        //      and Human is Friend of Perry the Platypus owned by Candace
+        //      and that Human is friendly
+        const queryManager: ConceptualGraphQueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
+        const ifHumanIsFriendOfPhineasAndFerb: Rule = new ExtractionRule(queryManager);
 
-    //     // Create Hypothesis: If Human is friend of Phineas and friend of Ferb
-    //     const boyBroOfGirlHypothesis: ConceptualGraph = new ConceptualGraph();
-    //     const someHuman: Concept = boyBroOfGirlHypothesis.createConcept("SomeHuman", "Human", DesignatorType.LAMBDA);
-    //     const phineas: Concept = boyBroOfGirlHypothesis.createConcept("Phineas", "Boy", "Phineas");
-    //     const ferb: Concept = boyBroOfGirlHypothesis.createConcept("Ferb", "Boy", "Ferb");
-    //     boyBroOfGirlHypothesis.createRelation("somehuman-friendof-phineas", "FriendOf", [someHuman, phineas]);
-    //     boyBroOfGirlHypothesis.createRelation("somehuman-friendof-ferb", "FriendOf", [someHuman, ferb]);
-    //     ifHumanIsFriendOfPhineasAndFerb.hypothesis = boyBroOfGirlHypothesis;
+        // Create Hypothesis: If Human is friend of Phineas and friend of Ferb
+        const boyBroOfGirlHypothesis: ConceptualGraph = new ConceptualGraph();
+        const someHuman: Concept = boyBroOfGirlHypothesis.createConcept("SomeHuman", "Human", DesignatorType.LAMBDA);
+        const phineas: Concept = boyBroOfGirlHypothesis.createConcept("Phineas", "Boy", "Phineas");
+        const ferb: Concept = boyBroOfGirlHypothesis.createConcept("Ferb", "Boy", "Ferb");
+        boyBroOfGirlHypothesis.createRelation("somehuman-friendof-phineas", "FriendOf", [someHuman, phineas]);
+        boyBroOfGirlHypothesis.createRelation("somehuman-friendof-ferb", "FriendOf", [someHuman, ferb]);
+        ifHumanIsFriendOfPhineasAndFerb.hypothesis = boyBroOfGirlHypothesis;
 
-    //     // Create Conclusion: then that Human is friend of Candace 
-    //     //  and Candace is friend of that Human
-    //     //  and Human is friend of Perry the Platypus owned by Phineas and Ferb and Candace
-    //     //  and Human is friendly
-    //     const friendOfCandaceAndPerryConclusion: ConceptualGraph = new ConceptualGraph();
-    //     friendOfCandaceAndPerryConclusion.addConcept(someHuman);
-    //     friendOfCandaceAndPerryConclusion.addConcept(phineas);
-    //     friendOfCandaceAndPerryConclusion.addConcept(ferb);
-    //     const candace: Concept = friendOfCandaceAndPerryConclusion.createConcept("Candace", "Girl", "Candace");
-    //     const perry: Concept = friendOfCandaceAndPerryConclusion.createConcept("PerryThePlatypus", "Platypus", "Perry");
-    //     const friendly: Concept = friendOfCandaceAndPerryConclusion.createConcept("Friendly", "Property", "Friendly");
-    //     friendOfCandaceAndPerryConclusion.createRelation("human-friendOf-candace", "FriendOf", [someHuman, candace]);
-    //     friendOfCandaceAndPerryConclusion.createRelation("candace-friendOf-human", "FriendOf", [candace, someHuman]);
-    //     friendOfCandaceAndPerryConclusion.createRelation("human-friendOf-perry", "FriendOf", [someHuman, perry]);
-    //     friendOfCandaceAndPerryConclusion.createRelation("phineas-ownsPet-perry", "OwnsPet", [phineas, perry]);
-    //     friendOfCandaceAndPerryConclusion.createRelation("ferb-ownsPet-perry", "OwnsPet", [ferb, perry]);
-    //     friendOfCandaceAndPerryConclusion.createRelation("candace-ownsPet-perry", "OwnsPet", [candace, perry]);
-    //     friendOfCandaceAndPerryConclusion.createRelation("human-attr-friendly", "Attribute", [someHuman, friendly]);
-    //     ifHumanIsFriendOfPhineasAndFerb.conclusion = friendOfCandaceAndPerryConclusion;
+        // Create Conclusion: then that Human is friend of Candace 
+        //  and Candace is friend of that Human
+        //  and Human is friend of Perry the Platypus owned by Candace
+        //  and Human is friendly
+        const friendOfCandaceAndPerryConclusion: ConceptualGraph = new ConceptualGraph();
+        friendOfCandaceAndPerryConclusion.addConcept(someHuman);
+        const candace: Concept = friendOfCandaceAndPerryConclusion.createConcept("Candace", "Girl", "Candace");
+        const perry: Concept = friendOfCandaceAndPerryConclusion.createConcept("PerryThePlatypus", "Platypus", "Perry");
+        const friendly: Concept = friendOfCandaceAndPerryConclusion.createConcept("Friendly", "Property", "Friendly");
+        friendOfCandaceAndPerryConclusion.createRelation("human-friendOf-candace", "FriendOf", [someHuman, candace]);
+        friendOfCandaceAndPerryConclusion.createRelation("candace-friendOf-human", "FriendOf", [candace, someHuman]);
+        friendOfCandaceAndPerryConclusion.createRelation("human-friendOf-perry", "FriendOf", [someHuman, perry]);
+        friendOfCandaceAndPerryConclusion.createRelation("candace-ownsPet-perry", "OwnsPet", [candace, perry]);
+        friendOfCandaceAndPerryConclusion.createRelation("human-attr-friendly", "Attribute", [someHuman, friendly]);
+        ifHumanIsFriendOfPhineasAndFerb.conclusion = friendOfCandaceAndPerryConclusion;
 
-    //     // Create Phineas and Ferb Friends Conceptual Graph
-    //     const phineasFerbAndFriendsCG: ConceptualGraph = testScenarioProvider_PhineasAndFerb.getPhineasFerbAndFriendsCG();
+        // Create Phineas and Ferb Friends Conceptual Graph
+        const phineasFerbAndFriendsCG: ConceptualGraph = testScenarioProvider_PhineasAndFerb.getPhineasFerbAndFriendsCG();
 
-    //     // Apply Rule
-    //     const extractedFriendsCG: ConceptualGraph = ifHumanIsFriendOfPhineasAndFerb.applyRule(phineasFerbAndFriendsCG);
+        // Apply Rule
+        const extractedFriendsCG: ConceptualGraph = ifHumanIsFriendOfPhineasAndFerb.applyRule(phineasFerbAndFriendsCG);
 
-    //     // extracted graph must still have all nodes of previous graph
-    //     expect(doesConceptualGraphAContainAllNodesOfConceptualGraphB(
-    //         phineasFerbAndFriendsCG,
-    //         extractedFriendsCG
-    //     )).toBe(true);
-    // })
+        // Extracted graph must not be same as original
+        expect(doesConceptualGraphAContainAllNodesOfConceptualGraphB(
+            phineasFerbAndFriendsCG,
+            extractedFriendsCG
+        )).toBe(false);
 
-    // it('Concepts with the same Concept Types are identified via label', () => {
-    //     // RUle: If Baljeet is friends with Phineas and Ferb
-    //     //  then Phineas is sibling of Ferb
-    //     //  and Ferb is friendly
-    //     // Create Rule: If Human A is friends with Human B and Human C, 
-    //     //  then Human B is sibling of Human C 
-    //     //  and Human C is friendly
-    //     // Rule: If Phineas is brother of Candace, then Ferb is brother of Candace
-    //     // Create rule: if boy is brother of girl then ferb is brother of girl
-    //     const queryManager: ConceptualGraphQueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
-    //     const ifHumanAIsFriendsWithHumanBAndC: Rule = new ExtractionRule(queryManager);
+        // Nodes which are in original but not in Rule's conclusion must not be in Extracted graph
+        expect(extractedFriendsCG.getConceptByLabel("Phineas")).toBeUndefined();
+        expect(extractedFriendsCG.getConceptByLabel("Ferb")).toBeUndefined();
+        expect(extractedFriendsCG.getRelationByLabel("baljeet-friendOf-phineas")).toBeUndefined();
+        expect(extractedFriendsCG.getRelationByLabel("baljeet-friendOf-ferb")).toBeUndefined();
+        expect(extractedFriendsCG.getRelationByLabel("buford-friendOf-phineas")).toBeUndefined();
+        expect(extractedFriendsCG.getRelationByLabel("buford-friendOf-ferb")).toBeUndefined();
+        expect(extractedFriendsCG.getRelationByLabel("isabella-friendOf-phineas")).toBeUndefined();
+        expect(extractedFriendsCG.getRelationByLabel("isabella-friendOf-ferb")).toBeUndefined();
+    })
 
-    //     // Create Hypothesis: If Human A is friends with Human B and Human C
-    //     const humanFriendsOfHumansHypothesis: ConceptualGraph = new ConceptualGraph();
-    //     const someHumanA: Concept = humanFriendsOfHumansHypothesis.createConcept("SomeHumanA", "Human", DesignatorType.LAMBDA);
-    //     const someHumanB: Concept = humanFriendsOfHumansHypothesis.createConcept("SomeHumanB", "Human", DesignatorType.LAMBDA);
-    //     const someHumanC: Concept = humanFriendsOfHumansHypothesis.createConcept("SomeHumanC", "Human", DesignatorType.LAMBDA);
-    //     humanFriendsOfHumansHypothesis.createRelation("humana-friendof-humanb", "FriendOf", [someHumanA, someHumanB]);
-    //     humanFriendsOfHumansHypothesis.createRelation("humana-friendof-humanC", "FriendOf", [someHumanA, someHumanC]);
-    //     ifHumanAIsFriendsWithHumanBAndC.hypothesis = humanFriendsOfHumansHypothesis;
+    it('Concepts with the same Concept Types are identified via label', () => {
+        // RUle: If Baljeet is friends with Phineas and Ferb
+        //  then Phineas is sibling of Ferb
+        //  and Ferb is friendly
+        // Create Rule: If Human A is friends with Human B and Human C, 
+        //  then Human B is sibling of Human C 
+        //  and Human C is friendly
+        // Rule: If Phineas is brother of Candace, then Ferb is brother of Candace
+        // Create rule: if boy is brother of girl then ferb is brother of girl
+        const queryManager: ConceptualGraphQueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
+        const ifHumanAIsFriendsWithHumanBAndC: Rule = new ExtractionRule(queryManager);
 
-    //     // Create Conclusion: then Human B is sibling of Human C 
-    //     //  and Human C is friendly
-    //     const siblingAndFriendlyConclusion: ConceptualGraph = new ConceptualGraph();
-    //     siblingAndFriendlyConclusion.addConcept(someHumanB);
-    //     siblingAndFriendlyConclusion.addConcept(someHumanC);
-    //     const friendly: Concept = siblingAndFriendlyConclusion.createConcept("Friendly", "Property");
-    //     siblingAndFriendlyConclusion.createRelation("humanb-siblingof-humanc", "SiblingOf", [someHumanB, someHumanC]);
-    //     siblingAndFriendlyConclusion.createRelation("humanc-attr-friendly", "Attribute", [someHumanC, friendly]);
-    //     ifHumanAIsFriendsWithHumanBAndC.conclusion = siblingAndFriendlyConclusion;
+        // Create Hypothesis: If Human A is friends with Human B and Human C
+        const humanFriendsOfHumansHypothesis: ConceptualGraph = new ConceptualGraph();
+        const someHumanA: Concept = humanFriendsOfHumansHypothesis.createConcept("SomeHumanA", "Human", DesignatorType.LAMBDA);
+        const someHumanB: Concept = humanFriendsOfHumansHypothesis.createConcept("SomeHumanB", "Human", DesignatorType.LAMBDA);
+        const someHumanC: Concept = humanFriendsOfHumansHypothesis.createConcept("SomeHumanC", "Human", DesignatorType.LAMBDA);
+        humanFriendsOfHumansHypothesis.createRelation("humana-friendof-humanb", "FriendOf", [someHumanA, someHumanB]);
+        humanFriendsOfHumansHypothesis.createRelation("humana-friendof-humanC", "FriendOf", [someHumanA, someHumanC]);
+        ifHumanAIsFriendsWithHumanBAndC.hypothesis = humanFriendsOfHumansHypothesis;
 
-    //     // Create Phineas and Candace Conceptual Graph
-    //     const phineasAndCandaceCG: ConceptualGraph = testScenarioProvider_PhineasAndFerb.getBaljeetFriendsOfPhineasAndFerbCG();
+        // Create Conclusion: then Human B is sibling of Human C 
+        //  and Human C is friendly
+        const siblingAndFriendlyConclusion: ConceptualGraph = new ConceptualGraph();
+        siblingAndFriendlyConclusion.addConcept(someHumanB);
+        siblingAndFriendlyConclusion.addConcept(someHumanC);
+        const friendly: Concept = siblingAndFriendlyConclusion.createConcept("Friendly", "Property");
+        siblingAndFriendlyConclusion.createRelation("humanb-siblingof-humanc", "SiblingOf", [someHumanB, someHumanC]);
+        siblingAndFriendlyConclusion.createRelation("humanc-attr-friendly", "Attribute", [someHumanC, friendly]);
+        ifHumanAIsFriendsWithHumanBAndC.conclusion = siblingAndFriendlyConclusion;
 
-    //     // Apply Rule
-    //     const extractedBaljeetCG: ConceptualGraph = ifHumanAIsFriendsWithHumanBAndC.applyRule(phineasAndCandaceCG);
+        // Create Phineas and Candace Conceptual Graph
+        const phineasAndCandaceCG: ConceptualGraph = testScenarioProvider_PhineasAndFerb.getBaljeetFriendsOfPhineasAndFerbCG();
 
-    //     // Expect Phineas to be sibling of Ferb
-    //     expect(extractedBaljeetCG.getRelationByLabel("Phineas-SiblingOf-Ferb")).toEqual({
-    //         id: undefined,
-    //         label: "Phineas-SiblingOf-Ferb",
-    //         relationTypeLabels: ["SiblingOf"],
-    //         conceptArgumentLabels: ["Phineas", "Ferb"]
-    //     });
+        // Apply Rule
+        const extractedBaljeetCG: ConceptualGraph = ifHumanAIsFriendsWithHumanBAndC.applyRule(phineasAndCandaceCG);
 
-    //     // Expect Ferb to be sibling of Phineas
-    //     expect(extractedBaljeetCG.getRelationByLabel("Ferb-SiblingOf-Phineas")).toEqual({
-    //         id: undefined,
-    //         label: "Ferb-SiblingOf-Phineas",
-    //         relationTypeLabels: ["SiblingOf"],
-    //         conceptArgumentLabels: ["Ferb", "Phineas"]
-    //     });
+        // Expect Phineas to be sibling of Ferb
+        expect(extractedBaljeetCG.getRelationByLabel("Phineas-SiblingOf-Ferb")).toEqual({
+            id: undefined,
+            label: "Phineas-SiblingOf-Ferb",
+            relationTypeLabels: ["SiblingOf"],
+            conceptArgumentLabels: ["Phineas", "Ferb"]
+        });
 
-    //     // Expect Phineas to be friendly
-    //     expect(extractedBaljeetCG.getRelationByLabel("Phineas-Attribute-Friendly")).toEqual({
-    //         id: undefined,
-    //         label: "Phineas-Attribute-Friendly",
-    //         relationTypeLabels: ["Attribute"],
-    //         conceptArgumentLabels: ["Phineas", "Friendly"]
-    //     });
+        // Expect Ferb to be sibling of Phineas
+        expect(extractedBaljeetCG.getRelationByLabel("Ferb-SiblingOf-Phineas")).toEqual({
+            id: undefined,
+            label: "Ferb-SiblingOf-Phineas",
+            relationTypeLabels: ["SiblingOf"],
+            conceptArgumentLabels: ["Ferb", "Phineas"]
+        });
 
-    //     // Expect Ferb to be friendly
-    //     expect(extractedBaljeetCG.getRelationByLabel("Ferb-Attribute-Friendly")).toEqual({
-    //         id: undefined,
-    //         label: "Ferb-Attribute-Friendly",
-    //         relationTypeLabels: ["Attribute"],
-    //         conceptArgumentLabels: ["Ferb", "Friendly"]
-    //     });
+        // Expect Phineas to be friendly
+        expect(extractedBaljeetCG.getRelationByLabel("Phineas-Attribute-Friendly")).toEqual({
+            id: undefined,
+            label: "Phineas-Attribute-Friendly",
+            relationTypeLabels: ["Attribute"],
+            conceptArgumentLabels: ["Phineas", "Friendly"]
+        });
 
-    // })
+        // Expect Ferb to be friendly
+        expect(extractedBaljeetCG.getRelationByLabel("Ferb-Attribute-Friendly")).toEqual({
+            id: undefined,
+            label: "Ferb-Attribute-Friendly",
+            relationTypeLabels: ["Attribute"],
+            conceptArgumentLabels: ["Ferb", "Friendly"]
+        });
 
-    // it('If a concept or relation already exists, do not create a new one', () => {
-    //     // Rule: If Phineas is brother of Candace, then Ferb is brother of Candace
-    //     // Create rule: if boy is brother of girl then ferb is brother of girl
-    //     const queryManager: ConceptualGraphQueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
-    //     const ifBoyBroOfGirlThenOtherBoyBroOfGirlRule: Rule = new ExtractionRule(queryManager);
+    })
 
-    //     // Create Hypothesis: if boy is brother of girl
-    //     const boyBroOfGirlHypothesis: ConceptualGraph = new ConceptualGraph();
-    //     const someBoy: Concept = boyBroOfGirlHypothesis.createConcept("SomeBoy", "Boy", DesignatorType.LAMBDA);
-    //     const someGirl: Concept = boyBroOfGirlHypothesis.createConcept("SomeGirl", "Girl", DesignatorType.LAMBDA);
-    //     boyBroOfGirlHypothesis.createRelation("someboy-broof-somegirl", "BrotherOf", [someBoy, someGirl]);
-    //     ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.hypothesis = boyBroOfGirlHypothesis;
+    it('Must create a copy and not adjust the original', () => {
+        // Rule: If Phineas is brother of Candace, then Ferb is brother of Candace
+        // Create rule: if boy is brother of girl then ferb is brother of girl
+        const queryManager: ConceptualGraphQueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
+        const ifBoyBroOfGirlThenOtherBoyBroOfGirlRule: Rule = new ExtractionRule(queryManager);
 
-    //     // Create Conclusion: then Ferb is brother of girl
-    //     const girlBroOfBoyConclusion: ConceptualGraph = new ConceptualGraph();
-    //     girlBroOfBoyConclusion.addConcept(someGirl);
-    //     girlBroOfBoyConclusion.addConcept(testScenarioProvider_PhineasAndFerb.ferb);
-    //     girlBroOfBoyConclusion.createRelation("ferb-broof-somegirl", "BrotherOf", [testScenarioProvider_PhineasAndFerb.ferb, someGirl]);
-    //     ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.conclusion = girlBroOfBoyConclusion;
+        // Create Hypothesis: if boy is brother of girl
+        const boyBroOfGirlHypothesis: ConceptualGraph = new ConceptualGraph();
+        const someBoy: Concept = boyBroOfGirlHypothesis.createConcept("SomeBoy", "Boy", DesignatorType.LAMBDA);
+        const someGirl: Concept = boyBroOfGirlHypothesis.createConcept("SomeGirl", "Girl", DesignatorType.LAMBDA);
+        boyBroOfGirlHypothesis.createRelation("someboy-broof-somegirl", "BrotherOf", [someBoy, someGirl]);
+        ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.hypothesis = boyBroOfGirlHypothesis;
 
-    //     // Create Phineas and Candace Conceptual Graph WITH Conclusion Already In Place
-    //     const phineasAndCandaceCG: ConceptualGraph = testScenarioProvider_PhineasAndFerb.getPhineasAndCandaceCG();
-    //     phineasAndCandaceCG.addConcept(testScenarioProvider_PhineasAndFerb.ferb);
-    //     phineasAndCandaceCG.createRelation("Ferb-BrotherOf-Candace", "BrotherOf", [testScenarioProvider_PhineasAndFerb.ferb, testScenarioProvider_PhineasAndFerb.candace])
+        // Create Conclusion: then Ferb is brother of girl
+        const girlBroOfBoyConclusion: ConceptualGraph = new ConceptualGraph();
+        girlBroOfBoyConclusion.addConcept(someGirl);
+        girlBroOfBoyConclusion.addConcept(testScenarioProvider_PhineasAndFerb.ferb);
+        girlBroOfBoyConclusion.createRelation("ferb-broof-somegirl", "BrotherOf", [testScenarioProvider_PhineasAndFerb.ferb, someGirl]);
+        ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.conclusion = girlBroOfBoyConclusion;
 
-    //     // Apply Rule
-    //     const extractedPhineasAndCandaceCG: ConceptualGraph = ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.applyRule(phineasAndCandaceCG);
+        // Create Phineas and Candace Conceptual Graph
+        const originalPhineasAndCandaceCG: ConceptualGraph = testScenarioProvider_PhineasAndFerb.getPhineasAndCandaceCG();
+        const clonePhineasAndCandaceCG: ConceptualGraph = originalPhineasAndCandaceCG.clone();
 
-    //     // Expect there to be two brother relations
-    //     expect(extractedPhineasAndCandaceCG.relations.length).toBe(2);
-    //     expect(extractedPhineasAndCandaceCG.relations[0]).toEqual({
-    //         ...relationDao.getRelationByLabel("phineas-broOf-candace"),
-    //         id: undefined,
-    //     });
-    //     expect(extractedPhineasAndCandaceCG.relations[1]).toEqual({
-    //         id: undefined,
-    //         label: "Ferb-BrotherOf-Candace",
-    //         relationTypeLabels: ["BrotherOf"],
-    //         conceptArgumentLabels: ["Ferb", "Candace"]
-    //     });
+        // Apply Rule
+        const extractedPhineasAndCandaceCG: ConceptualGraph = ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.applyRule(originalPhineasAndCandaceCG);
 
-    //     // Expect ferb to have been added
-    //     expect(extractedPhineasAndCandaceCG.concepts.length).toBe(3);
-    //     expect(extractedPhineasAndCandaceCG.concepts[0]).toEqual(testScenarioProvider_PhineasAndFerb.phineas);
-    //     expect(extractedPhineasAndCandaceCG.concepts[1]).toEqual(testScenarioProvider_PhineasAndFerb.candace);
-    //     expect(extractedPhineasAndCandaceCG.concepts[2]).toEqual(testScenarioProvider_PhineasAndFerb.ferb);
-    // })
+        // Expect original to be the same
+        expect(originalPhineasAndCandaceCG).toEqual(clonePhineasAndCandaceCG);
+        expect(originalPhineasAndCandaceCG).not.toEqual(extractedPhineasAndCandaceCG);
 
-    // it('Must create a copy and not adjust the original', () => {
-    //     // Rule: If Phineas is brother of Candace, then Ferb is brother of Candace
-    //     // Create rule: if boy is brother of girl then ferb is brother of girl
-    //     const queryManager: ConceptualGraphQueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
-    //     const ifBoyBroOfGirlThenOtherBoyBroOfGirlRule: Rule = new ExtractionRule(queryManager);
+        // Expect addition of concept to extracted graph not to reflect in original graph
+        extractedPhineasAndCandaceCG.createConcept("ShouldNotBeInOriginal", "Unwanted");
+        expect(originalPhineasAndCandaceCG.getConceptByLabel("ShouldNotBeInOriginal")).toBeUndefined();
+    })
 
-    //     // Create Hypothesis: if boy is brother of girl
-    //     const boyBroOfGirlHypothesis: ConceptualGraph = new ConceptualGraph();
-    //     const someBoy: Concept = boyBroOfGirlHypothesis.createConcept("SomeBoy", "Boy", DesignatorType.LAMBDA);
-    //     const someGirl: Concept = boyBroOfGirlHypothesis.createConcept("SomeGirl", "Girl", DesignatorType.LAMBDA);
-    //     boyBroOfGirlHypothesis.createRelation("someboy-broof-somegirl", "BrotherOf", [someBoy, someGirl]);
-    //     ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.hypothesis = boyBroOfGirlHypothesis;
+    it('When no matches for hypothesis, return a an empty conceptual graph', () => {
+        // Rule: If Phineas is brother of Candace, then Ferb is brother of Candace
+        // Create rule: if boy is brother of girl then ferb is brother of girl
+        const queryManager: ConceptualGraphQueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
+        const ifBoyBroOfGirlThenOtherBoyBroOfGirlRule: Rule = new ExtractionRule(queryManager);
 
-    //     // Create Conclusion: then Ferb is brother of girl
-    //     const girlBroOfBoyConclusion: ConceptualGraph = new ConceptualGraph();
-    //     girlBroOfBoyConclusion.addConcept(someGirl);
-    //     girlBroOfBoyConclusion.addConcept(testScenarioProvider_PhineasAndFerb.ferb);
-    //     girlBroOfBoyConclusion.createRelation("ferb-broof-somegirl", "BrotherOf", [testScenarioProvider_PhineasAndFerb.ferb, someGirl]);
-    //     ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.conclusion = girlBroOfBoyConclusion;
+        // Create Hypothesis: if boy is brother of girl
+        const boyBroOfGirlHypothesis: ConceptualGraph = new ConceptualGraph();
+        const someBoy: Concept = boyBroOfGirlHypothesis.createConcept("SomeBoy", "Boy", DesignatorType.LAMBDA);
+        const someGirl: Concept = boyBroOfGirlHypothesis.createConcept("SomeGirl", "Girl", DesignatorType.LAMBDA);
+        boyBroOfGirlHypothesis.createRelation("someboy-broof-somegirl", "BrotherOf", [someBoy, someGirl]);
+        ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.hypothesis = boyBroOfGirlHypothesis;
 
-    //     // Create Phineas and Candace Conceptual Graph
-    //     const originalPhineasAndCandaceCG: ConceptualGraph = testScenarioProvider_PhineasAndFerb.getPhineasAndCandaceCG();
-    //     const clonePhineasAndCandaceCG: ConceptualGraph = originalPhineasAndCandaceCG.clone();
+        // Create Conclusion: then Ferb is brother of girl
+        const girlBroOfBoyConclusion: ConceptualGraph = new ConceptualGraph();
+        girlBroOfBoyConclusion.addConcept(someGirl);
+        girlBroOfBoyConclusion.addConcept(testScenarioProvider_PhineasAndFerb.ferb);
+        girlBroOfBoyConclusion.createRelation("ferb-broof-somegirl", "BrotherOf", [testScenarioProvider_PhineasAndFerb.ferb, someGirl]);
+        ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.conclusion = girlBroOfBoyConclusion;
 
-    //     // Apply Rule
-    //     const extractedPhineasAndCandaceCG: ConceptualGraph = ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.applyRule(originalPhineasAndCandaceCG);
+        // Create flynt is yellow
+        const flyntIsYellowCG: ConceptualGraph = testScenarioProvider_FlyntTheBird.getConcept_flyntTheBirdIsColourYellow(testId);
 
-    //     // Expect original to be the same
-    //     expect(originalPhineasAndCandaceCG).toEqual(clonePhineasAndCandaceCG);
-    //     expect(originalPhineasAndCandaceCG).not.toEqual(extractedPhineasAndCandaceCG);
+        // Apply Rule
+        const extractedFlyntIsYellowCG: ConceptualGraph = ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.applyRule(flyntIsYellowCG);
 
-    //     // Expect addition of concept to extracted graph not to reflect in original graph
-    //     extractedPhineasAndCandaceCG.createConcept("ShouldNotBeInOriginal", "Unwanted");
-    //     expect(originalPhineasAndCandaceCG.getConceptByLabel("ShouldNotBeInOriginal")).toBeUndefined();
-    // })
-
-    // it('When no matches for hypothesis, return a copy of the original graph', () => {
-    //     // Rule: If Phineas is brother of Candace, then Ferb is brother of Candace
-    //     // Create rule: if boy is brother of girl then ferb is brother of girl
-    //     const queryManager: ConceptualGraphQueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
-    //     const ifBoyBroOfGirlThenOtherBoyBroOfGirlRule: Rule = new ExtractionRule(queryManager);
-
-    //     // Create Hypothesis: if boy is brother of girl
-    //     const boyBroOfGirlHypothesis: ConceptualGraph = new ConceptualGraph();
-    //     const someBoy: Concept = boyBroOfGirlHypothesis.createConcept("SomeBoy", "Boy", DesignatorType.LAMBDA);
-    //     const someGirl: Concept = boyBroOfGirlHypothesis.createConcept("SomeGirl", "Girl", DesignatorType.LAMBDA);
-    //     boyBroOfGirlHypothesis.createRelation("someboy-broof-somegirl", "BrotherOf", [someBoy, someGirl]);
-    //     ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.hypothesis = boyBroOfGirlHypothesis;
-
-    //     // Create Conclusion: then Ferb is brother of girl
-    //     const girlBroOfBoyConclusion: ConceptualGraph = new ConceptualGraph();
-    //     girlBroOfBoyConclusion.addConcept(someGirl);
-    //     girlBroOfBoyConclusion.addConcept(testScenarioProvider_PhineasAndFerb.ferb);
-    //     girlBroOfBoyConclusion.createRelation("ferb-broof-somegirl", "BrotherOf", [testScenarioProvider_PhineasAndFerb.ferb, someGirl]);
-    //     ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.conclusion = girlBroOfBoyConclusion;
-
-    //     // Create flynt is yellow
-    //     const flyntIsYellowCG: ConceptualGraph = testScenarioProvider_FlyntTheBird.getConcept_flyntTheBirdIsColourYellow(testId);
-
-    //     // Apply Rule
-    //     const extractedFlyntIsYellowCG: ConceptualGraph = ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.applyRule(flyntIsYellowCG);
-
-    //     // Expect original to be the same as extracted
-    //     expect(flyntIsYellowCG).toEqual(extractedFlyntIsYellowCG);
+        // Expect original to be the same as extracted
+        expect(extractedFlyntIsYellowCG.concepts.length).toBe(0);
+        expect(extractedFlyntIsYellowCG.relations.length).toBe(0);
         
-    // })
+    })
 
 })

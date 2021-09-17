@@ -331,21 +331,15 @@ export class TestScenarioProvider_PhineasAndFerb {
         const ferb: Concept = phineasFerbAndFriends.createConcept("Ferb", "Boy", "Ferb");
         
         const baljeet: Concept = phineasFerbAndFriends.createConcept("Baljeet", "Boy", "Baljeet");
-        // phineasFerbAndFriends.createRelation("phineas-friendOf-baljeet", "FriendOf", [phineas, baljeet]);
         phineasFerbAndFriends.createRelation("baljeet-friendOf-phineas", "FriendOf", [baljeet, phineas]);
-        // phineasFerbAndFriends.createRelation("ferb-friendOf-baljeet", "FriendOf", [ferb, baljeet]);
         phineasFerbAndFriends.createRelation("baljeet-friendOf-ferb", "FriendOf", [baljeet, ferb]);
         
         const buford: Concept = phineasFerbAndFriends.createConcept("Buford", "Boy", "Buford");
-        // phineasFerbAndFriends.createRelation("phineas-friendOf-buford", "FriendOf", [phineas, buford]);
         phineasFerbAndFriends.createRelation("buford-friendOf-phineas", "FriendOf", [buford, phineas]);
-        // phineasFerbAndFriends.createRelation("ferb-friendOf-buford", "FriendOf", [ferb, buford]);
         phineasFerbAndFriends.createRelation("buford-friendOf-ferb", "FriendOf", [buford, ferb]);
         
         const isabella: Concept = phineasFerbAndFriends.createConcept("Isabella", "Girl", "Isabella");
-        // phineasFerbAndFriends.createRelation("phineas-friendOf-isabella", "FriendOf", [phineas, isabella]);
         phineasFerbAndFriends.createRelation("isabella-friendOf-phineas", "FriendOf", [isabella, phineas]);
-        // phineasFerbAndFriends.createRelation("ferb-friendOf-isabella", "FriendOf", [ferb, isabella]);
         phineasFerbAndFriends.createRelation("isabella-friendOf-ferb", "FriendOf", [isabella, ferb]);
 
         return phineasFerbAndFriends;
