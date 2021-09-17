@@ -27,7 +27,7 @@ export class InMemoryConceptualGraphDao implements ConceptualGraphDao {
         createdConceptualGraph.label = conceptualGraph.label;
         simpleConceptualGraph.label = conceptualGraph.label;
         conceptualGraph.concepts.forEach((singleConcept: Concept) => {
-            const possibleExistingConcept: Concept = this.conceptDao.getConceptById(singleConcept.id);
+            const possibleExistingConcept: Concept = this.conceptDao.getConceptByLabel(singleConcept.label);
             if (possibleExistingConcept) {
                 const updatedConcept: Concept
                     = this.conceptDao.updateConcept(singleConcept);
@@ -42,7 +42,7 @@ export class InMemoryConceptualGraphDao implements ConceptualGraphDao {
 
         })
         conceptualGraph.relations.forEach((singleRelation: Relation) => {
-            const possibleExistingRelation: Relation = this.relationDao.getRelationById(singleRelation.id);
+            const possibleExistingRelation: Relation = this.relationDao.getRelationByLabel(singleRelation.label);
             if (possibleExistingRelation) {
                 const updatedRelation: Relation
                     = this.relationDao.updateRelation(singleRelation);

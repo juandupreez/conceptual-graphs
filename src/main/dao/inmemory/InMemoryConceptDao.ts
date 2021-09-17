@@ -136,11 +136,6 @@ export class InMemoryConceptDao implements ConceptDao {
     }
 
     _validateConceptBeforeUpdate(conceptToUpdate: Concept): void {
-        if (!conceptToUpdate || !conceptToUpdate.id) {
-            throw new Error('Could not update concept with label: '
-                + conceptToUpdate.label
-                + '. A concept must have conceptual graph id');
-        }
         if (!conceptToUpdate.conceptTypeLabels || conceptToUpdate.conceptTypeLabels.length === 0) {
             throw new Error('Could not update concept with label: '
                 + conceptToUpdate.label
