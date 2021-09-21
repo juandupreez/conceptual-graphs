@@ -52,8 +52,6 @@ export class ConceptualGraphQueryManager extends QueryManager {
             if (conceptToMatch.referent?.designatorType === DesignatorType.LAMBDA && doConceptTypesMatch) {
                 doesConceptMatch = true;
             } else if (doConceptTypesMatch
-                && conceptToMatch.referent.quantifierType === singleConcept.referent.quantifierType
-                && conceptToMatch.referent.quantifierValue === singleConcept.referent.quantifierValue
                 && conceptToMatch.referent.designatorType === singleConcept.referent.designatorType
                 && conceptToMatch.referent.designatorValue === singleConcept.referent.designatorValue) {
                 doesConceptMatch = true;
@@ -131,8 +129,6 @@ export class ConceptualGraphQueryManager extends QueryManager {
                 if (conceptToMatch.referent?.designatorType === DesignatorType.LAMBDA && doConceptTypesMatch) {
                     doAllConceptsMatch = doAllConceptsMatch && true;
                 } else if (doConceptTypesMatch
-                    && conceptToMatch.referent.quantifierType === potentialConcept.referent.quantifierType
-                    && conceptToMatch.referent.quantifierValue === potentialConcept.referent.quantifierValue
                     && conceptToMatch.referent.designatorType === potentialConcept.referent.designatorType
                     && conceptToMatch.referent.designatorValue === potentialConcept.referent.designatorValue) {
                     doAllConceptsMatch = doAllConceptsMatch && true;

@@ -1,6 +1,6 @@
 import { cloneConcept, conceptToString, isConcept } from "../util/ConceptUtil";
 import { cloneRelation, relationToString } from "../util/RelationUtil";
-import { Concept, DesignatorType, QuantifierType, Referent } from "./Concept";
+import { Concept, DesignatorType, Referent } from "./Concept";
 import { Relation } from "./Relation";
 
 export class SimpleConceptualGraph {
@@ -89,31 +89,23 @@ export class ConceptualGraph {
         }
         if (!referent) {
             newConcept.referent = {
-                quantifierType: QuantifierType.A_SINGLE,
-                quantifierValue: undefined,
                 designatorType: DesignatorType.BLANK,
                 designatorValue: undefined
             };
         } else if (typeof referent === "string") {
             if (referent === DesignatorType.LAMBDA) {
                 newConcept.referent = {
-                    quantifierType: QuantifierType.A_SINGLE,
-                    quantifierValue: undefined,
                     designatorType: DesignatorType.LAMBDA,
                     designatorValue: undefined
                 };
             } else {
                 newConcept.referent = {
-                    quantifierType: QuantifierType.A_SINGLE,
-                    quantifierValue: undefined,
                     designatorType: DesignatorType.LITERAL,
                     designatorValue: referent
                 };
             }
         } else {
             newConcept.referent = {
-                quantifierType: referent.quantifierType,
-                quantifierValue: referent.quantifierValue,
                 designatorType: referent.designatorType,
                 designatorValue: referent.designatorValue
             };

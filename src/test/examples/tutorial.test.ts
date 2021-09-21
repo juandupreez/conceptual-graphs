@@ -4,7 +4,7 @@ import { RelationTypeDao } from "../../main/dao/RelationTypeDao";
 import { InMemoryConceptDao } from "../../main/dao/inmemory/InMemoryConceptDao";
 import { InMemoryConceptTypeDao } from "../../main/dao/inmemory/InMemoryConceptTypeDao";
 import { InMemoryRelationTypeDao } from "../../main/dao/inmemory/InMemoryRelationTypeDao";
-import { Concept, DesignatorType, QuantifierType } from "../../main/domain/Concept";
+import { Concept, DesignatorType } from "../../main/domain/Concept";
 import { ConceptType, SimpleConceptType } from "../../main/domain/ConceptType";
 import { ConceptualGraph } from "../../main/domain/ConceptualGraph";
 import { Relation } from "../../main/domain/Relation";
@@ -100,7 +100,6 @@ describe('Example ', () => {
     it('Conceptual graphs', () => {
         const conceptualGraph: ConceptualGraph = new ConceptualGraph();
         const graphConcept: Concept = conceptualGraph.createConcept("Graphs", "Graph", {
-            quantifierType: QuantifierType.SOME,
             designatorType: DesignatorType.BLANK
         });
         const conceptualConcept: Concept = conceptualGraph.createConcept("Conceptual", "Conceptual");
@@ -194,7 +193,6 @@ describe('Example ', () => {
     it('There exists a person whose name is John', () => {
         const conceptualGraph: ConceptualGraph = new ConceptualGraph();
         const john: Concept = conceptualGraph.createConcept("JohnPerson2", "Person", {
-            quantifierType: QuantifierType.A_SINGLE,
             designatorType: DesignatorType.LITERAL,
             designatorValue: "John"
         });
@@ -206,7 +204,6 @@ describe('Example ', () => {
     it('There exists a bus', () => {
         const conceptualGraph: ConceptualGraph = new ConceptualGraph();
         const aBush: Concept = conceptualGraph.createConcept("ABus", "Bus", {
-            quantifierType: QuantifierType.A_SINGLE,
             designatorType: DesignatorType.BLANK
         });
 
@@ -236,7 +233,6 @@ describe('Example ', () => {
 
         const birdSangConceptualGraph: ConceptualGraph = new ConceptualGraph;
         const situationConcept: Concept = birdSangConceptualGraph.createConcept("ABirdSang", "Situation", {
-            quantifierType: QuantifierType.A_SINGLE,
             designatorType: DesignatorType.CONCEPTUAL_GRAPH_LABEL,
             designatorValue: birdSingingConceptualGraph.label
         })
@@ -254,7 +250,6 @@ describe('Example ', () => {
 
         const birdSangConceptualGraph: ConceptualGraph = new ConceptualGraph;
         const situationConcept: Concept = birdSangConceptualGraph.createConcept("ABirdCouldBeSinging", "Situation", {
-            quantifierType: QuantifierType.A_SINGLE,
             designatorType: DesignatorType.CONCEPTUAL_GRAPH_LABEL,
             designatorValue: birdSingingConceptualGraph.label
         })

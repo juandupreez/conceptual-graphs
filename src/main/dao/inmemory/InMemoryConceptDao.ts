@@ -1,4 +1,4 @@
-import { Concept, DesignatorType, QuantifierType, Referent } from "../../domain/Concept";
+import { Concept, DesignatorType, Referent } from "../../domain/Concept";
 import { ConceptType } from "../../domain/ConceptType";
 import { cloneConcept } from "../../util/ConceptUtil";
 import { IdGenerator } from "../../util/IdGenerator";
@@ -23,21 +23,16 @@ export class InMemoryConceptDao implements ConceptDao {
         newConcept.conceptTypeLabels = conceptTypeLabels;
         if (!referent) {
             newConcept.referent = {
-                quantifierType: QuantifierType.A_SINGLE,
-                quantifierValue: undefined,
                 designatorType: DesignatorType.BLANK,
                 designatorValue: undefined
             };
         } else if (typeof referent === 'string') {
             newConcept.referent = {
-                quantifierType: QuantifierType.A_SINGLE,
                 designatorType: DesignatorType.LITERAL,
                 designatorValue: referent
             }
         } else {
             newConcept.referent = {
-                quantifierType: referent.quantifierType,
-                quantifierValue: referent.quantifierValue,
                 designatorType: referent.designatorType,
                 designatorValue: referent.designatorValue
             };
@@ -86,8 +81,6 @@ export class InMemoryConceptDao implements ConceptDao {
             if (conceptToMatch.referent?.designatorType === DesignatorType.LAMBDA && doConceptTypesMatch) {
                 doesConceptMatch = true;
             } else if (doConceptTypesMatch
-                && conceptToMatch.referent.quantifierType === singleConcept.referent.quantifierType
-                && conceptToMatch.referent.quantifierValue === singleConcept.referent.quantifierValue
                 && conceptToMatch.referent.designatorType === singleConcept.referent.designatorType
                 && conceptToMatch.referent.designatorValue === singleConcept.referent.designatorValue) {
                 doesConceptMatch = true;

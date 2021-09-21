@@ -153,8 +153,6 @@ export class InMemoryRelationDao implements RelationDao {
                 if (conceptToMatch.referent?.designatorType === DesignatorType.LAMBDA && doConceptTypesMatch) {
                     doAllConceptsMatch = doAllConceptsMatch && true;
                 } else if (doConceptTypesMatch
-                    && conceptToMatch.referent.quantifierType === potentialConcept.referent.quantifierType
-                    && conceptToMatch.referent.quantifierValue === potentialConcept.referent.quantifierValue
                     && conceptToMatch.referent.designatorType === potentialConcept.referent.designatorType
                     && conceptToMatch.referent.designatorValue === potentialConcept.referent.designatorValue) {
                     doAllConceptsMatch = doAllConceptsMatch && true;

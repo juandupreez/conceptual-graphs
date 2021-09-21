@@ -8,7 +8,7 @@ import { InMemoryRelationDao } from "../../main/dao/inmemory/InMemoryRelationDao
 import { InMemoryRelationTypeDao } from "../../main/dao/inmemory/InMemoryRelationTypeDao";
 import { RelationDao } from "../../main/dao/RelationDao";
 import { RelationTypeDao } from "../../main/dao/RelationTypeDao";
-import { Concept, DesignatorType, QuantifierType } from "../../main/domain/Concept";
+import { Concept, DesignatorType } from "../../main/domain/Concept";
 import { ConceptualGraph } from "../../main/domain/ConceptualGraph";
 import { Relation } from "../../main/domain/Relation";
 import { ConceptualGraphQueryManager } from "../../main/query/ConceptualGraphQueryManager";
@@ -57,7 +57,6 @@ describe('Simple queries', () => {
         // Create Query: What colour is the bird Flynt?
         const whatColourIsFlyntQuery: ConceptualGraph = new ConceptualGraph();
         const whatColour: Concept = whatColourIsFlyntQuery.createConcept("WhatColour", colourConceptTypeLabel, {
-            quantifierType: QuantifierType.A_SINGLE,
             designatorType: DesignatorType.LAMBDA
         })
         const flyntInQuery: Concept = whatColourIsFlyntQuery.createConcept("FlyntInQuery", birdConceptTypeLabel, flyntConceptLabel);
@@ -75,8 +74,6 @@ describe('Simple queries', () => {
             label: "Yellow-" + testId,
             conceptTypeLabels: ["Colour-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
                 designatorValue: "Yellow-" + testId,
             },
@@ -87,8 +84,6 @@ describe('Simple queries', () => {
             label: "Flynt-" + testId,
             conceptTypeLabels: ["Bird-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
                 designatorValue: "Flynt-" + testId,
             },
@@ -126,7 +121,6 @@ describe('Simple queries', () => {
         // Create Query: What colour is the bird Flynt?
         const whatColourIsFlyntQuery: ConceptualGraph = new ConceptualGraph();
         const whatColour: Concept = whatColourIsFlyntQuery.createConcept("WhatColour", colourConceptTypeLabel, {
-            quantifierType: QuantifierType.A_SINGLE,
             designatorType: DesignatorType.LAMBDA
         })
         const flyntInQuery: Concept = whatColourIsFlyntQuery.createConcept("FlyntInQuery", birdConceptTypeLabel, flyntConceptLabel);
@@ -144,8 +138,6 @@ describe('Simple queries', () => {
             label: "Yellow-" + testId,
             conceptTypeLabels: ["Colour-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
                 designatorValue: "Yellow-" + testId,
             },
@@ -156,8 +148,6 @@ describe('Simple queries', () => {
             label: "Flynt-" + testId,
             conceptTypeLabels: ["Bird-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
                 designatorValue: "Flynt-" + testId,
             },
@@ -182,8 +172,6 @@ describe('Simple queries', () => {
             label: "Blue-" + testId,
             conceptTypeLabels: ["Colour-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
                 designatorValue: "Blue-" + testId,
             },
@@ -194,8 +182,6 @@ describe('Simple queries', () => {
             label: "Flynt-" + testId,
             conceptTypeLabels: ["Bird-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
                 designatorValue: "Flynt-" + testId,
             },
@@ -233,7 +219,6 @@ describe('Simple queries', () => {
         const whatColourIsFlyntQuery: ConceptualGraph = new ConceptualGraph();
         const whatBlueColour: Concept = whatColourIsFlyntQuery.createConcept("BlueInQuery", colourConceptTypeLabel, blueConceptLabel);
         const whatBird: Concept = whatColourIsFlyntQuery.createConcept("WhatBird", birdConceptTypeLabel, {
-            quantifierType: QuantifierType.A_SINGLE,
             designatorType: DesignatorType.LAMBDA
         });
         whatColourIsFlyntQuery.createRelation("query-whatbird-attr-blue", attributeRelationTypeLabel, [whatBird, whatBlueColour]);
@@ -250,8 +235,6 @@ describe('Simple queries', () => {
             label: "Blue-" + testId,
             conceptTypeLabels: ["Colour-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
                 designatorValue: "Blue-" + testId,
             },
@@ -262,8 +245,6 @@ describe('Simple queries', () => {
             label: "Flynt-" + testId,
             conceptTypeLabels: ["Bird-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
                 designatorValue: "Flynt-" + testId,
             },
@@ -301,7 +282,6 @@ describe('Simple queries', () => {
         // Create Query: What colour is the bird Flynt?
         const whatAnimalIsYellow: ConceptualGraph = new ConceptualGraph();
         const whatAnimal: Concept = whatAnimalIsYellow.createConcept("WhatAnimal", animalConceptTypeLabel, {
-            quantifierType: QuantifierType.A_SINGLE,
             designatorType: DesignatorType.LAMBDA
         })
         const shadeOfLightInQuery: Concept = whatAnimalIsYellow.createConcept("BlueInQuery", shadeOfLightConceptTypeLabel, blueConceptLabel);
@@ -319,8 +299,6 @@ describe('Simple queries', () => {
             label: "Blue-" + testId,
             conceptTypeLabels: ["Colour-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
                 designatorValue: "Blue-" + testId,
             },
@@ -331,8 +309,6 @@ describe('Simple queries', () => {
             label: "Flynt-" + testId,
             conceptTypeLabels: ["Bird-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
                 designatorValue: "Flynt-" + testId,
             },
@@ -369,7 +345,6 @@ describe('Simple queries', () => {
         // Create Query: What colour is the bird Flynt?
         const whatAnimalIsYellow: ConceptualGraph = new ConceptualGraph();
         const whatAnimal: Concept = whatAnimalIsYellow.createConcept("WhatAnimal", animalConceptTypeLabel, {
-            quantifierType: QuantifierType.A_SINGLE,
             designatorType: DesignatorType.LAMBDA
         })
         const shadeOfLightInQuery: Concept = whatAnimalIsYellow.createConcept("BlueInQuery", shadeOfLightConceptTypeLabel, blueConceptLabel);
@@ -387,8 +362,6 @@ describe('Simple queries', () => {
             label: "Blue-" + testId,
             conceptTypeLabels: ["Colour-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
                 designatorValue: "Blue-" + testId,
             },
@@ -399,8 +372,6 @@ describe('Simple queries', () => {
             label: "Flynt-" + testId,
             conceptTypeLabels: ["Bird-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
                 designatorValue: "Flynt-" + testId,
             },
@@ -438,7 +409,6 @@ describe('Simple queries', () => {
         // Create Query: What colour is the bird Flynt?
         const whatAnimalIsYellow: ConceptualGraph = new ConceptualGraph();
         const whatAnimal: Concept = whatAnimalIsYellow.createConcept("WhatAnimal", animalConceptTypeLabel, {
-            quantifierType: QuantifierType.A_SINGLE,
             designatorType: DesignatorType.LAMBDA
         })
         const shadeOfLightInQuery: Concept = whatAnimalIsYellow.createConcept("BlueInQuery", shadeOfLightConceptTypeLabel, blueConceptLabel);
@@ -456,8 +426,6 @@ describe('Simple queries', () => {
             label: "Blue-" + testId,
             conceptTypeLabels: ["Colour-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
                 designatorValue: "Blue-" + testId,
             },
@@ -468,8 +436,6 @@ describe('Simple queries', () => {
             label: "Flynt-" + testId,
             conceptTypeLabels: ["Bird-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
                 designatorValue: "Flynt-" + testId,
             },
@@ -534,8 +500,6 @@ describe('Simple queries', () => {
             label: "Flynt-" + testId,
             conceptTypeLabels: ["Bird-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
                 designatorValue: "Flynt-" + testId,
             },
@@ -546,8 +510,6 @@ describe('Simple queries', () => {
             label: "Yellow-" + testId,
             conceptTypeLabels: ["Colour-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
                 designatorValue: "Yellow-" + testId,
             },
@@ -575,8 +537,6 @@ describe('Simple queries', () => {
             label: "Rhysand-" + testId,
             conceptTypeLabels: ["Cat-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
                 designatorValue: "Rhysand-" + testId,
             },
@@ -587,8 +547,6 @@ describe('Simple queries', () => {
             label: "Blue-" + testId,
             conceptTypeLabels: ["Colour-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
                 designatorValue: "Blue-" + testId,
             },
@@ -616,8 +574,6 @@ describe('Simple queries', () => {
             label: "Rusky-" + testId,
             conceptTypeLabels: ["Dog-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
                 designatorValue: "Rusky-" + testId,
             },
@@ -628,8 +584,6 @@ describe('Simple queries', () => {
             label: "Red-" + testId,
             conceptTypeLabels: ["Colour-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
                 designatorValue: "Red-" + testId,
             },
@@ -681,8 +635,6 @@ describe('Simple queries', () => {
             label: "Yellow-" + testId,
             conceptTypeLabels: ["Colour-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
                 designatorValue: "Yellow-" + testId,
             },
@@ -736,8 +688,6 @@ describe('Simple queries', () => {
             label: "Flynt-" + testId,
             conceptTypeLabels: ["Bird-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
                 designatorValue: "Flynt-" + testId,
             },
@@ -748,8 +698,6 @@ describe('Simple queries', () => {
             label: "Yellow-" + testId,
             conceptTypeLabels: ["Colour-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
                 designatorValue: "Yellow-" + testId,
             },

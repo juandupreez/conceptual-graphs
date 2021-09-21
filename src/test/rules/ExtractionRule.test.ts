@@ -8,7 +8,7 @@ import { InMemoryRelationDao } from "../../main/dao/inmemory/InMemoryRelationDao
 import { InMemoryRelationTypeDao } from "../../main/dao/inmemory/InMemoryRelationTypeDao";
 import { RelationDao } from "../../main/dao/RelationDao";
 import { RelationTypeDao } from "../../main/dao/RelationTypeDao";
-import { Concept, DesignatorType, QuantifierType } from "../../main/domain/Concept";
+import { Concept, DesignatorType } from "../../main/domain/Concept";
 import { ConceptualGraph } from "../../main/domain/ConceptualGraph";
 import { Relation } from "../../main/domain/Relation";
 import { RelationType } from "../../main/domain/RelationType";

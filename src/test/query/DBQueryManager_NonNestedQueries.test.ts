@@ -8,7 +8,7 @@ import { InMemoryRelationDao } from "../../main/dao/inmemory/InMemoryRelationDao
 import { InMemoryRelationTypeDao } from "../../main/dao/inmemory/InMemoryRelationTypeDao";
 import { RelationDao } from "../../main/dao/RelationDao";
 import { RelationTypeDao } from "../../main/dao/RelationTypeDao";
-import { Concept, DesignatorType, QuantifierType } from "../../main/domain/Concept";
+import { Concept, DesignatorType } from "../../main/domain/Concept";
 import { ConceptualGraph } from "../../main/domain/ConceptualGraph";
 import { Relation } from "../../main/domain/Relation";
 import { DatabaseQueryManager } from "../../main/query/DatabaseQueryManager";
@@ -56,7 +56,6 @@ describe('Simple queries', () => {
         // Create Query: What colour is the bird Flynt?
         const whatColourIsFlyntQuery: ConceptualGraph = new ConceptualGraph();
         const whatColour: Concept = whatColourIsFlyntQuery.createConcept("WhatColour", colourConceptTypeLabel, {
-            quantifierType: QuantifierType.A_SINGLE,
             designatorType: DesignatorType.LAMBDA
         })
         const flyntInQuery: Concept = whatColourIsFlyntQuery.createConcept(flyntConceptLabel, birdConceptTypeLabel, flyntConceptLabel);
@@ -92,7 +91,6 @@ describe('Simple queries', () => {
         // Create Query: What colour is the bird Flynt?
         const whatColourIsFlyntQuery: ConceptualGraph = new ConceptualGraph();
         const whatColour: Concept = whatColourIsFlyntQuery.createConcept("WhatColour", colourConceptTypeLabel, {
-            quantifierType: QuantifierType.A_SINGLE,
             designatorType: DesignatorType.LAMBDA
         })
         const flyntInQuery: Concept = whatColourIsFlyntQuery.createConcept(flyntConceptLabel, birdConceptTypeLabel, flyntConceptLabel);
@@ -135,7 +133,6 @@ describe('Simple queries', () => {
         const whatColourIsFlyntQuery: ConceptualGraph = new ConceptualGraph();
         const whatBlueColour: Concept = whatColourIsFlyntQuery.createConcept("WhatColour", colourConceptTypeLabel, blueConceptLabel);
         const flyntInQuery: Concept = whatColourIsFlyntQuery.createConcept(flyntConceptLabel, birdConceptTypeLabel, {
-            quantifierType: QuantifierType.A_SINGLE,
             designatorType: DesignatorType.LAMBDA
         });
         whatColourIsFlyntQuery.createRelation(flyntAttrBlueRelationLabel, attributeRelationTypeLabel, [flyntInQuery, whatBlueColour]);
@@ -173,7 +170,6 @@ describe('Simple queries', () => {
         // Create Query: What colour is the bird Flynt?
         const whatAnimalIsYellow: ConceptualGraph = new ConceptualGraph();
         const whatAnimal: Concept = whatAnimalIsYellow.createConcept("WhatAnimal", animalConceptTypeLabel, {
-            quantifierType: QuantifierType.A_SINGLE,
             designatorType: DesignatorType.LAMBDA
         })
         const shadeOfLightInQuery: Concept = whatAnimalIsYellow.createConcept(blueConceptLabel, shadeOfLightConceptTypeLabel, blueConceptLabel);
@@ -212,7 +208,6 @@ describe('Simple queries', () => {
         // Create Query: What colour is the bird Flynt?
         const whatAnimalIsYellow: ConceptualGraph = new ConceptualGraph();
         const whatAnimal: Concept = whatAnimalIsYellow.createConcept("WhatAnimal", animalConceptTypeLabel, {
-            quantifierType: QuantifierType.A_SINGLE,
             designatorType: DesignatorType.LAMBDA
         })
         const shadeOfLightInQuery: Concept = whatAnimalIsYellow.createConcept(blueConceptLabel, shadeOfLightConceptTypeLabel, blueConceptLabel);
@@ -253,7 +248,6 @@ describe('Simple queries', () => {
         // Create Query: What colour is the bird Flynt?
         const whatAnimalIsYellow: ConceptualGraph = new ConceptualGraph();
         const whatAnimal: Concept = whatAnimalIsYellow.createConcept("WhatAnimal", animalConceptTypeLabel, {
-            quantifierType: QuantifierType.A_SINGLE,
             designatorType: DesignatorType.LAMBDA
         })
         const shadeOfLightInQuery: Concept = whatAnimalIsYellow.createConcept(blueConceptLabel, shadeOfLightConceptTypeLabel, blueConceptLabel);
