@@ -20,8 +20,8 @@ import { InMemoryRelationDao } from "./dao/inmemory/InMemoryRelationDao";
 import { InMemoryConceptualGraphDao } from "./dao/inmemory/InMemoryConceptualGraphDao";
 
 // Utils
-import { isConcept, hasConceptType, hasAnyConceptTypes, conceptToString, cloneConcept } from "./util/ConceptUtil";
-import { relationToString, cloneRelation } from "./util/RelationUtil";
+import { isConcept, hasConceptType, hasAnyConceptTypes, conceptToString, cloneConcept, createConcept } from "./util/ConceptUtil";
+import { relationToString, cloneRelation, createRelation } from "./util/RelationUtil";
 
 // Query
 import { QueryManager } from "./query/QueryManager";
@@ -48,8 +48,8 @@ export { InMemoryRelationTypeDao };
 export { InMemoryConceptDao };
 export { InMemoryRelationDao };
 export { InMemoryConceptualGraphDao };
-export { isConcept, hasConceptType, hasAnyConceptTypes, conceptToString, cloneConcept };
-export { relationToString, cloneRelation };
+export { isConcept, hasConceptType, hasAnyConceptTypes, conceptToString, cloneConcept, createConcept };
+export { relationToString, cloneRelation, createRelation };
 export { QueryManager };
 export { DatabaseQueryManager };
 export { ConceptualGraphQueryManager };

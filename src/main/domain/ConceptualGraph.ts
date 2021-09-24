@@ -1,5 +1,5 @@
-import { cloneConcept, conceptToString, isConcept } from "../util/ConceptUtil";
-import { cloneRelation, relationToString } from "../util/RelationUtil";
+import { cloneConcept, conceptToString, createConcept, isConcept } from "../util/ConceptUtil";
+import { cloneRelation, createRelation, relationToString } from "../util/RelationUtil";
 import { Concept, DesignatorType, Referent } from "./Concept";
 import { Relation } from "./Relation";
 
@@ -51,6 +51,7 @@ export class ConceptualGraph {
             this.addRelationIfNotExist(singleRelationToAdd);
         })
     }
+
     addRelationIfNotExist(relation: Relation) {
         if (!this.getRelationByLabel(relation.label)) {
             this.addRelation(relation);
@@ -78,49 +79,13 @@ export class ConceptualGraph {
     }
 
     createConcept(label: string, conceptTypeLabels: string | string[], referent?: string | Referent): Concept {
-        const newConcept: Concept = new Concept();
-        newConcept.label = label;
-        if (typeof conceptTypeLabels === "string") {
-            newConcept.conceptTypeLabels.push(conceptTypeLabels);
-        } else if (conceptTypeLabels && conceptTypeLabels.length > 0) {
-            conceptTypeLabels.forEach((singleConceptTypeLabel) => {
-                newConcept.conceptTypeLabels.push(singleConceptTypeLabel);
-            });
-        }
-        if (!referent) {
-            newConcept.referent = {
-                designatorType: DesignatorType.BLANK,
-                designatorValue: undefined
-            };
-        } else if (typeof referent === "string") {
-            if (referent === DesignatorType.LAMBDA) {
-                newConcept.referent = {
-                    designatorType: DesignatorType.LAMBDA,
-                    designatorValue: undefined
-                };
-            } else {
-                newConcept.referent = {
-                    designatorType: DesignatorType.LITERAL,
-                    designatorValue: referent
-                };
-            }
-        } else {
-            newConcept.referent = {
-                designatorType: referent.designatorType,
-                designatorValue: referent.designatorValue
-            };
-        }
+        const newConcept: Concept = createConcept(label, conceptTypeLabels, referent);
         this.concepts.push(newConcept);
         return newConcept;
     }
 
     createRelation(label: string, relationType: string, conceptArguments: Concept[]): Relation {
-        const newRelation: Relation = new Relation();
-        newRelation.label = label;
-        newRelation.relationTypeLabels.push(relationType);
-        newRelation.conceptArgumentLabels.push(...conceptArguments.map((singleConceptArgument: Concept) => {
-            return singleConceptArgument.label;
-        }));
+        const newRelation: Relation = createRelation(label, relationType, conceptArguments);
         this.relations.push(newRelation);
         return newRelation;
     }
