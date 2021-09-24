@@ -1,3 +1,5 @@
+import { ConceptTypeDao } from "../conceptual-graphs";
+import { isSetOneASubsetOfSetTwo } from "../util/CommonUtil";
 import { cloneConcept, conceptToString, createConcept, isConcept } from "../util/ConceptUtil";
 import { cloneRelation, createRelation, relationToString } from "../util/RelationUtil";
 import { Concept, DesignatorType, Referent } from "./Concept";
@@ -159,7 +161,7 @@ export class ConceptualGraph {
         }
     }
 
-    private _generateStringForNode(curNode: Concept | Relation, prevNode?: Relation | Concept, 
+    private _generateStringForNode(curNode: Concept | Relation, prevNode?: Relation | Concept,
         alreadyProcessedNodes?: (Concept | Relation)[], curDepth?: number): string {
         let leftPadding: string = "";
         for (let i = 0; i < (curDepth ?? 1); i++) {
@@ -186,7 +188,7 @@ export class ConceptualGraph {
         if (alreadyProcessedNodes) {
             alreadyProcessedNodes.push(curNode);
         } else {
-            
+
             alreadyProcessedNodes = [curNode];
         }
 
@@ -212,5 +214,23 @@ export class ConceptualGraph {
             nextNodesFound.push(...nextConcepts);
         }
         return nextNodesFound;
+    }
+
+    matchConceptsByExample(conceptToMatch: Concept, conceptTypeDao: ConceptTypeDao): Concept[] {
+        // A concept matches when it has concept types equal to or lower than the concept to match's concept types
+        const possibleConceptTypeLabels: string[] = conceptTypeDao.getLabelAndAllSubLabelsOfConceptType(conceptToMatch.conceptTypeLabels);
+        const matchedConcepts: Concept[] = this.concepts.filter((singleConcept) => {
+            let doesConceptMatch: boolean = false;
+            let doConceptTypesMatch: boolean = isSetOneASubsetOfSetTwo(singleConcept.conceptTypeLabels, possibleConceptTypeLabels);
+            if (conceptToMatch.referent?.designatorType === DesignatorType.LAMBDA && doConceptTypesMatch) {
+                doesConceptMatch = true;
+            } else if (doConceptTypesMatch
+                && conceptToMatch.referent.designatorType === singleConcept.referent.designatorType
+                && conceptToMatch.referent.designatorValue === singleConcept.referent.designatorValue) {
+                doesConceptMatch = true;
+            }
+            return doesConceptMatch;
+        })
+        return matchedConcepts;
     }
 }

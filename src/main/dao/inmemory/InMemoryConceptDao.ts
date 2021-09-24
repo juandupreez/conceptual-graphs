@@ -91,7 +91,7 @@ export class InMemoryConceptDao implements ConceptDao {
 
     private _getAllSubConceptTypes(conceptTypeLabels: string[]): string[] {
         return conceptTypeLabels.reduce((accumulator: string[], singleConceptTypeLabel) => {
-            accumulator.push(...this.conceptTypeDao.getLabelAndAllSubLabelsOfConcept(singleConceptTypeLabel));
+            accumulator.push(...this.conceptTypeDao.getLabelAndAllSubLabelsOfConceptType(singleConceptTypeLabel));
             return accumulator;
         }, []);
     }

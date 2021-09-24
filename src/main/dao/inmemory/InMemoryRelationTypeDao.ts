@@ -80,7 +80,7 @@ export class InMemoryRelationTypeDao implements RelationTypeDao {
                 parentLabels.forEach((singleParentLabel) => {
                     const parentRelationType: RelationType = this.getRelationTypeByLabel(singleParentLabel);
                     const conceptTypeLabelAndSubConceptTypeLabels: string[]
-                        = this.conceptTypeDao.getLabelAndAllSubLabelsOfConcept(parentRelationType.signature[singleSignatureIndex]);
+                        = this.conceptTypeDao.getLabelAndAllSubLabelsOfConceptType(parentRelationType.signature[singleSignatureIndex]);
                     possibleSignatureConceptTypeLabels.push(...conceptTypeLabelAndSubConceptTypeLabels);
                 })
                 if (!possibleSignatureConceptTypeLabels.includes(singleSignatureLabel)) {
@@ -114,8 +114,15 @@ export class InMemoryRelationTypeDao implements RelationTypeDao {
         })
     }
 
-    getLabelAndAllSubLabelsOfRelation(singleRelationTypeLabel: string): string[] {
-        return this._getLabelAndAllSubLabelsOfRelation(singleRelationTypeLabel, []);
+    getLabelAndAllSubLabelsOfRelation(labelOrLabels: string | string[]): string[] {        
+        if (typeof labelOrLabels === 'string') {
+            return this._getLabelAndAllSubLabelsOfRelation(labelOrLabels, []);
+        } else {
+            return labelOrLabels?.reduce((accumulator, singleLabel) => {
+                accumulator.push(...this._getLabelAndAllSubLabelsOfRelation(singleLabel, []));
+                return accumulator;
+            }, [])
+        }
     }
 
     private _getLabelAndAllSubLabelsOfRelation(label: string, labelsGottenSoFar: string[]): string[] {

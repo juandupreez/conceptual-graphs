@@ -5,7 +5,7 @@ export interface RelationTypeDao {
     getRelationTypeById(relationTypeId: string): RelationType;
     getRelationTypeByLabel(label: string): RelationType;
     getRootRelationTypes(): RelationType[];
-    getLabelAndAllSubLabelsOfRelation(singleRelationTypeLabel: string): string[];
+    getLabelAndAllSubLabelsOfRelation(singleRelationTypeLabel: string | string[]): string[];
     updateRelationType(concpetType: RelationType): RelationType;
     deleteRelationType(relationTypeId: string): boolean;
     importHierarchyFromSimpleRelationTypes(hierarchyToGenerate: SimpleRelationType[]): void;
