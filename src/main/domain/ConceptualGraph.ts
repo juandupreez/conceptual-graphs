@@ -233,4 +233,17 @@ export class ConceptualGraph {
         })
         return matchedConcepts;
     }
+
+    mergeFrom(otherConceptualGraph: ConceptualGraph) {
+        otherConceptualGraph?.concepts?.forEach((singleConcept: Concept) => {
+            this.addConceptIfNotExist(singleConcept);
+        });
+        otherConceptualGraph?.relations?.forEach((singleRelation: Relation) => {
+            this.addRelationIfNotExist(singleRelation);
+        });
+    }
+
+    isEmpty() {
+        return (this.concepts.length === 0 && this.relations.length === 0);
+    }
 }
