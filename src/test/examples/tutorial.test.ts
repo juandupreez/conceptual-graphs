@@ -31,7 +31,7 @@ describe('Example ', () => {
                 { label: "Say" },
                 { label: "Phrase" },
                 { label: "God" },
-                { label: "Bird" },
+                { label: "Mouse" },
                 { label: "SycamoreTree" },
                 { label: "Fat" },
                 { label: "Sing" },
@@ -129,9 +129,9 @@ describe('Example ', () => {
 
     it('There is a bird in a sycamore tree', () => {
         const conceptualGraph: ConceptualGraph = new ConceptualGraph();
-        const aBirdConcept: Concept = conceptualGraph.createConcept("ABird", "Bird");
+        const aMouseConcept: Concept = conceptualGraph.createConcept("AMouse", "Mouse");
         const aSycamoreTreeConcept: Concept = conceptualGraph.createConcept("ASycamoreTree", "SycamoreTree");
-        conceptualGraph.createRelation("abird-in-sycamoretree", "In", [aBirdConcept, aSycamoreTreeConcept]);
+        conceptualGraph.createRelation("abird-in-sycamoretree", "In", [aMouseConcept, aSycamoreTreeConcept]);
 
         conceptualGraphDao.createConceptualGraph(conceptualGraph);
         // console.log(conceptualGraph.toString());
@@ -159,9 +159,9 @@ describe('Example ', () => {
 
     it('A bird is singing', () => {
         const conceptualGraph: ConceptualGraph = new ConceptualGraph();
-        const aBirdConcept: Concept = conceptualGraph.createConcept("AnotherBird", "Bird");
+        const aMouseConcept: Concept = conceptualGraph.createConcept("AnotherMouse", "Mouse");
         const singConcept: Concept = conceptualGraph.createConcept("Sing", "Sing");
-        conceptualGraph.createRelation("abird-agnt-sing", "Agent", [aBirdConcept, singConcept]);
+        conceptualGraph.createRelation("abird-agnt-sing", "Agent", [aMouseConcept, singConcept]);
 
         conceptualGraphDao.createConceptualGraph(conceptualGraph);
         // console.log(conceptualGraph.toString());
@@ -226,13 +226,13 @@ describe('Example ', () => {
     it('In the past, there was this situation: A bird was singing', () => {
         const birdSingingConceptualGraph: ConceptualGraph = new ConceptualGraph();
         birdSingingConceptualGraph.label = "a bird is singing";
-        const aBird: Concept = birdSingingConceptualGraph.createConcept("aBird2", "Bird");
+        const aMouse: Concept = birdSingingConceptualGraph.createConcept("aMouse2", "Mouse");
         const sing: Concept = birdSingingConceptualGraph.createConcept("sing2", "Sing");
-        const birdIsSingingRelation: Relation = birdSingingConceptualGraph.createRelation("bird-is-singing", "Agent", [aBird, sing]);
+        const birdIsSingingRelation: Relation = birdSingingConceptualGraph.createRelation("bird-is-singing", "Agent", [aMouse, sing]);
         conceptualGraphDao.createConceptualGraph(birdSingingConceptualGraph);
 
         const birdSangConceptualGraph: ConceptualGraph = new ConceptualGraph;
-        const situationConcept: Concept = birdSangConceptualGraph.createConcept("ABirdSang", "Situation", {
+        const situationConcept: Concept = birdSangConceptualGraph.createConcept("AMouseSang", "Situation", {
             designatorType: DesignatorType.CONCEPTUAL_GRAPH_LABEL,
             designatorValue: birdSingingConceptualGraph.label
         })
@@ -243,13 +243,13 @@ describe('Example ', () => {
     it('It is possible that a bird is singing', () => {
         const birdSingingConceptualGraph: ConceptualGraph = new ConceptualGraph();
         birdSingingConceptualGraph.label = "a bird is singing again";
-        const aBird: Concept = birdSingingConceptualGraph.createConcept("aBird3", "Bird");
+        const aMouse: Concept = birdSingingConceptualGraph.createConcept("aMouse3", "Mouse");
         const sing: Concept = birdSingingConceptualGraph.createConcept("sing3", "Sing");
-        const birdIsSingingRelation: Relation = birdSingingConceptualGraph.createRelation("bird-is-singing-again", "Agent", [aBird, sing]);
+        const birdIsSingingRelation: Relation = birdSingingConceptualGraph.createRelation("bird-is-singing-again", "Agent", [aMouse, sing]);
         conceptualGraphDao.createConceptualGraph(birdSingingConceptualGraph);
 
         const birdSangConceptualGraph: ConceptualGraph = new ConceptualGraph;
-        const situationConcept: Concept = birdSangConceptualGraph.createConcept("ABirdCouldBeSinging", "Situation", {
+        const situationConcept: Concept = birdSangConceptualGraph.createConcept("AMouseCouldBeSinging", "Situation", {
             designatorType: DesignatorType.CONCEPTUAL_GRAPH_LABEL,
             designatorValue: birdSingingConceptualGraph.label
         })

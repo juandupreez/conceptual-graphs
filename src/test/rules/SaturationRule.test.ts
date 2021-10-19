@@ -17,7 +17,7 @@ import { QueryManager } from "../../main/query/QueryManager";
 import { Rule } from "../../main/rules/Rule";
 import { SaturationRule } from "../../main/rules/SaturationRule";
 import { IdGenerator } from "../../main/util/IdGenerator";
-import { TestScenarioProvider_FlyntTheBird } from "../testutil/TestScenarioProvider_FlyntTheBird";
+import { TestScenarioProvider_TomAndJerry } from "../testutil/TestScenarioProvider_TomAndJerry";
 import { TestScenarioProvider_PhineasAndFerb } from "../testutil/TestScenarioProvider_PhineasAndFerb";
 import { doesConceptualGraphAContainAllNodesOfConceptualGraphB } from "../../main/util/ConceptualGraphUtil";
 
@@ -26,7 +26,7 @@ const relationTypeDao: RelationTypeDao = new InMemoryRelationTypeDao(conceptType
 const conceptDao: ConceptDao = new InMemoryConceptDao(conceptTypeDao);
 const relationDao: RelationDao = new InMemoryRelationDao(conceptDao, conceptTypeDao, relationTypeDao);
 const conceptualGraphDao: ConceptualGraphDao = new InMemoryConceptualGraphDao(conceptDao, relationDao);
-const testScenarioProvider_FlyntTheBird: TestScenarioProvider_FlyntTheBird = new TestScenarioProvider_FlyntTheBird(conceptDao, relationDao, conceptTypeDao, relationTypeDao, conceptualGraphDao);
+const testScenarioProvider_JerryTheMouse: TestScenarioProvider_TomAndJerry = new TestScenarioProvider_TomAndJerry(conceptDao, relationDao, conceptTypeDao, relationTypeDao, conceptualGraphDao);
 const testScenarioProvider_PhineasAndFerb: TestScenarioProvider_PhineasAndFerb = new TestScenarioProvider_PhineasAndFerb(conceptDao, relationDao, conceptTypeDao, relationTypeDao, conceptualGraphDao);
 
 
@@ -511,14 +511,14 @@ describe('Simple saturation', () => {
         girlBroOfBoyConclusion.createRelation("ferb-broof-somegirl", "BrotherOf", [testScenarioProvider_PhineasAndFerb.ferb, someGirl]);
         ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.conclusion = girlBroOfBoyConclusion;
 
-        // Create flynt is yellow
-        const flyntIsYellowCG: ConceptualGraph = testScenarioProvider_FlyntTheBird.getConcept_flyntTheBirdIsColourYellow(testId);
+        // Create jerry is brown
+        const jerryIsBrownCG: ConceptualGraph = testScenarioProvider_JerryTheMouse.getConcept_jerryTheMouseIsColourBrown(testId);
 
         // Apply Rule
-        const saturatedFlyntIsYellowCG: ConceptualGraph = ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.applyRule(flyntIsYellowCG);
+        const saturatedJerryIsBrownCG: ConceptualGraph = ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.applyRule(jerryIsBrownCG);
 
         // Expect original to be the same as saturated
-        expect(flyntIsYellowCG).toEqual(saturatedFlyntIsYellowCG);
+        expect(jerryIsBrownCG).toEqual(saturatedJerryIsBrownCG);
         
     })
 
