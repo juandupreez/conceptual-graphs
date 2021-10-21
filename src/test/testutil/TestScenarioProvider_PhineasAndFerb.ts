@@ -1,6 +1,6 @@
+import { FactDao } from "../../main/conceptual-graphs";
 import { ConceptDao } from "../../main/dao/ConceptDao";
 import { ConceptTypeDao } from "../../main/dao/ConceptTypeDao";
-import { ConceptualGraphDao } from "../../main/dao/ConceptualGraphDao";
 import { RelationDao } from "../../main/dao/RelationDao";
 import { RelationTypeDao } from "../../main/dao/RelationTypeDao";
 import { Concept } from "../../main/domain/Concept";
@@ -11,7 +11,7 @@ export class TestScenarioProvider_PhineasAndFerb {
     relationDao: RelationDao;
     conceptTypeDao: ConceptTypeDao;
     relationTypeDao: RelationTypeDao;
-    conceptualGraphDao: ConceptualGraphDao;
+    conceptualGraphDao: FactDao;
 
     phineas: Concept;
     ferb: Concept;
@@ -31,7 +31,7 @@ export class TestScenarioProvider_PhineasAndFerb {
 
     constructor(conceptDao: ConceptDao, relationDao: RelationDao,
         conceptTypeDao: ConceptTypeDao, relationTypeDao: RelationTypeDao,
-        conceptualtGraphDao: ConceptualGraphDao) {
+        conceptualtGraphDao: FactDao) {
         this.conceptDao = conceptDao;
         this.relationDao = relationDao;
         this.conceptTypeDao = conceptTypeDao;
@@ -246,7 +246,7 @@ export class TestScenarioProvider_PhineasAndFerb {
         fletcherFamily.createRelation("lawrence-fatherOf-ferb", "FatherOf", [this.lawrence, this.ferb]);
         fletcherFamily.createRelation("ferb-sonOf-lawrence", "SonOf", [this.ferb, this.lawrence]);
 
-        this.conceptualGraphDao.createConceptualGraph(fletcherFamily);
+        this.conceptualGraphDao.createFact(fletcherFamily);
 
     }
 
@@ -283,7 +283,7 @@ export class TestScenarioProvider_PhineasAndFerb {
         friendGroup.createRelation("baljeet-friendOf-ferb", "FriendOf", [this.baljeet, this.ferb]);
         friendGroup.createRelation("buford-friendOf-ferb", "FriendOf", [this.buford, this.ferb]);
 
-        this.conceptualGraphDao.createConceptualGraph(friendGroup);
+        this.conceptualGraphDao.createFact(friendGroup);
     }
 
     private _createOtherRelations() {
@@ -297,7 +297,7 @@ export class TestScenarioProvider_PhineasAndFerb {
         // Pinky the Chihuahua
         petRelations.createRelation("isabella-ownsPet-pinky", "OwnsPet", [this.isabella, this.pinkyTheChihuahua]);
 
-        this.conceptualGraphDao.createConceptualGraph(petRelations);
+        this.conceptualGraphDao.createFact(petRelations);
 
         // Buford not a nerd
         const bufordNotNerdy: ConceptualGraph = new ConceptualGraph();
@@ -305,7 +305,7 @@ export class TestScenarioProvider_PhineasAndFerb {
         bufordNotNerdy.addConcept(this.nerdy);
         bufordNotNerdy.createRelation("buford-attr-nerdy", "Attribute", [this.buford, this.nerdy]);
         bufordNotNerdy.createRelation("not-nerdy", "Not", [this.nerdy]);
-        this.conceptualGraphDao.createConceptualGraph(bufordNotNerdy);
+        this.conceptualGraphDao.createFact(bufordNotNerdy);
 
         // Between
         const isabellaBetweenPhineasAndFerb: ConceptualGraph = new ConceptualGraph();
@@ -313,7 +313,7 @@ export class TestScenarioProvider_PhineasAndFerb {
         isabellaBetweenPhineasAndFerb.addConcept(this.phineas);
         isabellaBetweenPhineasAndFerb.addConcept(this.ferb);
         isabellaBetweenPhineasAndFerb.createRelation("isabella-between-phineas-and-ferb", "Between", [this.isabella, this.phineas, this.ferb]);
-        this.conceptualGraphDao.createConceptualGraph(isabellaBetweenPhineasAndFerb);
+        this.conceptualGraphDao.createFact(isabellaBetweenPhineasAndFerb);
     }
     
     getPhineasAndCandaceCG(): ConceptualGraph {

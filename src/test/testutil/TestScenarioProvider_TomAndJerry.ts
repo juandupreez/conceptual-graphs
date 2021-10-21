@@ -1,6 +1,6 @@
+import { FactDao } from "../../main/conceptual-graphs";
 import { ConceptDao } from "../../main/dao/ConceptDao";
 import { ConceptTypeDao } from "../../main/dao/ConceptTypeDao";
-import { ConceptualGraphDao } from "../../main/dao/ConceptualGraphDao";
 import { RelationDao } from "../../main/dao/RelationDao";
 import { RelationTypeDao } from "../../main/dao/RelationTypeDao";
 import { Concept } from "../../main/domain/Concept";
@@ -13,11 +13,11 @@ export class TestScenarioProvider_TomAndJerry {
     relationDao: RelationDao;
     conceptTypeDao: ConceptTypeDao;
     relationTypeDao: RelationTypeDao;
-    conceptualGraphDao: ConceptualGraphDao;
+    conceptualGraphDao: FactDao;
 
     constructor(conceptDao: ConceptDao, relationDao: RelationDao,
         conceptTypeDao: ConceptTypeDao, relationTypeDao: RelationTypeDao,
-        conceptualtGraphDao: ConceptualGraphDao) {
+        conceptualtGraphDao: FactDao) {
         this.conceptDao = conceptDao;
         this.relationDao = relationDao;
         this.conceptTypeDao = conceptTypeDao;
@@ -54,7 +54,7 @@ export class TestScenarioProvider_TomAndJerry {
         const jerryAttrBrownRelation: Relation
             = jerryTheMouseIsBrown.createRelation(jerryAttrBrownRelationLabel, attributeRelationTypeLabel, [jerry, brown]);
 
-        this.conceptualGraphDao.createConceptualGraph(jerryTheMouseIsBrown);
+        this.conceptualGraphDao.createFact(jerryTheMouseIsBrown);
     }
 
     getConcept_jerryTheMouseIsColourBrown(testId: string): ConceptualGraph {
@@ -121,7 +121,7 @@ export class TestScenarioProvider_TomAndJerry {
         const jerryAttrBlueRelation: Relation
             = jerryTheMouseIsBrownAndBlue.createRelation(jerryAttrBlueRelationLabel, attributeRelationTypeLabel, [jerry, blue]);
 
-        this.conceptualGraphDao.createConceptualGraph(jerryTheMouseIsBrownAndBlue);
+        this.conceptualGraphDao.createFact(jerryTheMouseIsBrownAndBlue);
     }
 
     getConcept_jerryTheMouseIsColourBrownAndBlue(testId: string): ConceptualGraph {
@@ -198,7 +198,7 @@ export class TestScenarioProvider_TomAndJerry {
         const jerryAttrBlueRelation: Relation
             = jerryTheMouseIsBrownAndBlue.createRelation(jerryAttrBlueRelationLabel, attributeRelationTypeLabel, [jerry, blue]);
 
-        this.conceptualGraphDao.createConceptualGraph(jerryTheMouseIsBrownAndBlue);
+        this.conceptualGraphDao.createFact(jerryTheMouseIsBrownAndBlue);
     }
 
     getConcept_jerryTheMouseIsColourBrownAndBlueWithSubConceptTypes(testId: string): ConceptualGraph {
@@ -284,7 +284,7 @@ export class TestScenarioProvider_TomAndJerry {
         const jerryAttrBlueRelation: Relation
             = jerryTheMouseIsBrownAndBlue.createRelation(jerryAttrBlueRelationLabel, attributeRelationTypeLabel, [jerry, blue]);
 
-        this.conceptualGraphDao.createConceptualGraph(jerryTheMouseIsBrownAndBlue);
+        this.conceptualGraphDao.createFact(jerryTheMouseIsBrownAndBlue);
     }
 
     getConcept_jerryTheMouseIsColourBrownAndBlueWithSubRelationTypes(testId: string): ConceptualGraph {
@@ -380,7 +380,7 @@ export class TestScenarioProvider_TomAndJerry {
         const blueAttrJerryReverseRelation: Relation
             = jerryTheMouseIsBrownAndBlue.createRelation(blueAttrJerryRelationLabel, reverseAttributeRelationTypeLabel, [blue, jerry]);
 
-        this.conceptualGraphDao.createConceptualGraph(jerryTheMouseIsBrownAndBlue);
+        this.conceptualGraphDao.createFact(jerryTheMouseIsBrownAndBlue);
     }
 
     getConcept_jerryTheMouseIsColourBrownAndBlueWithReverseRelation(testId: string): ConceptualGraph {
@@ -480,7 +480,7 @@ export class TestScenarioProvider_TomAndJerry {
         const brownConcept: Concept = jerryIsBrownAndCute.createConcept("Brown-" + testId, "Colour-" + testId);
         jerryIsBrownAndCute.createRelation("jerry-attribute-brown-" + testId, "Attribute-" + testId, [jerryConcept, brownConcept]);
         jerryIsBrownAndCute.createRelation("jerry-attribute-cute-" + testId, "Attribute-" + testId, [jerryConcept, cuteConcept]);
-        this.conceptualGraphDao.createConceptualGraph(jerryIsBrownAndCute);
+        this.conceptualGraphDao.createFact(jerryIsBrownAndCute);
 
         // Create Concepttual Graph: Tom Is Blue and Cute
         const tomIsBlueAndCute: ConceptualGraph = new ConceptualGraph();
@@ -488,7 +488,7 @@ export class TestScenarioProvider_TomAndJerry {
         const blueConcept: Concept = tomIsBlueAndCute.createConcept("Blue-" + testId, "Colour-" + testId);
         tomIsBlueAndCute.createRelation("tom-attribute-blue-" + testId, "Attribute-" + testId, [tomConcept, blueConcept]);
         tomIsBlueAndCute.createRelation("tom-attribute-cute-" + testId, "Attribute-" + testId, [tomConcept, cuteConcept]);
-        this.conceptualGraphDao.createConceptualGraph(tomIsBlueAndCute);
+        this.conceptualGraphDao.createFact(tomIsBlueAndCute);
 
         // Create Concepttual Graph: Spike Is Red and Cute
         const spikeIsRedAndCute: ConceptualGraph = new ConceptualGraph();
@@ -496,7 +496,7 @@ export class TestScenarioProvider_TomAndJerry {
         const redConcept: Concept = spikeIsRedAndCute.createConcept("Red-" + testId, "Colour-" + testId);
         spikeIsRedAndCute.createRelation("spike-attribute-red-" + testId, "Attribute-" + testId, [spikeConcept, redConcept]);
         spikeIsRedAndCute.createRelation("spike-attribute-cute-" + testId, "Attribute-" + testId, [spikeConcept, cuteConcept]);
-        this.conceptualGraphDao.createConceptualGraph(spikeIsRedAndCute);
+        this.conceptualGraphDao.createFact(spikeIsRedAndCute);
     }
 
     getConcept_threeAnimalsWithColourAndAllThreeCute(testId: string): ConceptualGraph {
@@ -592,7 +592,7 @@ export class TestScenarioProvider_TomAndJerry {
         const jerryIsBrownAndCute: ConceptualGraph = new ConceptualGraph();
         const brownConcept: Concept = jerryIsBrownAndCute.createConcept("Brown-" + testId, "Colour-" + testId, "Brown-" + testId);
         jerryIsBrownAndCute.createRelation("brown-attribute-brown-" + testId, "Attribute-" + testId, [brownConcept, brownConcept]);
-        this.conceptualGraphDao.createConceptualGraph(jerryIsBrownAndCute);
+        this.conceptualGraphDao.createFact(jerryIsBrownAndCute);
     }
 
     getConcept_brownHasAttributeBrown(testId: string) {
@@ -668,7 +668,7 @@ export class TestScenarioProvider_TomAndJerry {
         const brownConcept: Concept = jerryIsBrownAndCute.createConcept("Brown-" + testId, "Colour-" + testId, "Brown-" + testId);
         jerryIsBrownAndCute.createRelation("jerry-attribute-brown-" + testId, "Attribute-" + testId, [jerryConcept, brownConcept]);
         jerryIsBrownAndCute.createRelation("brown-attribute-jerry-" + testId, "Attribute-" + testId, [brownConcept, jerryConcept]);
-        this.conceptualGraphDao.createConceptualGraph(jerryIsBrownAndCute);
+        this.conceptualGraphDao.createFact(jerryIsBrownAndCute);
     }
 
     getConcept_jerryHasAttributeBrownHasAttributeJerry(testId: string): ConceptualGraph {

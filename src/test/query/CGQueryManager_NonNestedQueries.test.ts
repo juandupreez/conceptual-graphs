@@ -1,9 +1,7 @@
 import { ConceptDao } from "../../main/dao/ConceptDao";
-import { ConceptTypeDao } from "../../main/dao/ConceptTypeDao"
-import { ConceptualGraphDao } from "../../main/dao/ConceptualGraphDao";
-import { InMemoryConceptDao } from "../../main/dao/inmemory/InMemoryConceptDao"
-import { InMemoryConceptTypeDao } from "../../main/dao/inmemory/InMemoryConceptTypeDao"
-import { InMemoryConceptualGraphDao } from "../../main/dao/inmemory/InMemoryConceptualGraphDao";
+import { ConceptTypeDao } from "../../main/dao/ConceptTypeDao";
+import { InMemoryConceptDao } from "../../main/dao/inmemory/InMemoryConceptDao";
+import { InMemoryConceptTypeDao } from "../../main/dao/inmemory/InMemoryConceptTypeDao";
 import { InMemoryRelationDao } from "../../main/dao/inmemory/InMemoryRelationDao";
 import { InMemoryRelationTypeDao } from "../../main/dao/inmemory/InMemoryRelationTypeDao";
 import { RelationDao } from "../../main/dao/RelationDao";
@@ -12,17 +10,17 @@ import { Concept, DesignatorType } from "../../main/domain/Concept";
 import { ConceptualGraph } from "../../main/domain/ConceptualGraph";
 import { Relation } from "../../main/domain/Relation";
 import { ConceptualGraphQueryManager } from "../../main/query/ConceptualGraphQueryManager";
-import { DatabaseQueryManager } from "../../main/query/DatabaseQueryManager";
 import { QueryManager } from "../../main/query/QueryManager";
 import { IdGenerator } from "../../main/util/IdGenerator";
 import { TestScenarioProvider_TomAndJerry } from "../testutil/TestScenarioProvider_TomAndJerry";
 import { TestScenarioProvider_PhineasAndFerb } from "../testutil/TestScenarioProvider_PhineasAndFerb";
+import { FactDao, InMemoryFactDao } from "../../main/conceptual-graphs";
 
 const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
 const relationTypeDao: RelationTypeDao = new InMemoryRelationTypeDao(conceptTypeDao);
 const conceptDao: ConceptDao = new InMemoryConceptDao(conceptTypeDao);
 const relationDao: RelationDao = new InMemoryRelationDao(conceptDao, conceptTypeDao, relationTypeDao);
-const conceptualGraphDao: ConceptualGraphDao = new InMemoryConceptualGraphDao(conceptDao, relationDao);
+const conceptualGraphDao: FactDao = new InMemoryFactDao(conceptDao, relationDao);
 const testScenarioProvider_JerryTheMouse: TestScenarioProvider_TomAndJerry = new TestScenarioProvider_TomAndJerry(conceptDao, relationDao, conceptTypeDao, relationTypeDao, conceptualGraphDao);
 const testScenarioProvider_PhineasAndFerb: TestScenarioProvider_PhineasAndFerb = new TestScenarioProvider_PhineasAndFerb(conceptDao, relationDao, conceptTypeDao, relationTypeDao, conceptualGraphDao);
 
