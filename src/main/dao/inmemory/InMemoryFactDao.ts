@@ -1,19 +1,13 @@
 import { Concept } from "../../domain/Concept";
-import { ConceptualGraph } from "../../domain/ConceptualGraph";
+import { ConceptualGraph, SimpleConceptualGraph } from "../../domain/ConceptualGraph";
 import { Relation } from "../../domain/Relation";
 import { IdGenerator } from "../../util/IdGenerator";
 import { ConceptDao } from "../ConceptDao";
-import { ConceptualGraphDao } from "../ConceptualGraphDao";
+import { FactDao } from "../FactDao";
 import { RelationDao } from "../RelationDao";
 import { Store } from "./store/Store";
 
-export class SimpleConceptualGraph {
-    id?: string;
-    label: string;
-    conceptLabels: string[] = [];
-    relationLabels: string[] = [];
-}
-export class InMemoryConceptualGraphDao implements ConceptualGraphDao {
+export class InMemoryFactDao implements FactDao {
     conceptDao: ConceptDao;
     relationDao: RelationDao;
     simpleConceptualGraphs: SimpleConceptualGraph[] = Store.getInstance().state.simpleConceptualGarphs;
@@ -23,49 +17,49 @@ export class InMemoryConceptualGraphDao implements ConceptualGraphDao {
         this.relationDao = relationDao;
     }
 
-    createConceptualGraph(conceptualGraph: ConceptualGraph): ConceptualGraph {
-        const createdConceptualGraph = new ConceptualGraph();
+    createFact(fact: ConceptualGraph): ConceptualGraph {
+        const createdFact = new ConceptualGraph();
         const simpleConceptualGraph = new SimpleConceptualGraph();
         const generatedId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
-        conceptualGraph.id = generatedId;
-        createdConceptualGraph.id = generatedId;
+        fact.id = generatedId;
+        createdFact.id = generatedId;
         simpleConceptualGraph.id = generatedId;
-        createdConceptualGraph.label = conceptualGraph.label;
-        simpleConceptualGraph.label = conceptualGraph.label;
-        conceptualGraph.concepts.forEach((singleConcept: Concept) => {
-            const possibleExistingConcept: Concept = this.conceptDao.getConceptById(singleConcept.id);
+        createdFact.label = fact.label;
+        simpleConceptualGraph.label = fact.label;
+        fact.concepts.forEach((singleConcept: Concept) => {
+            const possibleExistingConcept: Concept = this.conceptDao.getConceptByLabel(singleConcept.label);
             if (possibleExistingConcept) {
                 const updatedConcept: Concept
                     = this.conceptDao.updateConcept(singleConcept);
-                createdConceptualGraph.concepts.push(updatedConcept);
+                createdFact.concepts.push(updatedConcept);
                 simpleConceptualGraph.conceptLabels.push(updatedConcept.label);
             } else {
                 const createdConcept: Concept
                     = this.conceptDao.createConcept(singleConcept.label, singleConcept.conceptTypeLabels, singleConcept.referent);
-                createdConceptualGraph.concepts.push(createdConcept);
+                createdFact.concepts.push(createdConcept);
                 simpleConceptualGraph.conceptLabels.push(createdConcept.label);
             }
 
         })
-        conceptualGraph.relations.forEach((singleRelation: Relation) => {
-            const possibleExistingRelation: Relation = this.relationDao.getRelationById(singleRelation.id);
+        fact.relations.forEach((singleRelation: Relation) => {
+            const possibleExistingRelation: Relation = this.relationDao.getRelationByLabel(singleRelation.label);
             if (possibleExistingRelation) {
                 const updatedRelation: Relation
                     = this.relationDao.updateRelation(singleRelation);
-                createdConceptualGraph.relations.push(updatedRelation);
+                createdFact.relations.push(updatedRelation);
                 simpleConceptualGraph.relationLabels.push(updatedRelation.label);
             } else {
                 const createdRelation: Relation
                     = this.relationDao.createRelation(singleRelation.label, singleRelation.relationTypeLabels, singleRelation.conceptArgumentLabels);
-                createdConceptualGraph.relations.push(createdRelation);
+                createdFact.relations.push(createdRelation);
                 simpleConceptualGraph.relationLabels.push(singleRelation.label);
             }
         })
         this.simpleConceptualGraphs.push(simpleConceptualGraph);
-        return createdConceptualGraph;
+        return createdFact;
     }
 
-    getConceptualGraphById(conceptualGraphId: string): ConceptualGraph {
+    getFactById(conceptualGraphId: string): ConceptualGraph {
         const foundSimpleConceptualGraph: SimpleConceptualGraph = this.simpleConceptualGraphs.find((singleSimpleConceptualGraph) => {
             return (singleSimpleConceptualGraph.id && singleSimpleConceptualGraph.id === conceptualGraphId);
         })
@@ -86,7 +80,7 @@ export class InMemoryConceptualGraphDao implements ConceptualGraphDao {
         }
     }
 
-    getConceptualGraphByLabel(label: string): ConceptualGraph {
+    getFactByLabel(label: string): ConceptualGraph {
         const foundSimpleConceptualGraph: SimpleConceptualGraph = this.simpleConceptualGraphs.find((singleSimpleConceptualGraph) => {
             return (singleSimpleConceptualGraph.label && singleSimpleConceptualGraph.label === label);
         })
@@ -107,7 +101,7 @@ export class InMemoryConceptualGraphDao implements ConceptualGraphDao {
         }
     }
 
-    updateConceptualGraph(conceptualGraphToUpdate: ConceptualGraph): ConceptualGraph {
+    updateFact(conceptualGraphToUpdate: ConceptualGraph): ConceptualGraph {
         this.simpleConceptualGraphs.forEach((singleSimpleConceptualGraph) => {
             if (conceptualGraphToUpdate.id === singleSimpleConceptualGraph.id) {
                 singleSimpleConceptualGraph.label = conceptualGraphToUpdate.label;
@@ -124,7 +118,7 @@ export class InMemoryConceptualGraphDao implements ConceptualGraphDao {
         return conceptualGraphToUpdate;
     }
     
-    deleteConceptualGraph(idToDelete: string): boolean {
+    deleteFact(idToDelete: string): boolean {
         let isSuccessfulDelete: boolean = false;
         const lengthBeforeDelete: number = this.simpleConceptualGraphs.length;
         this.simpleConceptualGraphs = this.simpleConceptualGraphs.filter((singleSimpleConceptualGraph) => {

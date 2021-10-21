@@ -1,29 +1,27 @@
 import { ConceptDao } from "../../main/dao/ConceptDao";
-import { ConceptTypeDao } from "../../main/dao/ConceptTypeDao"
-import { ConceptualGraphDao } from "../../main/dao/ConceptualGraphDao";
-import { InMemoryConceptDao } from "../../main/dao/inmemory/InMemoryConceptDao"
-import { InMemoryConceptTypeDao } from "../../main/dao/inmemory/InMemoryConceptTypeDao"
-import { InMemoryConceptualGraphDao } from "../../main/dao/inmemory/InMemoryConceptualGraphDao";
+import { ConceptTypeDao } from "../../main/dao/ConceptTypeDao";
+import { InMemoryConceptDao } from "../../main/dao/inmemory/InMemoryConceptDao";
+import { InMemoryConceptTypeDao } from "../../main/dao/inmemory/InMemoryConceptTypeDao";
 import { InMemoryRelationDao } from "../../main/dao/inmemory/InMemoryRelationDao";
 import { InMemoryRelationTypeDao } from "../../main/dao/inmemory/InMemoryRelationTypeDao";
 import { RelationDao } from "../../main/dao/RelationDao";
 import { RelationTypeDao } from "../../main/dao/RelationTypeDao";
-import { Concept, DesignatorType, QuantifierType } from "../../main/domain/Concept";
+import { Concept, DesignatorType } from "../../main/domain/Concept";
 import { ConceptualGraph } from "../../main/domain/ConceptualGraph";
 import { Relation } from "../../main/domain/Relation";
 import { ConceptualGraphQueryManager } from "../../main/query/ConceptualGraphQueryManager";
-import { DatabaseQueryManager } from "../../main/query/DatabaseQueryManager";
 import { QueryManager } from "../../main/query/QueryManager";
 import { IdGenerator } from "../../main/util/IdGenerator";
-import { TestScenarioProvider_FlyntTheBird } from "../testutil/TestScenarioProvider_FlyntTheBird";
+import { TestScenarioProvider_TomAndJerry } from "../testutil/TestScenarioProvider_TomAndJerry";
 import { TestScenarioProvider_PhineasAndFerb } from "../testutil/TestScenarioProvider_PhineasAndFerb";
+import { FactDao, InMemoryFactDao } from "../../main/conceptual-graphs";
 
 const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
 const relationTypeDao: RelationTypeDao = new InMemoryRelationTypeDao(conceptTypeDao);
 const conceptDao: ConceptDao = new InMemoryConceptDao(conceptTypeDao);
 const relationDao: RelationDao = new InMemoryRelationDao(conceptDao, conceptTypeDao, relationTypeDao);
-const conceptualGraphDao: ConceptualGraphDao = new InMemoryConceptualGraphDao(conceptDao, relationDao);
-const testScenarioProvider_FlyntTheBird: TestScenarioProvider_FlyntTheBird = new TestScenarioProvider_FlyntTheBird(conceptDao, relationDao, conceptTypeDao, relationTypeDao, conceptualGraphDao);
+const conceptualGraphDao: FactDao = new InMemoryFactDao(conceptDao, relationDao);
+const testScenarioProvider_JerryTheMouse: TestScenarioProvider_TomAndJerry = new TestScenarioProvider_TomAndJerry(conceptDao, relationDao, conceptTypeDao, relationTypeDao, conceptualGraphDao);
 const testScenarioProvider_PhineasAndFerb: TestScenarioProvider_PhineasAndFerb = new TestScenarioProvider_PhineasAndFerb(conceptDao, relationDao, conceptTypeDao, relationTypeDao, conceptualGraphDao);
 
 let testId: string = "";
@@ -44,136 +42,126 @@ describe('Simple queries', () => {
     it('Simple Query with one relation and two concepts: Exact Concept Types | Exact Relation Types | Match all nodes | Single Answer', () => {
         const queryManager: QueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
 
-        // Create Conceptual graph: Flynt the bird is yellow
-        const flyntTheBirdIsColourYellow: ConceptualGraph = testScenarioProvider_FlyntTheBird.getConcept_flyntTheBirdIsColourYellow(testId);
-        const birdConceptTypeLabel: string = "Bird-" + testId;
+        // Create Conceptual graph: Jerry the bird is brown
+        const jerryTheMouseIsColourBrown: ConceptualGraph = testScenarioProvider_JerryTheMouse.getConcept_jerryTheMouseIsColourBrown(testId);
+        const birdConceptTypeLabel: string = "Mouse-" + testId;
         const colourConceptTypeLabel: string = "Colour-" + testId;
         const attributeRelationTypeLabel: string = "Attribute-" + testId;
-        const flyntAttrYellowRelationLabel: string = "flynt-attribute-yellow-" + testId;
-        const flyntConceptLabel: string = "Flynt-" + testId;
-        const yellowConceptLabel: string = "Yellow-" + testId;
-        (queryManager as ConceptualGraphQueryManager).conceptualGraphToMatch = flyntTheBirdIsColourYellow;
+        const jerryAttrBrownRelationLabel: string = "jerry-attribute-brown-" + testId;
+        const jerryConceptLabel: string = "Jerry-" + testId;
+        const brownConceptLabel: string = "Brown-" + testId;
+        (queryManager as ConceptualGraphQueryManager).conceptualGraphToMatch = jerryTheMouseIsColourBrown;
 
-        // Create Query: What colour is the bird Flynt?
-        const whatColourIsFlyntQuery: ConceptualGraph = new ConceptualGraph();
-        const whatColour: Concept = whatColourIsFlyntQuery.createConcept("WhatColour", colourConceptTypeLabel, {
-            quantifierType: QuantifierType.A_SINGLE,
+        // Create Query: What colour is the bird Jerry?
+        const whatColourIsJerryQuery: ConceptualGraph = new ConceptualGraph();
+        const whatColour: Concept = whatColourIsJerryQuery.createConcept("WhatColour", colourConceptTypeLabel, {
             designatorType: DesignatorType.LAMBDA
         })
-        const flyntInQuery: Concept = whatColourIsFlyntQuery.createConcept("FlyntInQuery", birdConceptTypeLabel, flyntConceptLabel);
-        whatColourIsFlyntQuery.createRelation("query-whatcolor-attr-flynt", attributeRelationTypeLabel, [flyntInQuery, whatColour]);
+        const jerryInQuery: Concept = whatColourIsJerryQuery.createConcept("JerryInQuery", birdConceptTypeLabel, jerryConceptLabel);
+        whatColourIsJerryQuery.createRelation("query-whatcolor-attr-jerry", attributeRelationTypeLabel, [jerryInQuery, whatColour]);
 
         // Run query against data
-        const matches: ConceptualGraph[] = queryManager.executeQuery(whatColourIsFlyntQuery);
+        const matches: ConceptualGraph[] = queryManager.executeQuery(whatColourIsJerryQuery);
 
         // Expect single answer
         expect(matches.length).toBe(1);
 
-        // Expect answer to be: Yellow
-        expect(matches[0].getConceptByLabel(yellowConceptLabel)).toEqual({
+        // Expect answer to be: Brown
+        expect(matches[0].getConceptByLabel(brownConceptLabel)).toEqual({
             id: undefined,
-            label: "Yellow-" + testId,
+            label: "Brown-" + testId,
             conceptTypeLabels: ["Colour-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
-                designatorValue: "Yellow-" + testId,
+                designatorValue: "Brown-" + testId,
             },
             templateConceptLabelWhichWasMatched: "WhatColour"
         });
-        expect(matches[0].getConceptByLabel(flyntConceptLabel)).toEqual({
+        expect(matches[0].getConceptByLabel(jerryConceptLabel)).toEqual({
             id: undefined,
-            label: "Flynt-" + testId,
-            conceptTypeLabels: ["Bird-" + testId],
+            label: "Jerry-" + testId,
+            conceptTypeLabels: ["Mouse-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
-                designatorValue: "Flynt-" + testId,
+                designatorValue: "Jerry-" + testId,
             },
-            templateConceptLabelWhichWasMatched: "FlyntInQuery"
+            templateConceptLabelWhichWasMatched: "JerryInQuery"
         });
-        expect(matches[0].getRelationByLabel(flyntAttrYellowRelationLabel)).toEqual({
+        expect(matches[0].getRelationByLabel(jerryAttrBrownRelationLabel)).toEqual({
             id: undefined,
-            label: "flynt-attribute-yellow-" + testId,
+            label: "jerry-attribute-brown-" + testId,
             relationTypeLabels: [
                 "Attribute-" + testId,
             ],
             conceptArgumentLabels: [
-                "Flynt-" + testId,
-                "Yellow-" + testId,
+                "Jerry-" + testId,
+                "Brown-" + testId,
             ],
-            templateRelationLabelWhichWasMatched: "query-whatcolor-attr-flynt",
+            templateRelationLabelWhichWasMatched: "query-whatcolor-attr-jerry",
         });
     })
 
     it('Query with two relations and three concepts: Exact Concept Types | Exact Relation Types | Match all nodes | Multiple Answers', () => {
         const queryManager: QueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
 
-        // Create Conceptual graph: Flynt the bird is yellow and blue
-        const flyntIsYellowAndBlue: ConceptualGraph = testScenarioProvider_FlyntTheBird.getConcept_flyntTheBirdIsColourYellowAndBlue(testId);
-        const birdConceptTypeLabel: string = "Bird-" + testId;
+        // Create Conceptual graph: Jerry the bird is brown and blue
+        const jerryIsBrownAndBlue: ConceptualGraph = testScenarioProvider_JerryTheMouse.getConcept_jerryTheMouseIsColourBrownAndBlue(testId);
+        const birdConceptTypeLabel: string = "Mouse-" + testId;
         const colourConceptTypeLabel: string = "Colour-" + testId;
         const attributeRelationTypeLabel: string = "Attribute-" + testId;
-        const flyntAttrYellowRelationLabel: string = "flynt-attribute-yellow-" + testId;
-        const flyntAttrBlueRelationLabel: string = "flynt-attribute-blue-" + testId;
-        const flyntConceptLabel: string = "Flynt-" + testId;
-        const yellowConceptLabel: string = "Yellow-" + testId;
+        const jerryAttrBrownRelationLabel: string = "jerry-attribute-brown-" + testId;
+        const jerryAttrBlueRelationLabel: string = "jerry-attribute-blue-" + testId;
+        const jerryConceptLabel: string = "Jerry-" + testId;
+        const brownConceptLabel: string = "Brown-" + testId;
         const blueConceptLabel: string = "Blue-" + testId;
-        (queryManager as ConceptualGraphQueryManager).conceptualGraphToMatch = flyntIsYellowAndBlue;
+        (queryManager as ConceptualGraphQueryManager).conceptualGraphToMatch = jerryIsBrownAndBlue;
 
-        // Create Query: What colour is the bird Flynt?
-        const whatColourIsFlyntQuery: ConceptualGraph = new ConceptualGraph();
-        const whatColour: Concept = whatColourIsFlyntQuery.createConcept("WhatColour", colourConceptTypeLabel, {
-            quantifierType: QuantifierType.A_SINGLE,
+        // Create Query: What colour is the bird Jerry?
+        const whatColourIsJerryQuery: ConceptualGraph = new ConceptualGraph();
+        const whatColour: Concept = whatColourIsJerryQuery.createConcept("WhatColour", colourConceptTypeLabel, {
             designatorType: DesignatorType.LAMBDA
         })
-        const flyntInQuery: Concept = whatColourIsFlyntQuery.createConcept("FlyntInQuery", birdConceptTypeLabel, flyntConceptLabel);
-        whatColourIsFlyntQuery.createRelation("query-flynt-attr-whatcolor", attributeRelationTypeLabel, [flyntInQuery, whatColour]);
+        const jerryInQuery: Concept = whatColourIsJerryQuery.createConcept("JerryInQuery", birdConceptTypeLabel, jerryConceptLabel);
+        whatColourIsJerryQuery.createRelation("query-jerry-attr-whatcolor", attributeRelationTypeLabel, [jerryInQuery, whatColour]);
 
         // Run query against data
-        const matches: ConceptualGraph[] = queryManager.executeQuery(whatColourIsFlyntQuery);
+        const matches: ConceptualGraph[] = queryManager.executeQuery(whatColourIsJerryQuery);
 
         // Expect single answer
         expect(matches.length).toBe(2);
 
-        // Expect First answer to be: Yellow
-        expect(matches[0].getConceptByLabel(yellowConceptLabel)).toEqual({
+        // Expect First answer to be: Brown
+        expect(matches[0].getConceptByLabel(brownConceptLabel)).toEqual({
             id: undefined,
-            label: "Yellow-" + testId,
+            label: "Brown-" + testId,
             conceptTypeLabels: ["Colour-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
-                designatorValue: "Yellow-" + testId,
+                designatorValue: "Brown-" + testId,
             },
             templateConceptLabelWhichWasMatched: "WhatColour"
         });
-        expect(matches[0].getConceptByLabel(flyntConceptLabel)).toEqual({
+        expect(matches[0].getConceptByLabel(jerryConceptLabel)).toEqual({
             id: undefined,
-            label: "Flynt-" + testId,
-            conceptTypeLabels: ["Bird-" + testId],
+            label: "Jerry-" + testId,
+            conceptTypeLabels: ["Mouse-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
-                designatorValue: "Flynt-" + testId,
+                designatorValue: "Jerry-" + testId,
             },
-            templateConceptLabelWhichWasMatched: "FlyntInQuery"
+            templateConceptLabelWhichWasMatched: "JerryInQuery"
         });
-        expect(matches[0].getRelationByLabel(flyntAttrYellowRelationLabel)).toEqual({
+        expect(matches[0].getRelationByLabel(jerryAttrBrownRelationLabel)).toEqual({
             id: undefined,
-            label: "flynt-attribute-yellow-" + testId,
+            label: "jerry-attribute-brown-" + testId,
             relationTypeLabels: [
                 "Attribute-" + testId,
             ],
             conceptArgumentLabels: [
-                "Flynt-" + testId,
-                "Yellow-" + testId,
+                "Jerry-" + testId,
+                "Brown-" + testId,
             ],
-            templateRelationLabelWhichWasMatched: "query-flynt-attr-whatcolor",
+            templateRelationLabelWhichWasMatched: "query-jerry-attr-whatcolor",
         });
 
         // Expect Second answer to be: Blue
@@ -182,64 +170,59 @@ describe('Simple queries', () => {
             label: "Blue-" + testId,
             conceptTypeLabels: ["Colour-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
                 designatorValue: "Blue-" + testId,
             },
             templateConceptLabelWhichWasMatched: "WhatColour"
         });
-        expect(matches[1].getConceptByLabel(flyntConceptLabel)).toEqual({
+        expect(matches[1].getConceptByLabel(jerryConceptLabel)).toEqual({
             id: undefined,
-            label: "Flynt-" + testId,
-            conceptTypeLabels: ["Bird-" + testId],
+            label: "Jerry-" + testId,
+            conceptTypeLabels: ["Mouse-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
-                designatorValue: "Flynt-" + testId,
+                designatorValue: "Jerry-" + testId,
             },
-            templateConceptLabelWhichWasMatched: "FlyntInQuery"
+            templateConceptLabelWhichWasMatched: "JerryInQuery"
         });
-        expect(matches[1].getRelationByLabel(flyntAttrBlueRelationLabel)).toEqual({
+        expect(matches[1].getRelationByLabel(jerryAttrBlueRelationLabel)).toEqual({
             id: undefined,
-            label: "flynt-attribute-blue-" + testId,
+            label: "jerry-attribute-blue-" + testId,
             relationTypeLabels: [
                 "Attribute-" + testId,
             ],
             conceptArgumentLabels: [
-                "Flynt-" + testId,
+                "Jerry-" + testId,
                 "Blue-" + testId,
             ],
-            templateRelationLabelWhichWasMatched: "query-flynt-attr-whatcolor",
+            templateRelationLabelWhichWasMatched: "query-jerry-attr-whatcolor",
         });
     })
 
     it('Project answer nodes without returning whole: Exact Concept Types | Exact Relation Types | Extract only answer nodes | Single Answer', () => {
         const queryManager: QueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
 
-        // Create Conceptual graph: Flynt the bird is yellow and blue
-        const flyntIsYellowAndBlue: ConceptualGraph = testScenarioProvider_FlyntTheBird.getConcept_flyntTheBirdIsColourYellowAndBlue(testId);
-        const birdConceptTypeLabel: string = "Bird-" + testId;
+        // Create Conceptual graph: Jerry the bird is brown and blue
+        const jerryIsBrownAndBlue: ConceptualGraph = testScenarioProvider_JerryTheMouse.getConcept_jerryTheMouseIsColourBrownAndBlue(testId);
+        const birdConceptTypeLabel: string = "Mouse-" + testId;
         const colourConceptTypeLabel: string = "Colour-" + testId;
         const attributeRelationTypeLabel: string = "Attribute-" + testId;
-        const flyntAttrBlueRelationLabel: string = "flynt-attribute-blue-" + testId;
-        const flyntConceptLabel: string = "Flynt-" + testId;
-        const yellowConceptLabel: string = "Yellow-" + testId;
+        const jerryAttrBlueRelationLabel: string = "jerry-attribute-blue-" + testId;
+        const jerryConceptLabel: string = "Jerry-" + testId;
+        const brownConceptLabel: string = "Brown-" + testId;
         const blueConceptLabel: string = "Blue-" + testId;
-        (queryManager as ConceptualGraphQueryManager).conceptualGraphToMatch = flyntIsYellowAndBlue;
+        (queryManager as ConceptualGraphQueryManager).conceptualGraphToMatch = jerryIsBrownAndBlue;
 
-        // Create Query: What colour is the bird Flynt?
-        const whatColourIsFlyntQuery: ConceptualGraph = new ConceptualGraph();
-        const whatBlueColour: Concept = whatColourIsFlyntQuery.createConcept("BlueInQuery", colourConceptTypeLabel, blueConceptLabel);
-        const whatBird: Concept = whatColourIsFlyntQuery.createConcept("WhatBird", birdConceptTypeLabel, {
-            quantifierType: QuantifierType.A_SINGLE,
+        // Create Query: What colour is the bird Jerry?
+        const whatColourIsJerryQuery: ConceptualGraph = new ConceptualGraph();
+        const whatBlueColour: Concept = whatColourIsJerryQuery.createConcept("BlueInQuery", colourConceptTypeLabel, blueConceptLabel);
+        const whatMouse: Concept = whatColourIsJerryQuery.createConcept("WhatMouse", birdConceptTypeLabel, {
             designatorType: DesignatorType.LAMBDA
         });
-        whatColourIsFlyntQuery.createRelation("query-whatbird-attr-blue", attributeRelationTypeLabel, [whatBird, whatBlueColour]);
+        whatColourIsJerryQuery.createRelation("query-whatbird-attr-blue", attributeRelationTypeLabel, [whatMouse, whatBlueColour]);
 
         // Run query against data
-        const matches: ConceptualGraph[] = queryManager.executeQuery(whatColourIsFlyntQuery);
+        const matches: ConceptualGraph[] = queryManager.executeQuery(whatColourIsJerryQuery);
 
         // Expect single answer
         expect(matches.length).toBe(1);
@@ -250,65 +233,60 @@ describe('Simple queries', () => {
             label: "Blue-" + testId,
             conceptTypeLabels: ["Colour-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
                 designatorValue: "Blue-" + testId,
             },
             templateConceptLabelWhichWasMatched: "BlueInQuery"
         });
-        expect(matches[0].getConceptByLabel(flyntConceptLabel)).toEqual({
+        expect(matches[0].getConceptByLabel(jerryConceptLabel)).toEqual({
             id: undefined,
-            label: "Flynt-" + testId,
-            conceptTypeLabels: ["Bird-" + testId],
+            label: "Jerry-" + testId,
+            conceptTypeLabels: ["Mouse-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
-                designatorValue: "Flynt-" + testId,
+                designatorValue: "Jerry-" + testId,
             },
-            templateConceptLabelWhichWasMatched: "WhatBird"
+            templateConceptLabelWhichWasMatched: "WhatMouse"
         });
-        expect(matches[0].getRelationByLabel(flyntAttrBlueRelationLabel)).toEqual({
+        expect(matches[0].getRelationByLabel(jerryAttrBlueRelationLabel)).toEqual({
             id: undefined,
-            label: "flynt-attribute-blue-" + testId,
+            label: "jerry-attribute-blue-" + testId,
             relationTypeLabels: [
                 "Attribute-" + testId,
             ],
             conceptArgumentLabels: [
-                "Flynt-" + testId,
+                "Jerry-" + testId,
                 "Blue-" + testId,
             ],
             templateRelationLabelWhichWasMatched: "query-whatbird-attr-blue",
         });
-        expect(matches[0].getConceptByLabel(yellowConceptLabel)).toBeUndefined();
+        expect(matches[0].getConceptByLabel(brownConceptLabel)).toBeUndefined();
     })
 
     it('Match Sub Concepts Types: Parent Concept Types | Exact Relation Types | Match all nodes | Single Answer', () => {
         const queryManager: QueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
 
-        // Create Conceptual graph: Flynt the bird is yellow and blue
-        const flyntTheBirdIsColourYellowAndBlueWithSubConceptTypes: ConceptualGraph =
-            testScenarioProvider_FlyntTheBird.getConcept_flyntTheBirdIsColourYellowAndBlueWithSubConceptTypes(testId);
+        // Create Conceptual graph: Jerry the bird is brown and blue
+        const jerryTheMouseIsColourBrownAndBlueWithSubConceptTypes: ConceptualGraph =
+            testScenarioProvider_JerryTheMouse.getConcept_jerryTheMouseIsColourBrownAndBlueWithSubConceptTypes(testId);
         const animalConceptTypeLabel: string = "Animal-" + testId;
         const shadeOfLightConceptTypeLabel: string = "ShadeOfLight-" + testId;
         const attributeRelationTypeLabel: string = "Attribute-" + testId;
-        const flyntAttrBlueRelationLabel: string = "flynt-attribute-blue-" + testId;
-        const flyntConceptLabel: string = "Flynt-" + testId;
+        const jerryAttrBlueRelationLabel: string = "jerry-attribute-blue-" + testId;
+        const jerryConceptLabel: string = "Jerry-" + testId;
         const blueConceptLabel: string = "Blue-" + testId;
-        (queryManager as ConceptualGraphQueryManager).conceptualGraphToMatch = flyntTheBirdIsColourYellowAndBlueWithSubConceptTypes;
+        (queryManager as ConceptualGraphQueryManager).conceptualGraphToMatch = jerryTheMouseIsColourBrownAndBlueWithSubConceptTypes;
 
-        // Create Query: What colour is the bird Flynt?
-        const whatAnimalIsYellow: ConceptualGraph = new ConceptualGraph();
-        const whatAnimal: Concept = whatAnimalIsYellow.createConcept("WhatAnimal", animalConceptTypeLabel, {
-            quantifierType: QuantifierType.A_SINGLE,
+        // Create Query: What colour is the bird Jerry?
+        const whatAnimalIsBrown: ConceptualGraph = new ConceptualGraph();
+        const whatAnimal: Concept = whatAnimalIsBrown.createConcept("WhatAnimal", animalConceptTypeLabel, {
             designatorType: DesignatorType.LAMBDA
         })
-        const shadeOfLightInQuery: Concept = whatAnimalIsYellow.createConcept("BlueInQuery", shadeOfLightConceptTypeLabel, blueConceptLabel);
-        whatAnimalIsYellow.createRelation("query-whatanimal-attr-blue", attributeRelationTypeLabel, [whatAnimal, shadeOfLightInQuery]);
+        const shadeOfLightInQuery: Concept = whatAnimalIsBrown.createConcept("BlueInQuery", shadeOfLightConceptTypeLabel, blueConceptLabel);
+        whatAnimalIsBrown.createRelation("query-whatanimal-attr-blue", attributeRelationTypeLabel, [whatAnimal, shadeOfLightInQuery]);
 
         // Run query against data
-        const matches: ConceptualGraph[] = queryManager.executeQuery(whatAnimalIsYellow);
+        const matches: ConceptualGraph[] = queryManager.executeQuery(whatAnimalIsBrown);
 
         // Expect single answer
         expect(matches.length).toBe(1);
@@ -319,33 +297,29 @@ describe('Simple queries', () => {
             label: "Blue-" + testId,
             conceptTypeLabels: ["Colour-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
                 designatorValue: "Blue-" + testId,
             },
             templateConceptLabelWhichWasMatched: "BlueInQuery"
         });
-        expect(matches[0].getConceptByLabel(flyntConceptLabel)).toEqual({
+        expect(matches[0].getConceptByLabel(jerryConceptLabel)).toEqual({
             id: undefined,
-            label: "Flynt-" + testId,
-            conceptTypeLabels: ["Bird-" + testId],
+            label: "Jerry-" + testId,
+            conceptTypeLabels: ["Mouse-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
-                designatorValue: "Flynt-" + testId,
+                designatorValue: "Jerry-" + testId,
             },
             templateConceptLabelWhichWasMatched: "WhatAnimal"
         });
-        expect(matches[0].getRelationByLabel(flyntAttrBlueRelationLabel)).toEqual({
+        expect(matches[0].getRelationByLabel(jerryAttrBlueRelationLabel)).toEqual({
             id: undefined,
-            label: "flynt-attribute-blue-" + testId,
+            label: "jerry-attribute-blue-" + testId,
             relationTypeLabels: [
                 "Attribute-" + testId,
             ],
             conceptArgumentLabels: [
-                "Flynt-" + testId,
+                "Jerry-" + testId,
                 "Blue-" + testId,
             ],
             templateRelationLabelWhichWasMatched: "query-whatanimal-attr-blue",
@@ -355,28 +329,27 @@ describe('Simple queries', () => {
     it('Match Sub Relation Types: Parent Concept Types | Parent Relation Types | Match all nodes | Single Answer', () => {
         const queryManager: QueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
 
-        // Create Conceptual graph: Flynt the bird is yellow and blue
-        const flyntTheBirdIsColourYellowAndBlueWithSubRelationTypes: ConceptualGraph =
-            testScenarioProvider_FlyntTheBird.getConcept_flyntTheBirdIsColourYellowAndBlueWithSubRelationTypes(testId);
+        // Create Conceptual graph: Jerry the bird is brown and blue
+        const jerryTheMouseIsColourBrownAndBlueWithSubRelationTypes: ConceptualGraph =
+            testScenarioProvider_JerryTheMouse.getConcept_jerryTheMouseIsColourBrownAndBlueWithSubRelationTypes(testId);
         const animalConceptTypeLabel: string = "Animal-" + testId;
         const shadeOfLightConceptTypeLabel: string = "ShadeOfLight-" + testId;
         const propertyRelationTypeLabel: string = "Property-" + testId;
-        const flyntAttrBlueRelationLabel: string = "flynt-attribute-blue-" + testId;
-        const flyntConceptLabel: string = "Flynt-" + testId;
+        const jerryAttrBlueRelationLabel: string = "jerry-attribute-blue-" + testId;
+        const jerryConceptLabel: string = "Jerry-" + testId;
         const blueConceptLabel: string = "Blue-" + testId;
-        (queryManager as ConceptualGraphQueryManager).conceptualGraphToMatch = flyntTheBirdIsColourYellowAndBlueWithSubRelationTypes;
+        (queryManager as ConceptualGraphQueryManager).conceptualGraphToMatch = jerryTheMouseIsColourBrownAndBlueWithSubRelationTypes;
 
-        // Create Query: What colour is the bird Flynt?
-        const whatAnimalIsYellow: ConceptualGraph = new ConceptualGraph();
-        const whatAnimal: Concept = whatAnimalIsYellow.createConcept("WhatAnimal", animalConceptTypeLabel, {
-            quantifierType: QuantifierType.A_SINGLE,
+        // Create Query: What colour is the bird Jerry?
+        const whatAnimalIsBrown: ConceptualGraph = new ConceptualGraph();
+        const whatAnimal: Concept = whatAnimalIsBrown.createConcept("WhatAnimal", animalConceptTypeLabel, {
             designatorType: DesignatorType.LAMBDA
         })
-        const shadeOfLightInQuery: Concept = whatAnimalIsYellow.createConcept("BlueInQuery", shadeOfLightConceptTypeLabel, blueConceptLabel);
-        whatAnimalIsYellow.createRelation("query-whatanimal-attr-blue", propertyRelationTypeLabel, [whatAnimal, shadeOfLightInQuery]);
+        const shadeOfLightInQuery: Concept = whatAnimalIsBrown.createConcept("BlueInQuery", shadeOfLightConceptTypeLabel, blueConceptLabel);
+        whatAnimalIsBrown.createRelation("query-whatanimal-attr-blue", propertyRelationTypeLabel, [whatAnimal, shadeOfLightInQuery]);
 
         // Run query against data
-        const matches: ConceptualGraph[] = queryManager.executeQuery(whatAnimalIsYellow);
+        const matches: ConceptualGraph[] = queryManager.executeQuery(whatAnimalIsBrown);
 
         // Expect single answer
         expect(matches.length).toBe(1);
@@ -387,33 +360,29 @@ describe('Simple queries', () => {
             label: "Blue-" + testId,
             conceptTypeLabels: ["Colour-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
                 designatorValue: "Blue-" + testId,
             },
             templateConceptLabelWhichWasMatched: "BlueInQuery"
         });
-        expect(matches[0].getConceptByLabel(flyntConceptLabel)).toEqual({
+        expect(matches[0].getConceptByLabel(jerryConceptLabel)).toEqual({
             id: undefined,
-            label: "Flynt-" + testId,
-            conceptTypeLabels: ["Bird-" + testId],
+            label: "Jerry-" + testId,
+            conceptTypeLabels: ["Mouse-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
-                designatorValue: "Flynt-" + testId,
+                designatorValue: "Jerry-" + testId,
             },
             templateConceptLabelWhichWasMatched: "WhatAnimal"
         });
-        expect(matches[0].getRelationByLabel(flyntAttrBlueRelationLabel)).toEqual({
+        expect(matches[0].getRelationByLabel(jerryAttrBlueRelationLabel)).toEqual({
             id: undefined,
-            label: "flynt-attribute-blue-" + testId,
+            label: "jerry-attribute-blue-" + testId,
             relationTypeLabels: [
                 "Attribute-" + testId,
             ],
             conceptArgumentLabels: [
-                "Flynt-" + testId,
+                "Jerry-" + testId,
                 "Blue-" + testId,
             ],
             templateRelationLabelWhichWasMatched: "query-whatanimal-attr-blue",
@@ -423,29 +392,28 @@ describe('Simple queries', () => {
     it('Matching relations should match concepts exactly: Parent Concept Types | Parent Relation Types | Match all nodes | Single Answer', () => {
         const queryManager: QueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
 
-        // Create Conceptual graph: Flynt the bird is yellow and blue
-        const flyntTheBirdIsColourYellowAndBlueWithReverseRelation: ConceptualGraph =
-            testScenarioProvider_FlyntTheBird.getConcept_flyntTheBirdIsColourYellowAndBlueWithReverseRelation(testId);
+        // Create Conceptual graph: Jerry the bird is brown and blue
+        const jerryTheMouseIsColourBrownAndBlueWithReverseRelation: ConceptualGraph =
+            testScenarioProvider_JerryTheMouse.getConcept_jerryTheMouseIsColourBrownAndBlueWithReverseRelation(testId);
         const animalConceptTypeLabel: string = "Animal-" + testId;
         const shadeOfLightConceptTypeLabel: string = "ShadeOfLight-" + testId;
         const propertyRelationTypeLabel: string = "Property-" + testId;
-        const flyntAttrBlueRelationLabel: string = "flynt-attribute-blue-" + testId;
-        const blueAttrFlyntRelationLabel: string = "blue-attribute-flynt-reverse-" + testId;
-        const flyntConceptLabel: string = "Flynt-" + testId;
+        const jerryAttrBlueRelationLabel: string = "jerry-attribute-blue-" + testId;
+        const blueAttrJerryRelationLabel: string = "blue-attribute-jerry-reverse-" + testId;
+        const jerryConceptLabel: string = "Jerry-" + testId;
         const blueConceptLabel: string = "Blue-" + testId;
-        (queryManager as ConceptualGraphQueryManager).conceptualGraphToMatch = flyntTheBirdIsColourYellowAndBlueWithReverseRelation;
+        (queryManager as ConceptualGraphQueryManager).conceptualGraphToMatch = jerryTheMouseIsColourBrownAndBlueWithReverseRelation;
 
-        // Create Query: What colour is the bird Flynt?
-        const whatAnimalIsYellow: ConceptualGraph = new ConceptualGraph();
-        const whatAnimal: Concept = whatAnimalIsYellow.createConcept("WhatAnimal", animalConceptTypeLabel, {
-            quantifierType: QuantifierType.A_SINGLE,
+        // Create Query: What colour is the bird Jerry?
+        const whatAnimalIsBrown: ConceptualGraph = new ConceptualGraph();
+        const whatAnimal: Concept = whatAnimalIsBrown.createConcept("WhatAnimal", animalConceptTypeLabel, {
             designatorType: DesignatorType.LAMBDA
         })
-        const shadeOfLightInQuery: Concept = whatAnimalIsYellow.createConcept("BlueInQuery", shadeOfLightConceptTypeLabel, blueConceptLabel);
-        whatAnimalIsYellow.createRelation("query-whatanimal-attr-blue", propertyRelationTypeLabel, [whatAnimal, shadeOfLightInQuery]);
+        const shadeOfLightInQuery: Concept = whatAnimalIsBrown.createConcept("BlueInQuery", shadeOfLightConceptTypeLabel, blueConceptLabel);
+        whatAnimalIsBrown.createRelation("query-whatanimal-attr-blue", propertyRelationTypeLabel, [whatAnimal, shadeOfLightInQuery]);
 
         // Run query against data
-        const matches: ConceptualGraph[] = queryManager.executeQuery(whatAnimalIsYellow);
+        const matches: ConceptualGraph[] = queryManager.executeQuery(whatAnimalIsBrown);
 
         // Expect single answer
         expect(matches.length).toBe(1);
@@ -456,59 +424,55 @@ describe('Simple queries', () => {
             label: "Blue-" + testId,
             conceptTypeLabels: ["Colour-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
                 designatorValue: "Blue-" + testId,
             },
             templateConceptLabelWhichWasMatched: "BlueInQuery"
         });
-        expect(matches[0].getConceptByLabel(flyntConceptLabel)).toEqual({
+        expect(matches[0].getConceptByLabel(jerryConceptLabel)).toEqual({
             id: undefined,
-            label: "Flynt-" + testId,
-            conceptTypeLabels: ["Bird-" + testId],
+            label: "Jerry-" + testId,
+            conceptTypeLabels: ["Mouse-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
-                designatorValue: "Flynt-" + testId,
+                designatorValue: "Jerry-" + testId,
             },
             templateConceptLabelWhichWasMatched: "WhatAnimal"
         });
-        expect(matches[0].getRelationByLabel(flyntAttrBlueRelationLabel)).toEqual({
+        expect(matches[0].getRelationByLabel(jerryAttrBlueRelationLabel)).toEqual({
             id: undefined,
-            label: "flynt-attribute-blue-" + testId,
+            label: "jerry-attribute-blue-" + testId,
             relationTypeLabels: [
                 "Attribute-" + testId,
             ],
             conceptArgumentLabels: [
-                "Flynt-" + testId,
+                "Jerry-" + testId,
                 "Blue-" + testId,
             ],
             templateRelationLabelWhichWasMatched: "query-whatanimal-attr-blue",
         });
-        expect(matches[0].getRelationByLabel(blueAttrFlyntRelationLabel)).toBeUndefined();
+        expect(matches[0].getRelationByLabel(blueAttrJerryRelationLabel)).toBeUndefined();
     })
 
     it('Match 3 Lambdas: Parent Concept Types | Parent Relation Types | Match all nodes | Single Answer', () => {
         const queryManager: QueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
 
         const threeAnimalsWithColourAndAllThreeCute: ConceptualGraph =
-            testScenarioProvider_FlyntTheBird.getConcept_threeAnimalsWithColourAndAllThreeCute(testId);
+            testScenarioProvider_JerryTheMouse.getConcept_threeAnimalsWithColourAndAllThreeCute(testId);
         const animalConceptTypeLabel: string = "Animal-" + testId;
         const colourConceptTypeLabel: string = "Colour-" + testId;
         const cuteConceptTypeLabel: string = "Cute-" + testId;
 
         const attributeRelationTypeLabel: string = "Attribute-" + testId;
 
-        const flyntAttrYellowRelationLabel: string = "flynt-attribute-yellow-" + testId;
-        const rhysandAttrBlueRelationLabel: string = "rhysand-attribute-blue-" + testId;
-        const ruskyAttrRedRelationLabel: string = "rusky-attribute-red-" + testId;
+        const jerryAttrBrownRelationLabel: string = "jerry-attribute-brown-" + testId;
+        const tomAttrBlueRelationLabel: string = "tom-attribute-blue-" + testId;
+        const spikeAttrRedRelationLabel: string = "spike-attribute-red-" + testId;
 
-        const flyntConceptLabel: string = "Flynt-" + testId;
-        const rhysandConceptLabel: string = "Rhysand-" + testId;
-        const ruskyConceptLabel: string = "Rusky-" + testId;
-        const yellowConceptLabel: string = "Yellow-" + testId;
+        const jerryConceptLabel: string = "Jerry-" + testId;
+        const tomConceptLabel: string = "Tom-" + testId;
+        const spikeConceptLabel: string = "Spike-" + testId;
+        const brownConceptLabel: string = "Brown-" + testId;
         const blueConceptLabel: string = "Blue-" + testId;
         const redConceptLabel: string = "Red-" + testId;
         (queryManager as ConceptualGraphQueryManager).conceptualGraphToMatch = threeAnimalsWithColourAndAllThreeCute;
@@ -528,57 +492,51 @@ describe('Simple queries', () => {
         // Expect single answer
         expect(matches.length).toBe(3);
 
-        // Expect First answer to be: Flynt is yellow
-        expect(matches[0].getConceptByLabel(flyntConceptLabel)).toEqual({
+        // Expect First answer to be: Jerry is brown
+        expect(matches[0].getConceptByLabel(jerryConceptLabel)).toEqual({
             id: undefined,
-            label: "Flynt-" + testId,
-            conceptTypeLabels: ["Bird-" + testId],
+            label: "Jerry-" + testId,
+            conceptTypeLabels: ["Mouse-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
-                designatorValue: "Flynt-" + testId,
+                designatorValue: "Jerry-" + testId,
             },
             templateConceptLabelWhichWasMatched: "WhatAnimal"
         });
-        expect(matches[0].getConceptByLabel(yellowConceptLabel)).toEqual({
+        expect(matches[0].getConceptByLabel(brownConceptLabel)).toEqual({
             id: undefined,
-            label: "Yellow-" + testId,
+            label: "Brown-" + testId,
             conceptTypeLabels: ["Colour-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
-                designatorValue: "Yellow-" + testId,
+                designatorValue: "Brown-" + testId,
             },
             templateConceptLabelWhichWasMatched: "WhatColour"
         });
-        expect(matches[0].getRelationByLabel(flyntAttrYellowRelationLabel)).toEqual({
+        expect(matches[0].getRelationByLabel(jerryAttrBrownRelationLabel)).toEqual({
             id: undefined,
-            label: "flynt-attribute-yellow-" + testId,
+            label: "jerry-attribute-brown-" + testId,
             relationTypeLabels: [
                 "Attribute-" + testId,
             ],
             conceptArgumentLabels: [
-                "Flynt-" + testId,
-                "Yellow-" + testId,
+                "Jerry-" + testId,
+                "Brown-" + testId,
             ],
             templateRelationLabelWhichWasMatched: "query-whatanimal-attr-whatcolour",
         });
-        const flyntAttrYellowRelationInAnswer: Relation = matches[0].getRelationByLabel(flyntAttrYellowRelationLabel);
-        expect(flyntAttrYellowRelationInAnswer.conceptArgumentLabels).toContainEqual(matches[0].getConceptByLabel(flyntConceptLabel).label);
-        expect(flyntAttrYellowRelationInAnswer.conceptArgumentLabels).toContainEqual(matches[0].getConceptByLabel(yellowConceptLabel).label);
+        const jerryAttrBrownRelationInAnswer: Relation = matches[0].getRelationByLabel(jerryAttrBrownRelationLabel);
+        expect(jerryAttrBrownRelationInAnswer.conceptArgumentLabels).toContainEqual(matches[0].getConceptByLabel(jerryConceptLabel).label);
+        expect(jerryAttrBrownRelationInAnswer.conceptArgumentLabels).toContainEqual(matches[0].getConceptByLabel(brownConceptLabel).label);
 
-        // Expect Second answer to be: Rhysand is blue
-        expect(matches[1].getConceptByLabel(rhysandConceptLabel)).toEqual({
+        // Expect Second answer to be: Tom is blue
+        expect(matches[1].getConceptByLabel(tomConceptLabel)).toEqual({
             id: undefined,
-            label: "Rhysand-" + testId,
+            label: "Tom-" + testId,
             conceptTypeLabels: ["Cat-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
-                designatorValue: "Rhysand-" + testId,
+                designatorValue: "Tom-" + testId,
             },
             templateConceptLabelWhichWasMatched: "WhatAnimal"
         });
@@ -587,39 +545,35 @@ describe('Simple queries', () => {
             label: "Blue-" + testId,
             conceptTypeLabels: ["Colour-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
                 designatorValue: "Blue-" + testId,
             },
             templateConceptLabelWhichWasMatched: "WhatColour"
         });
-        expect(matches[1].getRelationByLabel(rhysandAttrBlueRelationLabel)).toEqual({
+        expect(matches[1].getRelationByLabel(tomAttrBlueRelationLabel)).toEqual({
             id: undefined,
-            label: "rhysand-attribute-blue-" + testId,
+            label: "tom-attribute-blue-" + testId,
             relationTypeLabels: [
                 "Attribute-" + testId,
             ],
             conceptArgumentLabels: [
-                "Rhysand-" + testId,
+                "Tom-" + testId,
                 "Blue-" + testId,
             ],
             templateRelationLabelWhichWasMatched: "query-whatanimal-attr-whatcolour",
         });
-        const rhysandAttrBlueRelationInAnswer: Relation = matches[1].getRelationByLabel(rhysandAttrBlueRelationLabel);
-        expect(rhysandAttrBlueRelationInAnswer.conceptArgumentLabels).toContainEqual(matches[1].getConceptByLabel(rhysandConceptLabel).label);
-        expect(rhysandAttrBlueRelationInAnswer.conceptArgumentLabels).toContainEqual(matches[1].getConceptByLabel(blueConceptLabel).label);
+        const tomAttrBlueRelationInAnswer: Relation = matches[1].getRelationByLabel(tomAttrBlueRelationLabel);
+        expect(tomAttrBlueRelationInAnswer.conceptArgumentLabels).toContainEqual(matches[1].getConceptByLabel(tomConceptLabel).label);
+        expect(tomAttrBlueRelationInAnswer.conceptArgumentLabels).toContainEqual(matches[1].getConceptByLabel(blueConceptLabel).label);
 
-        // Expect Second answer to be: Rusky is red
-        expect(matches[2].getConceptByLabel(ruskyConceptLabel)).toEqual({
+        // Expect Second answer to be: Spike is red
+        expect(matches[2].getConceptByLabel(spikeConceptLabel)).toEqual({
             id: undefined,
-            label: "Rusky-" + testId,
+            label: "Spike-" + testId,
             conceptTypeLabels: ["Dog-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
-                designatorValue: "Rusky-" + testId,
+                designatorValue: "Spike-" + testId,
             },
             templateConceptLabelWhichWasMatched: "WhatAnimal"
         });
@@ -628,156 +582,148 @@ describe('Simple queries', () => {
             label: "Red-" + testId,
             conceptTypeLabels: ["Colour-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
                 designatorValue: "Red-" + testId,
             },
             templateConceptLabelWhichWasMatched: "WhatColour"
         });
-        expect(matches[2].getRelationByLabel(ruskyAttrRedRelationLabel)).toEqual({
+        expect(matches[2].getRelationByLabel(spikeAttrRedRelationLabel)).toEqual({
             id: undefined,
-            label: "rusky-attribute-red-" + testId,
+            label: "spike-attribute-red-" + testId,
             relationTypeLabels: [
                 "Attribute-" + testId,
             ],
             conceptArgumentLabels: [
-                "Rusky-" + testId,
+                "Spike-" + testId,
                 "Red-" + testId,
             ],
             templateRelationLabelWhichWasMatched: "query-whatanimal-attr-whatcolour",
         });
-        const ruskyAttrBllueRelationInAnswer: Relation = matches[2].getRelationByLabel(ruskyAttrRedRelationLabel);
-        expect(ruskyAttrBllueRelationInAnswer.conceptArgumentLabels).toContainEqual(matches[2].getConceptByLabel(ruskyConceptLabel).label);
-        expect(ruskyAttrBllueRelationInAnswer.conceptArgumentLabels).toContainEqual(matches[2].getConceptByLabel(redConceptLabel).label);
+        const spikeAttrBllueRelationInAnswer: Relation = matches[2].getRelationByLabel(spikeAttrRedRelationLabel);
+        expect(spikeAttrBllueRelationInAnswer.conceptArgumentLabels).toContainEqual(matches[2].getConceptByLabel(spikeConceptLabel).label);
+        expect(spikeAttrBllueRelationInAnswer.conceptArgumentLabels).toContainEqual(matches[2].getConceptByLabel(redConceptLabel).label);
     })
 
     it('Direct Cycles: Parent Concept Types | Parent Relation Types | Match all nodes | Single Answer', () => {
         const queryManager: QueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
 
-        const yellowHasAttributeYellow: ConceptualGraph =
-            testScenarioProvider_FlyntTheBird.getConcept_yellowHasAttributeYellow(testId);
-        const yellowConceptLabel: string = "Yellow-" + testId;
+        const brownHasAttributeBrown: ConceptualGraph =
+            testScenarioProvider_JerryTheMouse.getConcept_brownHasAttributeBrown(testId);
+        const brownConceptLabel: string = "Brown-" + testId;
         const colourConceptTypeLabel: string = "Colour-" + testId;
         const attributeRelationTypeLabel: string = "Attribute-" + testId;
-        const yellowAttrYellowRelationLabel: string = "yellow-attribute-yellow-" + testId;
-        (queryManager as ConceptualGraphQueryManager).conceptualGraphToMatch = yellowHasAttributeYellow;
+        const brownAttrBrownRelationLabel: string = "brown-attribute-brown-" + testId;
+        (queryManager as ConceptualGraphQueryManager).conceptualGraphToMatch = brownHasAttributeBrown;
 
-        // Create Query: What Colour is Yellow
-        const whatColourIsYellow: ConceptualGraph = new ConceptualGraph();
-        const yellowInQuery: Concept = whatColourIsYellow.createConcept("QueryYellow", colourConceptTypeLabel, yellowConceptLabel);
-        const colourInQuery: Concept = whatColourIsYellow.createConcept("WhatColour", colourConceptTypeLabel, DesignatorType.LAMBDA);
-        whatColourIsYellow.createRelation("query-yellow-attr-whatcolour", attributeRelationTypeLabel, [yellowInQuery, colourInQuery]);
+        // Create Query: What Colour is Brown
+        const whatColourIsBrown: ConceptualGraph = new ConceptualGraph();
+        const brownInQuery: Concept = whatColourIsBrown.createConcept("QueryBrown", colourConceptTypeLabel, brownConceptLabel);
+        const colourInQuery: Concept = whatColourIsBrown.createConcept("WhatColour", colourConceptTypeLabel, DesignatorType.LAMBDA);
+        whatColourIsBrown.createRelation("query-brown-attr-whatcolour", attributeRelationTypeLabel, [brownInQuery, colourInQuery]);
 
         // Run query against data
-        const matches: ConceptualGraph[] = queryManager.executeQuery(whatColourIsYellow);
+        const matches: ConceptualGraph[] = queryManager.executeQuery(whatColourIsBrown);
 
         // Expect single answer
         expect(matches.length).toBe(1);
 
-        // Expect First answer to be: Yellow is yellow
-        expect(matches[0].getConceptByLabel(yellowConceptLabel)).toEqual({
+        // Expect First answer to be: Brown is brown
+        expect(matches[0].getConceptByLabel(brownConceptLabel)).toEqual({
             id: undefined,
-            label: "Yellow-" + testId,
+            label: "Brown-" + testId,
             conceptTypeLabels: ["Colour-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
-                designatorValue: "Yellow-" + testId,
+                designatorValue: "Brown-" + testId,
             },
             templateConceptLabelWhichWasMatched: "WhatColour"
         });
-        expect(matches[0].getRelationByLabel(yellowAttrYellowRelationLabel)).toEqual({
+        expect(matches[0].getRelationByLabel(brownAttrBrownRelationLabel)).toEqual({
             id: undefined,
-            label: "yellow-attribute-yellow-" + testId,
+            label: "brown-attribute-brown-" + testId,
             relationTypeLabels: [
                 "Attribute-" + testId,
             ],
             conceptArgumentLabels: [
-                "Yellow-" + testId,
-                "Yellow-" + testId,
+                "Brown-" + testId,
+                "Brown-" + testId,
             ],
-            templateRelationLabelWhichWasMatched: "query-yellow-attr-whatcolour",
+            templateRelationLabelWhichWasMatched: "query-brown-attr-whatcolour",
         });
     })
 
     it('Two level deep cycles: Parent Concept Types | Parent Relation Types | Match all nodes | Single Answer', () => {
         const queryManager: QueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
 
-        const flyntHasAttributeYellowHasAttributeFlynt: ConceptualGraph =
-        testScenarioProvider_FlyntTheBird.getConcept_flyntHasAttributeYellowHasAttributeFlynt(testId);
-        const birdConceptTypeLabel: string = "Bird-" + testId;
-        const flyntConceptLabel: string = "Flynt-" + testId;
-        const yellowConceptLabel: string = "Yellow-" + testId;
+        const jerryHasAttributeBrownHasAttributeJerry: ConceptualGraph =
+        testScenarioProvider_JerryTheMouse.getConcept_jerryHasAttributeBrownHasAttributeJerry(testId);
+        const birdConceptTypeLabel: string = "Mouse-" + testId;
+        const jerryConceptLabel: string = "Jerry-" + testId;
+        const brownConceptLabel: string = "Brown-" + testId;
         const colourConceptTypeLabel: string = "Colour-" + testId;
         const attributeRelationTypeLabel: string = "Attribute-" + testId;
-        const flyntAttrYellowRelationLabel: string = "flynt-attribute-yellow-" + testId;
-        const yellowAttrFlyntRelationLabel: string = "yellow-attribute-flynt-" + testId;
-        (queryManager as ConceptualGraphQueryManager).conceptualGraphToMatch = flyntHasAttributeYellowHasAttributeFlynt;
+        const jerryAttrBrownRelationLabel: string = "jerry-attribute-brown-" + testId;
+        const brownAttrJerryRelationLabel: string = "brown-attribute-jerry-" + testId;
+        (queryManager as ConceptualGraphQueryManager).conceptualGraphToMatch = jerryHasAttributeBrownHasAttributeJerry;
 
-        // Create Query: What Colour is the colour that flynt is
-        const whatColourIsFlynt: ConceptualGraph = new ConceptualGraph();
-        const colourInQuery: Concept = whatColourIsFlynt.createConcept("WhatColour", colourConceptTypeLabel, DesignatorType.LAMBDA);
-        const flyntInQuery: Concept = whatColourIsFlynt.createConcept("SomeBird", birdConceptTypeLabel, flyntConceptLabel);
-        whatColourIsFlynt.createRelation("query-flynt-attr-whatcolour", attributeRelationTypeLabel, [flyntInQuery, colourInQuery]);
-        whatColourIsFlynt.createRelation("query-whatcolour-attr-flynt", attributeRelationTypeLabel, [colourInQuery, flyntInQuery]);
+        // Create Query: What Colour is the colour that jerry is
+        const whatColourIsJerry: ConceptualGraph = new ConceptualGraph();
+        const colourInQuery: Concept = whatColourIsJerry.createConcept("WhatColour", colourConceptTypeLabel, DesignatorType.LAMBDA);
+        const jerryInQuery: Concept = whatColourIsJerry.createConcept("SomeMouse", birdConceptTypeLabel, jerryConceptLabel);
+        whatColourIsJerry.createRelation("query-jerry-attr-whatcolour", attributeRelationTypeLabel, [jerryInQuery, colourInQuery]);
+        whatColourIsJerry.createRelation("query-whatcolour-attr-jerry", attributeRelationTypeLabel, [colourInQuery, jerryInQuery]);
 
         // Run query against data
-        const matches: ConceptualGraph[] = queryManager.executeQuery(whatColourIsFlynt);
+        const matches: ConceptualGraph[] = queryManager.executeQuery(whatColourIsJerry);
 
         // Expect single answer
         expect(matches.length).toBe(1);
 
-        // Expect First answer to be: Yellow is yellow
+        // Expect First answer to be: Brown is brown
         expect(matches[0].concepts.length).toBe(2);
-        expect(matches[0].getConceptByLabel(flyntConceptLabel)).toEqual({
+        expect(matches[0].getConceptByLabel(jerryConceptLabel)).toEqual({
             id: undefined,
-            label: "Flynt-" + testId,
-            conceptTypeLabels: ["Bird-" + testId],
+            label: "Jerry-" + testId,
+            conceptTypeLabels: ["Mouse-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
-                designatorValue: "Flynt-" + testId,
+                designatorValue: "Jerry-" + testId,
             },
-            templateConceptLabelWhichWasMatched: "SomeBird"
+            templateConceptLabelWhichWasMatched: "SomeMouse"
         });
-        expect(matches[0].getConceptByLabel(yellowConceptLabel)).toEqual({
+        expect(matches[0].getConceptByLabel(brownConceptLabel)).toEqual({
             id: undefined,
-            label: "Yellow-" + testId,
+            label: "Brown-" + testId,
             conceptTypeLabels: ["Colour-" + testId],
             referent: {
-                quantifierType: "A_SINGLE",
-                quantifierValue: undefined,
                 designatorType: "LITERAL",
-                designatorValue: "Yellow-" + testId,
+                designatorValue: "Brown-" + testId,
             },
             templateConceptLabelWhichWasMatched: "WhatColour"
         });
-        expect(matches[0].getRelationByLabel(flyntAttrYellowRelationLabel)).toEqual({
+        expect(matches[0].getRelationByLabel(jerryAttrBrownRelationLabel)).toEqual({
             id: undefined,
-            label: "flynt-attribute-yellow-" + testId,
+            label: "jerry-attribute-brown-" + testId,
             relationTypeLabels: [
                 "Attribute-" + testId,
             ],
             conceptArgumentLabels: [
-                "Flynt-" + testId,
-                "Yellow-" + testId,
+                "Jerry-" + testId,
+                "Brown-" + testId,
             ],
-            templateRelationLabelWhichWasMatched: "query-flynt-attr-whatcolour",
+            templateRelationLabelWhichWasMatched: "query-jerry-attr-whatcolour",
         });
-        expect(matches[0].getRelationByLabel(flyntAttrYellowRelationLabel)).toEqual({
+        expect(matches[0].getRelationByLabel(jerryAttrBrownRelationLabel)).toEqual({
             id: undefined,
-            label: "flynt-attribute-yellow-" + testId,
+            label: "jerry-attribute-brown-" + testId,
             relationTypeLabels: [
                 "Attribute-" + testId,
             ],
             conceptArgumentLabels: [
-                "Flynt-" + testId,
-                "Yellow-" + testId,
+                "Jerry-" + testId,
+                "Brown-" + testId,
             ],
-            templateRelationLabelWhichWasMatched: "query-flynt-attr-whatcolour",
+            templateRelationLabelWhichWasMatched: "query-jerry-attr-whatcolour",
         });
     })
 

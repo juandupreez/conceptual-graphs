@@ -18,6 +18,7 @@ module.exports = {
         "**/test/query/CGQueryManager_NonNestedQueries.test.ts",
 
         "**/test/rules/SaturationRule.test.ts",
+        "**/test/rules/ExtractionRule.test.ts",
         
     ],
     "transform": {

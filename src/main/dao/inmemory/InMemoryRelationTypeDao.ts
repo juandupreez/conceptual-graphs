@@ -1,9 +1,9 @@
 import { ConceptType } from "../../domain/ConceptType";
-import { RelationType } from "../../domain/RelationType";
+import { RelationType, SimpleRelationType } from "../../domain/RelationType";
 import { IdGenerator } from "../../util/IdGenerator";
 import { ConceptTypeDao, NoSuchConceptTypeError } from "../ConceptTypeDao";
 import { NoSuchRelationTypeError, UniqueRelationTypeViolationError } from "../RelationTypeDao";
-import { RelationTypeDao, SimpleRelationType } from "../RelationTypeDao";
+import { RelationTypeDao } from "../RelationTypeDao";
 import { Store } from "./store/Store";
 
 export class InMemoryRelationTypeDao implements RelationTypeDao {
@@ -63,9 +63,9 @@ export class InMemoryRelationTypeDao implements RelationTypeDao {
                 }
                 if (signatureConceptTypeLabels.length !== parentRelationType.signature.length) {
                     throw new Error('Could not create relation type with label: '
-                    +   newRelationTypeLabel
-                    + '. Signature needs the same number of concept types as parent'
-                    + parentRelationTypeLabel + '" (Signature: ' + parentRelationType.signature + ')');
+                        + newRelationTypeLabel
+                        + '. Signature needs the same number of concept types as parent'
+                        + parentRelationTypeLabel + '" (Signature: ' + parentRelationType.signature + ')');
                 }
             })
         }
@@ -80,7 +80,7 @@ export class InMemoryRelationTypeDao implements RelationTypeDao {
                 parentLabels.forEach((singleParentLabel) => {
                     const parentRelationType: RelationType = this.getRelationTypeByLabel(singleParentLabel);
                     const conceptTypeLabelAndSubConceptTypeLabels: string[]
-                        = this.conceptTypeDao.getLabelAndAllSubLabelsOfConcept(parentRelationType.signature[singleSignatureIndex]);
+                        = this.conceptTypeDao.getLabelAndAllSubLabelsOfConceptType(parentRelationType.signature[singleSignatureIndex]);
                     possibleSignatureConceptTypeLabels.push(...conceptTypeLabelAndSubConceptTypeLabels);
                 })
                 if (!possibleSignatureConceptTypeLabels.includes(singleSignatureLabel)) {
@@ -114,8 +114,15 @@ export class InMemoryRelationTypeDao implements RelationTypeDao {
         })
     }
 
-    getLabelAndAllSubLabelsOfRelation(singleRelationTypeLabel: string): string[] {
-        return this._getLabelAndAllSubLabelsOfRelation(singleRelationTypeLabel, []);
+    getLabelAndAllSubLabelsOfRelation(labelOrLabels: string | string[]): string[] {        
+        if (typeof labelOrLabels === 'string') {
+            return this._getLabelAndAllSubLabelsOfRelation(labelOrLabels, []);
+        } else {
+            return labelOrLabels?.reduce((accumulator, singleLabel) => {
+                accumulator.push(...this._getLabelAndAllSubLabelsOfRelation(singleLabel, []));
+                return accumulator;
+            }, [])
+        }
     }
 
     private _getLabelAndAllSubLabelsOfRelation(label: string, labelsGottenSoFar: string[]): string[] {

@@ -1,6 +1,6 @@
 import { ConceptDao } from "../../main/dao/ConceptDao";
-import { ConceptTypeDao, SimpleConceptType } from "../../main/dao/ConceptTypeDao";
-import { RelationTypeDao, SimpleRelationType } from "../../main/dao/RelationTypeDao";
+import { ConceptTypeDao } from "../../main/dao/ConceptTypeDao";
+import { RelationTypeDao } from "../../main/dao/RelationTypeDao";
 import { InMemoryConceptDao } from "../../main/dao/inmemory/InMemoryConceptDao";
 import { InMemoryConceptTypeDao } from "../../main/dao/inmemory/InMemoryConceptTypeDao";
 import { InMemoryRelationTypeDao } from "../../main/dao/inmemory/InMemoryRelationTypeDao";
@@ -112,12 +112,12 @@ describe('ConceptualGraph', () => {
 
     xit('Test to string', () => {
         const cg: ConceptualGraph = new ConceptualGraph();
-        
-        const flynt: Concept = cg.createConcept('Flynt', 'Bird', 'Flynt');
+
+        const jerry: Concept = cg.createConcept('Jerry', 'Mouse', 'Jerry');
         const cute: Concept = cg.createConcept('Cute', 'Cute');
-        const yellow: Concept = cg.createConcept('Yellow', 'Colour', 'Yellow');
-        cg.createRelation('flynt-attr-yellow', "Attribute", [flynt, yellow]);
-        cg.createRelation('flynt-attr-cute', "Attribute", [flynt, cute]);
+        const brown: Concept = cg.createConcept('Brown', 'Colour', 'Brown');
+        cg.createRelation('jerry-attr-brown', "Attribute", [jerry, brown]);
+        cg.createRelation('jerry-attr-cute', "Attribute", [jerry, cute]);
 
         // console.log(cg.toString());
     })

@@ -1,16 +1,11 @@
-import { RelationType } from "../domain/RelationType";
+import { RelationType, SimpleRelationType } from "../domain/RelationType";
 
-export interface SimpleRelationType {
-    label: string;
-    signature: string[];
-    subRelationTypes?: SimpleRelationType[];
-}
 export interface RelationTypeDao {
     createRelationType(newLabel: string, signatureConceptTypeLabels: string[], parentLabels?: string[]): RelationType;
     getRelationTypeById(relationTypeId: string): RelationType;
     getRelationTypeByLabel(label: string): RelationType;
     getRootRelationTypes(): RelationType[];
-    getLabelAndAllSubLabelsOfRelation(singleRelationTypeLabel: string): string[];
+    getLabelAndAllSubLabelsOfRelation(singleRelationTypeLabel: string | string[]): string[];
     updateRelationType(concpetType: RelationType): RelationType;
     deleteRelationType(relationTypeId: string): boolean;
     importHierarchyFromSimpleRelationTypes(hierarchyToGenerate: SimpleRelationType[]): void;

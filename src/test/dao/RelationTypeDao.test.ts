@@ -1,7 +1,7 @@
-import { RelationType } from "../../main/domain/RelationType";
+import { RelationType, SimpleRelationType } from "../../main/domain/RelationType";
 import { InMemoryConceptTypeDao } from "../../main/dao/inmemory/InMemoryConceptTypeDao";
 import { ConceptTypeDao } from "../../main/dao/ConceptTypeDao";
-import { RelationTypeDao, SimpleRelationType } from "../../main/dao/RelationTypeDao";
+import { RelationTypeDao } from "../../main/dao/RelationTypeDao";
 import { InMemoryRelationTypeDao } from "../../main/dao/inmemory/InMemoryRelationTypeDao";
 import { IdGenerator } from "../../main/util/IdGenerator";
 

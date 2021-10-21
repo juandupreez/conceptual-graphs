@@ -1,4 +1,4 @@
-import { Concept, DesignatorType, QuantifierType, Referent } from "../../domain/Concept";
+import { Concept, DesignatorType, Referent } from "../../domain/Concept";
 import { ConceptType } from "../../domain/ConceptType";
 import { cloneConcept } from "../../util/ConceptUtil";
 import { IdGenerator } from "../../util/IdGenerator";
@@ -23,21 +23,16 @@ export class InMemoryConceptDao implements ConceptDao {
         newConcept.conceptTypeLabels = conceptTypeLabels;
         if (!referent) {
             newConcept.referent = {
-                quantifierType: QuantifierType.A_SINGLE,
-                quantifierValue: undefined,
                 designatorType: DesignatorType.BLANK,
                 designatorValue: undefined
             };
         } else if (typeof referent === 'string') {
             newConcept.referent = {
-                quantifierType: QuantifierType.A_SINGLE,
                 designatorType: DesignatorType.LITERAL,
                 designatorValue: referent
             }
         } else {
             newConcept.referent = {
-                quantifierType: referent.quantifierType,
-                quantifierValue: referent.quantifierValue,
                 designatorType: referent.designatorType,
                 designatorValue: referent.designatorValue
             };
@@ -86,8 +81,6 @@ export class InMemoryConceptDao implements ConceptDao {
             if (conceptToMatch.referent?.designatorType === DesignatorType.LAMBDA && doConceptTypesMatch) {
                 doesConceptMatch = true;
             } else if (doConceptTypesMatch
-                && conceptToMatch.referent.quantifierType === singleConcept.referent.quantifierType
-                && conceptToMatch.referent.quantifierValue === singleConcept.referent.quantifierValue
                 && conceptToMatch.referent.designatorType === singleConcept.referent.designatorType
                 && conceptToMatch.referent.designatorValue === singleConcept.referent.designatorValue) {
                 doesConceptMatch = true;
@@ -98,7 +91,7 @@ export class InMemoryConceptDao implements ConceptDao {
 
     private _getAllSubConceptTypes(conceptTypeLabels: string[]): string[] {
         return conceptTypeLabels.reduce((accumulator: string[], singleConceptTypeLabel) => {
-            accumulator.push(...this.conceptTypeDao.getLabelAndAllSubLabelsOfConcept(singleConceptTypeLabel));
+            accumulator.push(...this.conceptTypeDao.getLabelAndAllSubLabelsOfConceptType(singleConceptTypeLabel));
             return accumulator;
         }, []);
     }
@@ -136,11 +129,6 @@ export class InMemoryConceptDao implements ConceptDao {
     }
 
     _validateConceptBeforeUpdate(conceptToUpdate: Concept): void {
-        if (!conceptToUpdate || !conceptToUpdate.id) {
-            throw new Error('Could not update concept with label: '
-                + conceptToUpdate.label
-                + '. A concept must have conceptual graph id');
-        }
         if (!conceptToUpdate.conceptTypeLabels || conceptToUpdate.conceptTypeLabels.length === 0) {
             throw new Error('Could not update concept with label: '
                 + conceptToUpdate.label
