@@ -11,5 +11,4 @@ export class RelationType {
     subRelationTypeLabels: string[] = [];
     parentRelationTypeLabels: string[] = [];
     signature: string[];
-
 }

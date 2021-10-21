@@ -1,36 +1,124 @@
 # Conceptual Graphs
 
-[Conceptual Graphs](https://en.wikipedia.org/wiki/Conceptual_graph) are a formalism for knowledge representation. This npm module hopes to break conceptual graph theory down into managable objects that programmers can play with to explore the world of concepts via graphical notation.
+[Conceptual Graphs](https://en.wikipedia.org/wiki/Conceptual_graph) are a "formalism for knowledge representation". This npm module hopes to break conceptual graph theory down into managable objects that programmers can play with to explore the world of concepts via graphical notation.
 
-Below is an example of a conceptual graph of a beloved cartoon "Tom and Jerry."
+Below is an example of a conceptual graph of the beloved cartoon "Tom and Jerry."
 
 ![Image](https://juandupreez.github.io/images/TomAndJerryCG.PNG)
 
 ---
 
-<!-- ## Getting Started
+## Getting Started
 
-1. Initialize Your Own repo
-
-```
-npm init
-```
-
-2. Download conceptual-graphs
+### 1. Install conceptual-graphs module
 
 ```
 npm i conceptual-graphs
 ```
 
---- -->
+### 2. Create a conceptual graph
+
+```
+import { Concept, ConceptualGraph, Relation } from "conceptual-graphs";
+
+const tomAndJerryCG: ConceptualGraph = new ConceptualGraph();
+const tomConcept: Concept = tomAndJerryCG.createConcept("TomLabel", "Cat", "Tom");
+const blueConcept: Concept = tomAndJerryCG.createConcept("BlueLabel", "Colour", "Blue");
+const tomIsBlueRelation: Relation = 
+    tomAndJerryCG.createRelation("tom-is-blue-relation-label", "attribute", [tomConcept, blueConcept]);
+
+...
+```
+
+### 3. Import concept type hierarchy
+
+```
+import { ConceptTypeDao, InMemoryConceptTypeDao, SimpleConceptType } from "conceptual-graphs";
+
+const conceptTypeDataAccessObject: ConceptTypeDao = new InMemoryConceptTypeDao();
+const initialConceptTypeHierarchy: SimpleConceptType[] = [{
+    label: "Entity",
+    subConceptTypes: [
+        {
+            label: "Object",
+            subConceptTypes: [
+                {
+                    label: "Animal",
+                    subConceptTypes: [
+                        { label: "Cat" },
+                        { label: "Mouse" },
+                        { label: "Dog" }
+                    ]
+                }
+            ]
+        },
+        {
+            label: "Property",
+            subConceptTypes: [
+                { label: "Unlucky" },
+                { label: "Colour" }
+            ]
+        }
+    ]
+}]
+
+conceptTypeDataAccessObject.importHierarchyFromSimpleConceptTypes(initialConceptTypeHierarchy);
+```
+
+### 4. Import relation type hierarchy
+
+```
+import { ConceptTypeDao, InMemoryConceptTypeDao, InMemoryRelationTypeDao, 
+    RelationTypeDao, SimpleRelationType } from "conceptual-graphs";
+
+
+const conceptTypeDataAccessObject: ConceptTypeDao = new InMemoryConceptTypeDao();
+const relationTypeDataAccessObject: RelationTypeDao = 
+    new InMemoryRelationTypeDao(conceptTypeDataAccessObject);
+
+const initialRelationTypeHierarchy: SimpleRelationType[] = [{
+    label: "link",
+    signature: ["Entity", "Entity"],
+    subRelationTypes: [
+        {
+            label: "personalRelationTo",
+            signature: ["Entity", "Entity"],
+            subRelationTypes: [
+                {
+                    label: "archEnemyOf",
+                    signature: ["Animal", "Animal"]
+                },
+                {
+                    label: "friendOf",
+                    signature: ["Animal", "Animal"]
+                }
+            ]
+        },
+        {
+            label: "attribute",
+            signature: ["Entity", "Property"]
+        }
+    ]
+}]
+
+relationTypeDataAccessObject.importHierarchyFromSimpleRelationTypes(initialRelationTypeHierarchy);
+```
+
+---
 
 ## Basics
 
-Conceptual Graphs are composed of 2 kinds of nodes: Concept nodes and Relation nodes. A concept node is composed of a Concept Type and a referent which gives meaning to the Concept Type.
+Conceptual graphs are composed of 2 kinds of nodes: concept nodes and relation nodes. A concept node (the rectangles) is composed of a concept type and a referent which gives meaning to the Concept Type. For example, the concept [Cat: Tom] has a concept type "Cat" and a string literal as a referent, "Tom." A relation node (the rounded nodes) link related concepts to one another.
+
+A conceptual graph is always defined in terms of a "Vocabulary." The vocabulary consists of a concept type hierarchy and a relation type hierarchy.
 
 ### Vocabluary: Concept Type Hierarchy
 
+Concept Types are abstract classes/groups of different kinds of concepts. They are usually arranged in a hierarchical (or partially ordered) graph where the top elements are more general than those below. Usually, at the very top of the hierarchy is the most general class called "Entity."
+
 ![Image](https://juandupreez.github.io/images/TomAndJerryConceptTypes.PNG)
+
+In this module, a concept type has the following structure:
 
 ```
 ConceptType {
@@ -40,12 +128,100 @@ ConceptType {
     subConceptTypeLabels: string[];
 }
 ```
-Concept Types are abstract classes/groups of different kinds of concepts. They are usually arranged in a hierarchical (or partially ordered) graph where the top elements are more general than those below.
 
-### Relation Types
+The label is a unique identifier which is used to give the Concept Type human-readable meaning, such as "Entity", or "Cat". Concept types within the hierarchy are also doubly linked with their parents and children via the ```parentConceptTypeLabels``` and ```subConceptTypeLabels``` properties. The id is meant to be a unique identifier generated by the database of choice.
+
+### Vocabulary: Relation Type Hierarchy
+
+Similar to concept types, relation types are stored in a partially ordered graph ranging from most general at the top to most specific relations at the bottom. The difference between a concept type and a relation type is the addition of a signature. A relation type's signature is a list of concept types. This is similar to a function signature in programming which lists arguments of specific types. The signature specifies the types of the concept instances to which a relation instance would connect.
+
+![Image](https://juandupreez.github.io/images/TomAndJerryRelationTypes.PNG)
+
+```
+RelationType {
+    id: string;
+    label: string;
+    subRelationTypeLabels: string[] = [];
+    parentRelationTypeLabels: string[] = [];
+    signature: string[];
+}
+```
 ### Concepts
+
+Concepts are instances of concept types. In the same way that in programming an object is an instance of a class. As mentioned before, a concept consists of two parts, namely a required concept type and an optional referent. If the referent is blank, then the concept is general, meaning "any."
+
+```
+Concept {
+    id: string;
+    label: string;
+    conceptTypeLabels: string[] = [];
+    referent: Referent;
+}
+
+Referent {
+    designatorType: DesignatorType;
+    designatorValue?: string;
+}
+
+enum DesignatorType {
+    BLANK = "BLANK",                            // A blank descriptor which is a blank conceptual graph
+    LITERAL = "LITERAL",                        // A syntactic representation of the form of the referent
+    LAMBDA = "LAMBDA"                           // Used in querying or definitions -> meaning "Any such concept type"
+}
+```
+
+In this module, concept referents have a designator type and a designator value. If the type is "BLANK", then the designator value is ignored. A "LITERAL" designator type requires that a string value be supplied to the designator value. "LAMBDA" designator types are used in concept type definitions and in queries.
+
 ### Relations
+
+As concepts are instances of concept types, so relations are instances of relation types. A relation does not have a referent, however. A relation links two concepts together by filling in the signature of the concept type. This is the programming equivalent to passing arguments into a function. 
+
+```
+export class Relation {
+    id: string;
+    label: string;
+    relationTypeLabels: string[] = [];
+    conceptArgumentLabels: string[] = [];
+}
+```
+
 ### Conceptual Graph
+
+```
+export class ConceptualGraph {
+
+    concepts: Concept[] = [];
+    relations: Relation[] = [];
+    id: string;
+    label: string;
+
+    addConcept(concept: Concept) ;
+    addConceptsIfNotExist(concepts: Concept[]) ;
+    addConceptIfNotExist(concept: Concept) ;
+    addRelation(relation: Relation, conceptArgs?: Concept[]) ;
+    addRelationsIfNotExist(relations: Relation[]) ;
+    addRelationIfNotExist(relation: Relation) ;
+    addConceptOrRelation(conceptOrRelation: Concept | Relation) ;
+    addConceptOrRelationIfNotExist(conceptOrRelation: Concept | Relation) ;
+    createConcept(label: string, conceptTypeLabels: string | string[], referent?: string | Referent): Concept ;
+    createRelation(label: string, relationType: string, conceptArguments: Concept[]): Relation ;
+    doesContainConcept(concept: Concept): boolean ;
+    updateRelationByLabel(relationToUpdate: Relation) ;
+    removeConceptByLabel(conceptLabelToRemove: string) ;
+    getConceptByLabel(conceptLabelToGet: string): Concept ;
+    getRelationByLabel(relationLabelToGet: string): Relation ;
+    getRelationsWhereConceptIsUsed(conceptToBeUsed: Concept, nodesToExclude?: (Relation | Concept)[]): Relation[] ;
+    getConceptsUsedByRelation(relation: Relation, conceptsToExclude: (Concept | Relation)[]): Concept[] ;
+    clone(): ConceptualGraph ;
+    toString(): string ;
+    private _generateStringForNode(curNode: Concept | Relation, prevNode?: Relation | Concept,
+        alreadyProcessedNodes?: (Concept | Relation)[], curDepth?: number): string ;
+    private _getNextNodes(curNode: Relation | Concept, nodesToExclude: (Relation | Concept)[]): (Relation | Concept)[];
+    matchConceptsByExample(conceptToMatch: Concept, conceptTypeDao: ConceptTypeDao): Concept[];
+    mergeFrom(otherConceptualGraph: ConceptualGraph);
+    isEmpty();
+}
+```
 
 ---
 
