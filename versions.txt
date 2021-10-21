@@ -1,5 +1,17 @@
 --------------
 -
+-    0.1.7
+-
+--------------
+- Extraction Rule created
+- Remove quantifier from Referent
+- Ability to merge into conceptual graphs from others
+- CreateConcept and CreateRelation as a util function
+- Rename ConceptualGraphDao to FactDao
+- Make a readme
+
+--------------
+-
 -    0.1.6
 -
 --------------

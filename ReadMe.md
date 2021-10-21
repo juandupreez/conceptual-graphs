@@ -185,7 +185,7 @@ export class Relation {
 }
 ```
 
-### Conceptual Graph
+<!-- ### Conceptual Graph
 
 ```
 export class ConceptualGraph {
@@ -234,4 +234,4 @@ export class ConceptualGraph {
 ## Database Integration
 ### In-Memory Database
 ### Neo4J
-
+ -->
