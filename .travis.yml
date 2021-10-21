@@ -1,14 +1,14 @@
 language: node_js
 node_js:
-- 12
+  - 12
 
 branches:
   only:
-    -master
-    -release
+    - master
+    - release
 
-before_deploy: 
-  - npm run build      
+before_deploy:
+  - npm run build
   - git config --local user.name "juandupreez"
   - git config --local user.email "juan.du.preez@advance.io"
   - export TRAVIS_TAG=conceptual-graphs-$(node -e 'process.stdout.write(require("./package.json").version)')
