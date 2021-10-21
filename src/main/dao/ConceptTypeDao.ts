@@ -1,15 +1,10 @@
-import { ConceptType } from "../domain/ConceptType";
-
-export interface SimpleConceptType {
-    label: string;
-    subConceptTypes?: SimpleConceptType[]
-}
+import { ConceptType, SimpleConceptType } from "../domain/ConceptType";
 export interface ConceptTypeDao {
     createConceptType(newLabel: string, parentLabels?: string[]): ConceptType;
     getConceptTypeById(conceptTypeId: string): ConceptType;
     getConceptTypeByLabel(label: string): ConceptType;
     getRootConceptTypes(): ConceptType[];
-    getLabelAndAllSubLabelsOfConcept(labelOrLabels: string | string[]): string[];
+    getLabelAndAllSubLabelsOfConceptType(labelOrLabels: string | string[]): string[];
     updateConceptType(concpetType: ConceptType): ConceptType;
     deleteConceptType(conceptTypeId: string): boolean;
     importHierarchyFromSimpleConceptTypes(hierarchyToGenerate: SimpleConceptType[]): void;

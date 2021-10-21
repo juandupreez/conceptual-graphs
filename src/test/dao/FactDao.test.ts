@@ -1,25 +1,26 @@
 import { ConceptDao } from "../../main/dao/ConceptDao";
-import { ConceptTypeDao, SimpleConceptType } from "../../main/dao/ConceptTypeDao";
+import { ConceptTypeDao } from "../../main/dao/ConceptTypeDao";
 import { InMemoryConceptDao } from "../../main/dao/inmemory/InMemoryConceptDao";
 import { InMemoryConceptTypeDao } from "../../main/dao/inmemory/InMemoryConceptTypeDao";
 import { InMemoryRelationTypeDao } from "../../main/dao/inmemory/InMemoryRelationTypeDao";
-import { RelationTypeDao, SimpleRelationType } from "../../main/dao/RelationTypeDao";
+import { RelationTypeDao } from "../../main/dao/RelationTypeDao";
 import { RelationDao } from "../../main/dao/RelationDao";
 import { InMemoryRelationDao } from "../../main/dao/inmemory/InMemoryRelationDao";
 import { ConceptualGraph } from "../../main/domain/ConceptualGraph";
-import { Concept, DesignatorType, QuantifierType } from "../../main/domain/Concept";
+import { Concept, DesignatorType } from "../../main/domain/Concept";
 import { Relation } from "../../main/domain/Relation";
-import { ConceptualGraphDao } from "../../main/dao/ConceptualGraphDao";
-import { InMemoryConceptualGraphDao } from "../../main/dao/inmemory/InMemoryConceptualGraphDao";
 import { IdGenerator } from "../../main/util/IdGenerator";
+import { SimpleRelationType } from "../../main/domain/RelationType";
+import { SimpleConceptType } from "../../main/domain/ConceptType";
+import { FactDao, InMemoryFactDao } from "../../main/conceptual-graphs";
 
 const conceptTypeDao: ConceptTypeDao = new InMemoryConceptTypeDao();
 const relationTypeDao: RelationTypeDao = new InMemoryRelationTypeDao(conceptTypeDao);
 const conceptDao: ConceptDao = new InMemoryConceptDao(conceptTypeDao);
 const relationDao: RelationDao = new InMemoryRelationDao(conceptDao, conceptTypeDao, relationTypeDao);
-const conceptualGraphDao: ConceptualGraphDao = new InMemoryConceptualGraphDao(conceptDao, relationDao);
+const factDao: FactDao = new InMemoryFactDao(conceptDao, relationDao);
 
-describe('ConceptualGraphDao', () => {
+describe('FactDao', () => {
 
     beforeAll(() => {        
         const conceptTypeHierarchy: SimpleConceptType[] = [{
@@ -54,9 +55,9 @@ describe('ConceptualGraphDao', () => {
         const matConcept: Concept = conceptualGraph.createConcept(matConceptLabel, "Mat", "The");
         const onRelation: Relation = conceptualGraph.createRelation(onRelationLabel, "On", [catConcept, matConcept]);
 
-        const createdConceptualGraph: ConceptualGraph = conceptualGraphDao.createConceptualGraph(conceptualGraph);
+        const createdConceptualGraph: ConceptualGraph = factDao.createFact(conceptualGraph);
 
-        const savedConceptualGraph: ConceptualGraph = conceptualGraphDao.getConceptualGraphById(createdConceptualGraph.id);
+        const savedConceptualGraph: ConceptualGraph = factDao.getFactById(createdConceptualGraph.id);
         expect(createdConceptualGraph).toEqual(savedConceptualGraph);
         const createdCatConcept: Concept = conceptDao.getConceptByLabel(catConceptLabel);
         expect(createdCatConcept).toEqual({
@@ -85,14 +86,12 @@ describe('ConceptualGraphDao', () => {
         conceptualGraph.label = "The cat is on the mat - " + testId;
         const catConcept: Concept = conceptDao.createConcept(catConceptLabel, ["Cat"], "The");
         catConcept.referent = {
-            quantifierType: QuantifierType.A_SINGLE,
             designatorType: DesignatorType.THE,
             designatorValue: "THE"
         };
         conceptualGraph.addConcept(catConcept);
         const matConcept: Concept = conceptDao.createConcept(matConceptLabel, ["Mat"], "The");
         matConcept.referent = {
-            quantifierType: QuantifierType.A_SINGLE,
             designatorType: DesignatorType.THE,
             designatorValue: "THE"
         };
@@ -100,9 +99,9 @@ describe('ConceptualGraphDao', () => {
         const onRelation: Relation = relationDao.createRelation(onRelationLabel, ["On"], [catConceptLabel, matConceptLabel]);
         conceptualGraph.addRelation(onRelation);
 
-        const createdConceptualGraph: ConceptualGraph = conceptualGraphDao.createConceptualGraph(conceptualGraph);
+        const createdConceptualGraph: ConceptualGraph = factDao.createFact(conceptualGraph);
 
-        const savedConceptualGraph: ConceptualGraph = conceptualGraphDao.getConceptualGraphById(createdConceptualGraph.id);
+        const savedConceptualGraph: ConceptualGraph = factDao.getFactById(createdConceptualGraph.id);
         expect(createdConceptualGraph).toEqual(savedConceptualGraph);
         const savedCatConcept: Concept = conceptDao.getConceptByLabel(catConceptLabel);
         expect(savedCatConcept).toEqual(catConcept);
@@ -128,9 +127,9 @@ describe('ConceptualGraphDao', () => {
         const matConcept: Concept = conceptualGraph.createConcept(matConceptLabel, "Mat", "The");
         const onRelation: Relation = conceptualGraph.createRelation(onRelationLabel, "On", [catConcept, matConcept]);
 
-        const createdConceptualGraph: ConceptualGraph = conceptualGraphDao.createConceptualGraph(conceptualGraph);
+        const createdConceptualGraph: ConceptualGraph = factDao.createFact(conceptualGraph);
 
-        const savedConceptualGraph: ConceptualGraph = conceptualGraphDao.getConceptualGraphById(createdConceptualGraph.id);
+        const savedConceptualGraph: ConceptualGraph = factDao.getFactById(createdConceptualGraph.id);
         expect(createdConceptualGraph).toEqual(savedConceptualGraph);
     })
 
@@ -146,9 +145,9 @@ describe('ConceptualGraphDao', () => {
         const matConcept: Concept = conceptualGraph.createConcept(matConceptLabel, "Mat", "The");
         const onRelation: Relation = conceptualGraph.createRelation(onRelationLabel, "On", [catConcept, matConcept]);
 
-        const createdConceptualGraph: ConceptualGraph = conceptualGraphDao.createConceptualGraph(conceptualGraph);
+        const createdConceptualGraph: ConceptualGraph = factDao.createFact(conceptualGraph);
 
-        const savedConceptualGraph: ConceptualGraph = conceptualGraphDao.getConceptualGraphByLabel(createdConceptualGraph.label);
+        const savedConceptualGraph: ConceptualGraph = factDao.getFactByLabel(createdConceptualGraph.label);
         expect(createdConceptualGraph).toEqual(savedConceptualGraph);
     })
 
@@ -165,7 +164,7 @@ describe('ConceptualGraphDao', () => {
         const catConcept1: Concept = conceptualGraph.createConcept(catConceptLabel1, "Cat", "The");
         const matConcept1: Concept = conceptualGraph.createConcept(matConceptLabel1, "Mat", "The");
         const onRelation: Relation = conceptualGraph.createRelation(onRelationLabel, "On", [catConcept1, matConcept1]);
-        const createdConceptualGraph: ConceptualGraph = conceptualGraphDao.createConceptualGraph(conceptualGraph);
+        const createdConceptualGraph: ConceptualGraph = factDao.createFact(conceptualGraph);
 
         conceptualGraph.label = "New: the cat is on the mat - " + testId;
         const catConcept2: Concept = conceptDao.createConcept(catConceptLabel2, ["Cat"], "The");
@@ -175,9 +174,9 @@ describe('ConceptualGraphDao', () => {
         conceptualGraph.removeConceptByLabel(catConceptLabel1);
         conceptualGraph.removeConceptByLabel(matConceptLabel1);
 
-        const updatedConceptualGraph: ConceptualGraph = conceptualGraphDao.updateConceptualGraph(conceptualGraph);
+        const updatedConceptualGraph: ConceptualGraph = factDao.updateFact(conceptualGraph);
 
-        const savedConceptualGraph: ConceptualGraph = conceptualGraphDao.getConceptualGraphById(updatedConceptualGraph.id);
+        const savedConceptualGraph: ConceptualGraph = factDao.getFactById(updatedConceptualGraph.id);
         expect(createdConceptualGraph).not.toEqual(savedConceptualGraph);
         expect(updatedConceptualGraph).toEqual(savedConceptualGraph);
     })
@@ -193,12 +192,12 @@ describe('ConceptualGraphDao', () => {
         const catConcept1: Concept = conceptualGraph.createConcept(catConceptLabel, "Cat", "The");
         const matConcept1: Concept = conceptualGraph.createConcept(matConceptLabel, "Mat", "The");
         const onRelation: Relation = conceptualGraph.createRelation(onRelationLabel, "On", [catConcept1, matConcept1]);
-        const createdConceptualGraph: ConceptualGraph = conceptualGraphDao.createConceptualGraph(conceptualGraph);
+        const createdConceptualGraph: ConceptualGraph = factDao.createFact(conceptualGraph);
 
-        const isSuccessfulDelete: boolean = conceptualGraphDao.deleteConceptualGraph(conceptualGraph.id);
+        const isSuccessfulDelete: boolean = factDao.deleteFact(conceptualGraph.id);
 
         expect(isSuccessfulDelete).toBe(true);
-        const savedConceptualGraph: ConceptualGraph = conceptualGraphDao.getConceptualGraphById(createdConceptualGraph.id);
+        const savedConceptualGraph: ConceptualGraph = factDao.getFactById(createdConceptualGraph.id);
         expect(savedConceptualGraph).toBeUndefined();
     })
 

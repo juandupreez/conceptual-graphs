@@ -1,6 +1,6 @@
-import { ConceptType } from "../../domain/ConceptType";
+import { ConceptType, SimpleConceptType } from "../../domain/ConceptType";
 import { IdGenerator } from "../../util/IdGenerator";
-import { ConceptTypeDao, SimpleConceptType, NoSuchConceptTypeError, UniqueConceptTypeViolationError } from "../ConceptTypeDao";
+import { ConceptTypeDao, NoSuchConceptTypeError, UniqueConceptTypeViolationError } from "../ConceptTypeDao";
 import { Store } from "./store/Store";
 
 export class InMemoryConceptTypeDao implements ConceptTypeDao {
@@ -62,23 +62,23 @@ export class InMemoryConceptTypeDao implements ConceptTypeDao {
         })
     }
 
-    getLabelAndAllSubLabelsOfConcept(labelOrLabels: string | string[]): string[] {
+    getLabelAndAllSubLabelsOfConceptType(labelOrLabels: string | string[]): string[] {
         if (typeof labelOrLabels === 'string') {
-            return this._getLabelAndAllSubLabelsOfConcept(labelOrLabels, []);
+            return this._getLabelAndAllSubLabelsOfConceptType(labelOrLabels, []);
         } else {
             return labelOrLabels?.reduce((accumulator, singleLabel) => {
-                accumulator.push(...this._getLabelAndAllSubLabelsOfConcept(singleLabel, []));
+                accumulator.push(...this._getLabelAndAllSubLabelsOfConceptType(singleLabel, []));
                 return accumulator;
             }, [])
         }
     }
 
-    _getLabelAndAllSubLabelsOfConcept(label: string, labelsGottenSoFar: string[]): string[] {
+    _getLabelAndAllSubLabelsOfConceptType(label: string, labelsGottenSoFar: string[]): string[] {
         if (!labelsGottenSoFar.includes(label)) {
             const toReturn = [label, ...labelsGottenSoFar];
             const conceptType: ConceptType = this.getConceptTypeByLabel(label);
             conceptType?.subConceptTypeLabels.forEach((singleSubConceptTypeLabel) => {
-                toReturn.push(...this._getLabelAndAllSubLabelsOfConcept(singleSubConceptTypeLabel, labelsGottenSoFar));
+                toReturn.push(...this._getLabelAndAllSubLabelsOfConceptType(singleSubConceptTypeLabel, labelsGottenSoFar));
             })
             return toReturn;
         } else {

@@ -1,5 +1,5 @@
 import { ConceptDao } from "../../main/dao/ConceptDao";
-import { ConceptTypeDao } from "../../main/dao/ConceptTypeDao";
+import { ConceptTypeDao } from "../../main/dao/ConceptTypeDao"
 import { InMemoryConceptDao } from "../../main/dao/inmemory/InMemoryConceptDao";
 import { InMemoryConceptTypeDao } from "../../main/dao/inmemory/InMemoryConceptTypeDao";
 import { InMemoryRelationDao } from "../../main/dao/inmemory/InMemoryRelationDao";
@@ -11,7 +11,7 @@ import { ConceptualGraph } from "../../main/domain/ConceptualGraph";
 import { Relation } from "../../main/domain/Relation";
 import { ConceptualGraphQueryManager } from "../../main/query/ConceptualGraphQueryManager";
 import { Rule } from "../../main/rules/Rule";
-import { SaturationRule } from "../../main/rules/SaturationRule";
+import { ExtractionRule } from "../../main/rules/ExtractionRule";
 import { IdGenerator } from "../../main/util/IdGenerator";
 import { TestScenarioProvider_TomAndJerry } from "../testutil/TestScenarioProvider_TomAndJerry";
 import { TestScenarioProvider_PhineasAndFerb } from "../testutil/TestScenarioProvider_PhineasAndFerb";
@@ -29,7 +29,7 @@ const testScenarioProvider_PhineasAndFerb: TestScenarioProvider_PhineasAndFerb =
 
 let testId: string = "";
 
-describe('Simple saturation', () => {
+describe('Simple extraction', () => {
 
     beforeAll(() => {
         testScenarioProvider_PhineasAndFerb.createPhineasAndFerbStructure();
@@ -40,11 +40,11 @@ describe('Simple saturation', () => {
         global.console = require('console');
     })
 
-    it('Add a new single relation', () => {
+    it('Extract a new single relation', () => {
         // Rule: If Phineas is brother of Candace, then Candace is sister of Phineas
         // Create rule: if boy is brother of girl then girl is sister of boy
         const queryManager: ConceptualGraphQueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
-        const ifBoyBroOfGirlThenGirlSisOfBoyRule: Rule = new SaturationRule(queryManager);
+        const ifBoyBroOfGirlThenGirlSisOfBoyRule: Rule = new ExtractionRule(queryManager);
 
         // Create Hypothesis: if boy is brother of girl
         const boyBroOfGirlHypothesis: ConceptualGraph = new ConceptualGraph();
@@ -64,17 +64,11 @@ describe('Simple saturation', () => {
         const phineasAndCandaceCG: ConceptualGraph = testScenarioProvider_PhineasAndFerb.getPhineasAndCandaceCG();
 
         // Apply Rule
-        const saturatedPhineasAndCandaceCG: ConceptualGraph = ifBoyBroOfGirlThenGirlSisOfBoyRule.applyRule(phineasAndCandaceCG);
+        const extractedPhineasAndCandaceCG: ConceptualGraph = ifBoyBroOfGirlThenGirlSisOfBoyRule.applyRule(phineasAndCandaceCG);
 
-        // Expect there to be a sister of relation
-        expect(saturatedPhineasAndCandaceCG.relations.length).toBe(2);
-        expect(saturatedPhineasAndCandaceCG.relations[0]).toEqual({
-            label: "phineas-broOf-candace",
-            relationTypeLabels: ["BrotherOf"],
-            conceptArgumentLabels: ["Phineas", "Candace"],
-            id: undefined,
-        });
-        expect(saturatedPhineasAndCandaceCG.relations[1]).toEqual({
+        // Expect there to be ONLY a sister of relation
+        expect(extractedPhineasAndCandaceCG.relations.length).toBe(1);
+        expect(extractedPhineasAndCandaceCG.relations[0]).toEqual({
             id: undefined,
             label: "Candace-SisterOf-Phineas",
             relationTypeLabels: ["SisterOf"],
@@ -83,11 +77,11 @@ describe('Simple saturation', () => {
 
     })
 
-    it('Add a new single relation and concept', () => {
+    it('Extract a new single relation and concept', () => {
         // Rule: If Phineas is brother of Candace, then Ferb is brother of Candace
         // Create rule: if boy is brother of girl then ferb is brother of girl
         const queryManager: ConceptualGraphQueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
-        const ifBoyBroOfGirlThenOtherBoyBroOfGirlRule: Rule = new SaturationRule(queryManager);
+        const ifBoyBroOfGirlThenOtherBoyBroOfGirlRule: Rule = new ExtractionRule(queryManager);
 
         // Create Hypothesis: if boy is brother of girl
         const boyBroOfGirlHypothesis: ConceptualGraph = new ConceptualGraph();
@@ -107,37 +101,33 @@ describe('Simple saturation', () => {
         const phineasAndCandaceCG: ConceptualGraph = testScenarioProvider_PhineasAndFerb.getPhineasAndCandaceCG();
 
         // Apply Rule
-        const saturatedPhineasAndCandaceCG: ConceptualGraph = ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.applyRule(phineasAndCandaceCG);
+        const extractedPhineasAndCandaceCG: ConceptualGraph = ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.applyRule(phineasAndCandaceCG);
 
-        // Expect there to be two brother relations
-        expect(saturatedPhineasAndCandaceCG.relations.length).toBe(2);
-        expect(saturatedPhineasAndCandaceCG.relations[0]).toEqual({
-            ...relationDao.getRelationByLabel("phineas-broOf-candace"),
-            id: undefined,
-        });
-        expect(saturatedPhineasAndCandaceCG.relations[1]).toEqual({
+        // Expect there to be ONLY ferb brother relations
+        expect(extractedPhineasAndCandaceCG.relations.length).toBe(1);
+        expect(extractedPhineasAndCandaceCG.relations[0]).toEqual({
             id: undefined,
             label: "Ferb-BrotherOf-Candace",
             relationTypeLabels: ["BrotherOf"],
             conceptArgumentLabels: ["Ferb", "Candace"]
         });
 
-        // Expect ferb to have been added
-        expect(saturatedPhineasAndCandaceCG.concepts.length).toBe(3);
-        expect(saturatedPhineasAndCandaceCG.concepts[0]).toEqual(testScenarioProvider_PhineasAndFerb.phineas);
-        expect(saturatedPhineasAndCandaceCG.concepts[1]).toEqual(testScenarioProvider_PhineasAndFerb.candace);
-        expect(saturatedPhineasAndCandaceCG.concepts[2]).toEqual(testScenarioProvider_PhineasAndFerb.ferb);
+        // Expect ferb to have been added And phineas to be taken away
+        expect(extractedPhineasAndCandaceCG.concepts.length).toBe(2);
+        expect(extractedPhineasAndCandaceCG.concepts[0]).toEqual(testScenarioProvider_PhineasAndFerb.candace);
+        expect(extractedPhineasAndCandaceCG.concepts[1]).toEqual(testScenarioProvider_PhineasAndFerb.ferb);
+        expect(extractedPhineasAndCandaceCG.getConceptByLabel("Phineas")).toBeUndefined();
 
     })
 
-    it('Add several new concepts and relations', () => {
+    it('Extract several new concepts and relations', () => {
         // Rule: If Human is friend of Phineas and friend of Ferb, 
         //  then that Human is friend of Candace 
         //      and Candace is friend of that Human
-        //      and Human is Friend of Perry the Platypus owned by Phineas and Ferb and Candace
+        //      and Human is Friend of Perry the Platypus owned by Phineas Candace (But not Ferb)
         //      and that Human is friendly
         const queryManager: ConceptualGraphQueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
-        const ifHumanIsFriendOfPhineasAndFerb: Rule = new SaturationRule(queryManager);
+        const ifHumanIsFriendOfPhineasAndFerb: Rule = new ExtractionRule(queryManager);
 
         // Create Hypothesis: If Human is friend of Phineas and friend of Ferb
         const boyBroOfGirlHypothesis: ConceptualGraph = new ConceptualGraph();
@@ -150,12 +140,11 @@ describe('Simple saturation', () => {
 
         // Create Conclusion: then that Human is friend of Candace 
         //  and Candace is friend of that Human
-        //  and Human is friend of Perry the Platypus owned by Phineas and Ferb and Candace
+        //  and Human is friend of Perry the Platypus owned by Phineas and Candace (But not Ferb)
         //  and Human is friendly
         const friendOfCandaceAndPerryConclusion: ConceptualGraph = new ConceptualGraph();
         friendOfCandaceAndPerryConclusion.addConcept(someHuman);
         friendOfCandaceAndPerryConclusion.addConcept(phineas);
-        friendOfCandaceAndPerryConclusion.addConcept(ferb);
         const candace: Concept = friendOfCandaceAndPerryConclusion.createConcept("Candace", "Girl", "Candace");
         const perry: Concept = friendOfCandaceAndPerryConclusion.createConcept("PerryThePlatypus", "Platypus", "Perry");
         const friendly: Concept = friendOfCandaceAndPerryConclusion.createConcept("Friendly", "Property", "Friendly");
@@ -163,37 +152,30 @@ describe('Simple saturation', () => {
         friendOfCandaceAndPerryConclusion.createRelation("candace-friendOf-human", "FriendOf", [candace, someHuman]);
         friendOfCandaceAndPerryConclusion.createRelation("human-friendOf-perry", "FriendOf", [someHuman, perry]);
         friendOfCandaceAndPerryConclusion.createRelation("phineas-ownsPet-perry", "OwnsPet", [phineas, perry]);
-        friendOfCandaceAndPerryConclusion.createRelation("ferb-ownsPet-perry", "OwnsPet", [ferb, perry]);
         friendOfCandaceAndPerryConclusion.createRelation("candace-ownsPet-perry", "OwnsPet", [candace, perry]);
         friendOfCandaceAndPerryConclusion.createRelation("human-attr-friendly", "Attribute", [someHuman, friendly]);
         ifHumanIsFriendOfPhineasAndFerb.conclusion = friendOfCandaceAndPerryConclusion;
-
-
-        // console.log(ifHumanIsFriendOfPhineasAndFerb.toString());
-
-
+        
         // Create Phineas and Ferb Friends Conceptual Graph
         const phineasFerbAndFriendsCG: ConceptualGraph = testScenarioProvider_PhineasAndFerb.getPhineasFerbAndFriendsCG();
 
         // Apply Rule
-        const saturatedFriendsCG: ConceptualGraph = ifHumanIsFriendOfPhineasAndFerb.applyRule(phineasFerbAndFriendsCG);
-        
-        // console.log("\n\nSaturated Graph:\n----------------\n" + saturatedFriendsCG.toString());
+        const extractedFriendsCG: ConceptualGraph = ifHumanIsFriendOfPhineasAndFerb.applyRule(phineasFerbAndFriendsCG);
 
         // Expect baljeet/buford/isabella to be friends of candace
-        expect(saturatedFriendsCG.getRelationByLabel("Baljeet-FriendOf-Candace")).toEqual({
+        expect(extractedFriendsCG.getRelationByLabel("Baljeet-FriendOf-Candace")).toEqual({
             id: undefined,
             label: "Baljeet-FriendOf-Candace",
             relationTypeLabels: ["FriendOf"],
             conceptArgumentLabels: ["Baljeet", "Candace"]
         } as Relation);
-        expect(saturatedFriendsCG.getRelationByLabel("Buford-FriendOf-Candace")).toEqual({
+        expect(extractedFriendsCG.getRelationByLabel("Buford-FriendOf-Candace")).toEqual({
             id: undefined,
             label: "Buford-FriendOf-Candace",
             relationTypeLabels: ["FriendOf"],
             conceptArgumentLabels: ["Buford", "Candace"]
         } as Relation);
-        expect(saturatedFriendsCG.getRelationByLabel("Isabella-FriendOf-Candace")).toEqual({
+        expect(extractedFriendsCG.getRelationByLabel("Isabella-FriendOf-Candace")).toEqual({
             id: undefined,
             label: "Isabella-FriendOf-Candace",
             relationTypeLabels: ["FriendOf"],
@@ -201,19 +183,19 @@ describe('Simple saturation', () => {
         } as Relation);
 
         // Expect candace to be friends of baljeet/buford/isabella
-        expect(saturatedFriendsCG.getRelationByLabel("Candace-FriendOf-Baljeet")).toEqual({
+        expect(extractedFriendsCG.getRelationByLabel("Candace-FriendOf-Baljeet")).toEqual({
             id: undefined,
             label: "Candace-FriendOf-Baljeet",
             relationTypeLabels: ["FriendOf"],
             conceptArgumentLabels: ["Candace", "Baljeet"]
         } as Relation);
-        expect(saturatedFriendsCG.getRelationByLabel("Candace-FriendOf-Buford")).toEqual({
+        expect(extractedFriendsCG.getRelationByLabel("Candace-FriendOf-Buford")).toEqual({
             id: undefined,
             label: "Candace-FriendOf-Buford",
             relationTypeLabels: ["FriendOf"],
             conceptArgumentLabels: ["Candace", "Buford"]
         } as Relation);
-        expect(saturatedFriendsCG.getRelationByLabel("Candace-FriendOf-Isabella")).toEqual({
+        expect(extractedFriendsCG.getRelationByLabel("Candace-FriendOf-Isabella")).toEqual({
             id: undefined,
             label: "Candace-FriendOf-Isabella",
             relationTypeLabels: ["FriendOf"],
@@ -221,59 +203,57 @@ describe('Simple saturation', () => {
         } as Relation);
 
         // Expect baljeet/buford/isabella to be friends of perry
-        expect(saturatedFriendsCG.getRelationByLabel("Baljeet-FriendOf-PerryThePlatypus")).toEqual({
+        expect(extractedFriendsCG.getRelationByLabel("Baljeet-FriendOf-PerryThePlatypus")).toEqual({
             id: undefined,
             label: "Baljeet-FriendOf-PerryThePlatypus",
             relationTypeLabels: ["FriendOf"],
             conceptArgumentLabels: ["Baljeet", "PerryThePlatypus"]
         } as Relation);
-        expect(saturatedFriendsCG.getRelationByLabel("Buford-FriendOf-PerryThePlatypus")).toEqual({
+        expect(extractedFriendsCG.getRelationByLabel("Buford-FriendOf-PerryThePlatypus")).toEqual({
             id: undefined,
             label: "Buford-FriendOf-PerryThePlatypus",
             relationTypeLabels: ["FriendOf"],
             conceptArgumentLabels: ["Buford", "PerryThePlatypus"]
         } as Relation);
-        expect(saturatedFriendsCG.getRelationByLabel("Isabella-FriendOf-PerryThePlatypus")).toEqual({
+        expect(extractedFriendsCG.getRelationByLabel("Isabella-FriendOf-PerryThePlatypus")).toEqual({
             id: undefined,
             label: "Isabella-FriendOf-PerryThePlatypus",
             relationTypeLabels: ["FriendOf"],
             conceptArgumentLabels: ["Isabella", "PerryThePlatypus"]
         } as Relation);
 
-        // Expect perry to be pet of phineas/ferb/candace
-        expect(saturatedFriendsCG.getRelationByLabel("Phineas-OwnsPet-PerryThePlatypus")).toEqual({
+        // Expect perry to be pet of phineas/candace
+        expect(extractedFriendsCG.getRelationByLabel("Phineas-OwnsPet-PerryThePlatypus")).toEqual({
             id: undefined,
             label: "Phineas-OwnsPet-PerryThePlatypus",
             relationTypeLabels: ["OwnsPet"],
             conceptArgumentLabels: ["Phineas", "PerryThePlatypus"]
         } as Relation);
-        expect(saturatedFriendsCG.getRelationByLabel("Ferb-OwnsPet-PerryThePlatypus")).toEqual({
-            id: undefined,
-            label: "Ferb-OwnsPet-PerryThePlatypus",
-            relationTypeLabels: ["OwnsPet"],
-            conceptArgumentLabels: ["Ferb", "PerryThePlatypus"]
-        } as Relation);
-        expect(saturatedFriendsCG.getRelationByLabel("Candace-OwnsPet-PerryThePlatypus")).toEqual({
+        expect(extractedFriendsCG.getRelationByLabel("Candace-OwnsPet-PerryThePlatypus")).toEqual({
             id: undefined,
             label: "Candace-OwnsPet-PerryThePlatypus",
             relationTypeLabels: ["OwnsPet"],
             conceptArgumentLabels: ["Candace", "PerryThePlatypus"]
         } as Relation);
 
+        // Expect Ferb not to be in answer, as he was not in Conclusion
+        expect(extractedFriendsCG.getRelationByLabel("Ferb-OwnsPet-PerryThePlatypus")).toBeUndefined();
+        expect(extractedFriendsCG.getConceptByLabel("Ferb")).toBeUndefined();
+
         // Expect baljeet/buford/isabella to be friendly
-        expect(saturatedFriendsCG.getRelationByLabel("Baljeet-Attribute-Friendly")).toEqual({
+        expect(extractedFriendsCG.getRelationByLabel("Baljeet-Attribute-Friendly")).toEqual({
             id: undefined,
             label: "Baljeet-Attribute-Friendly",
             relationTypeLabels: ["Attribute"],
             conceptArgumentLabels: ["Baljeet", "Friendly"]
         } as Relation);
-        expect(saturatedFriendsCG.getRelationByLabel("Buford-Attribute-Friendly")).toEqual({
+        expect(extractedFriendsCG.getRelationByLabel("Buford-Attribute-Friendly")).toEqual({
             id: undefined,
             label: "Buford-Attribute-Friendly",
             relationTypeLabels: ["Attribute"],
             conceptArgumentLabels: ["Buford", "Friendly"]
         } as Relation);
-        expect(saturatedFriendsCG.getRelationByLabel("Isabella-Attribute-Friendly")).toEqual({
+        expect(extractedFriendsCG.getRelationByLabel("Isabella-Attribute-Friendly")).toEqual({
             id: undefined,
             label: "Isabella-Attribute-Friendly",
             relationTypeLabels: ["Attribute"],
@@ -282,14 +262,14 @@ describe('Simple saturation', () => {
 
     })
 
-    it('Saturated graph should contain all nodes of the original graph', () => {
+    it('Extracted graph should contain no nodes of the original graph unless they are in conclusion', () => {
         // Rule: If Human is friend of Phineas and friend of Ferb, 
         //  then that Human is friend of Candace 
         //      and Candace is friend of that Human
-        //      and Human is Friend of Perry the Platypus owned by Phineas and Ferb and Candace
+        //      and Human is Friend of Perry the Platypus owned by Candace
         //      and that Human is friendly
         const queryManager: ConceptualGraphQueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
-        const ifHumanIsFriendOfPhineasAndFerb: Rule = new SaturationRule(queryManager);
+        const ifHumanIsFriendOfPhineasAndFerb: Rule = new ExtractionRule(queryManager);
 
         // Create Hypothesis: If Human is friend of Phineas and friend of Ferb
         const boyBroOfGirlHypothesis: ConceptualGraph = new ConceptualGraph();
@@ -302,20 +282,16 @@ describe('Simple saturation', () => {
 
         // Create Conclusion: then that Human is friend of Candace 
         //  and Candace is friend of that Human
-        //  and Human is friend of Perry the Platypus owned by Phineas and Ferb and Candace
+        //  and Human is friend of Perry the Platypus owned by Candace
         //  and Human is friendly
         const friendOfCandaceAndPerryConclusion: ConceptualGraph = new ConceptualGraph();
         friendOfCandaceAndPerryConclusion.addConcept(someHuman);
-        friendOfCandaceAndPerryConclusion.addConcept(phineas);
-        friendOfCandaceAndPerryConclusion.addConcept(ferb);
         const candace: Concept = friendOfCandaceAndPerryConclusion.createConcept("Candace", "Girl", "Candace");
         const perry: Concept = friendOfCandaceAndPerryConclusion.createConcept("PerryThePlatypus", "Platypus", "Perry");
         const friendly: Concept = friendOfCandaceAndPerryConclusion.createConcept("Friendly", "Property", "Friendly");
         friendOfCandaceAndPerryConclusion.createRelation("human-friendOf-candace", "FriendOf", [someHuman, candace]);
         friendOfCandaceAndPerryConclusion.createRelation("candace-friendOf-human", "FriendOf", [candace, someHuman]);
         friendOfCandaceAndPerryConclusion.createRelation("human-friendOf-perry", "FriendOf", [someHuman, perry]);
-        friendOfCandaceAndPerryConclusion.createRelation("phineas-ownsPet-perry", "OwnsPet", [phineas, perry]);
-        friendOfCandaceAndPerryConclusion.createRelation("ferb-ownsPet-perry", "OwnsPet", [ferb, perry]);
         friendOfCandaceAndPerryConclusion.createRelation("candace-ownsPet-perry", "OwnsPet", [candace, perry]);
         friendOfCandaceAndPerryConclusion.createRelation("human-attr-friendly", "Attribute", [someHuman, friendly]);
         ifHumanIsFriendOfPhineasAndFerb.conclusion = friendOfCandaceAndPerryConclusion;
@@ -324,13 +300,23 @@ describe('Simple saturation', () => {
         const phineasFerbAndFriendsCG: ConceptualGraph = testScenarioProvider_PhineasAndFerb.getPhineasFerbAndFriendsCG();
 
         // Apply Rule
-        const saturatedFriendsCG: ConceptualGraph = ifHumanIsFriendOfPhineasAndFerb.applyRule(phineasFerbAndFriendsCG);
+        const extractedFriendsCG: ConceptualGraph = ifHumanIsFriendOfPhineasAndFerb.applyRule(phineasFerbAndFriendsCG);
 
-        // Saturated graph must still have all nodes of previous graph
+        // Extracted graph must not be same as original
         expect(doesConceptualGraphAContainAllNodesOfConceptualGraphB(
             phineasFerbAndFriendsCG,
-            saturatedFriendsCG
-        )).toBe(true);
+            extractedFriendsCG
+        )).toBe(false);
+
+        // Nodes which are in original but not in Rule's conclusion must not be in Extracted graph
+        expect(extractedFriendsCG.getConceptByLabel("Phineas")).toBeUndefined();
+        expect(extractedFriendsCG.getConceptByLabel("Ferb")).toBeUndefined();
+        expect(extractedFriendsCG.getRelationByLabel("baljeet-friendOf-phineas")).toBeUndefined();
+        expect(extractedFriendsCG.getRelationByLabel("baljeet-friendOf-ferb")).toBeUndefined();
+        expect(extractedFriendsCG.getRelationByLabel("buford-friendOf-phineas")).toBeUndefined();
+        expect(extractedFriendsCG.getRelationByLabel("buford-friendOf-ferb")).toBeUndefined();
+        expect(extractedFriendsCG.getRelationByLabel("isabella-friendOf-phineas")).toBeUndefined();
+        expect(extractedFriendsCG.getRelationByLabel("isabella-friendOf-ferb")).toBeUndefined();
     })
 
     it('Concepts with the same Concept Types are identified via label', () => {
@@ -343,7 +329,7 @@ describe('Simple saturation', () => {
         // Rule: If Phineas is brother of Candace, then Ferb is brother of Candace
         // Create rule: if boy is brother of girl then ferb is brother of girl
         const queryManager: ConceptualGraphQueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
-        const ifHumanAIsFriendsWithHumanBAndC: Rule = new SaturationRule(queryManager);
+        const ifHumanAIsFriendsWithHumanBAndC: Rule = new ExtractionRule(queryManager);
 
         // Create Hypothesis: If Human A is friends with Human B and Human C
         const humanFriendsOfHumansHypothesis: ConceptualGraph = new ConceptualGraph();
@@ -368,10 +354,10 @@ describe('Simple saturation', () => {
         const phineasAndCandaceCG: ConceptualGraph = testScenarioProvider_PhineasAndFerb.getBaljeetFriendsOfPhineasAndFerbCG();
 
         // Apply Rule
-        const saturatedBaljeetCG: ConceptualGraph = ifHumanAIsFriendsWithHumanBAndC.applyRule(phineasAndCandaceCG);
+        const extractedBaljeetCG: ConceptualGraph = ifHumanAIsFriendsWithHumanBAndC.applyRule(phineasAndCandaceCG);
 
         // Expect Phineas to be sibling of Ferb
-        expect(saturatedBaljeetCG.getRelationByLabel("Phineas-SiblingOf-Ferb")).toEqual({
+        expect(extractedBaljeetCG.getRelationByLabel("Phineas-SiblingOf-Ferb")).toEqual({
             id: undefined,
             label: "Phineas-SiblingOf-Ferb",
             relationTypeLabels: ["SiblingOf"],
@@ -379,7 +365,7 @@ describe('Simple saturation', () => {
         });
 
         // Expect Ferb to be sibling of Phineas
-        expect(saturatedBaljeetCG.getRelationByLabel("Ferb-SiblingOf-Phineas")).toEqual({
+        expect(extractedBaljeetCG.getRelationByLabel("Ferb-SiblingOf-Phineas")).toEqual({
             id: undefined,
             label: "Ferb-SiblingOf-Phineas",
             relationTypeLabels: ["SiblingOf"],
@@ -387,7 +373,7 @@ describe('Simple saturation', () => {
         });
 
         // Expect Phineas to be friendly
-        expect(saturatedBaljeetCG.getRelationByLabel("Phineas-Attribute-Friendly")).toEqual({
+        expect(extractedBaljeetCG.getRelationByLabel("Phineas-Attribute-Friendly")).toEqual({
             id: undefined,
             label: "Phineas-Attribute-Friendly",
             relationTypeLabels: ["Attribute"],
@@ -395,7 +381,7 @@ describe('Simple saturation', () => {
         });
 
         // Expect Ferb to be friendly
-        expect(saturatedBaljeetCG.getRelationByLabel("Ferb-Attribute-Friendly")).toEqual({
+        expect(extractedBaljeetCG.getRelationByLabel("Ferb-Attribute-Friendly")).toEqual({
             id: undefined,
             label: "Ferb-Attribute-Friendly",
             relationTypeLabels: ["Attribute"],
@@ -404,59 +390,11 @@ describe('Simple saturation', () => {
 
     })
 
-    it('If a concept or relation already exists, do not create a new one', () => {
-        // Rule: If Phineas is brother of Candace, then Ferb is brother of Candace
-        // Create rule: if boy is brother of girl then ferb is brother of girl
-        const queryManager: ConceptualGraphQueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
-        const ifBoyBroOfGirlThenOtherBoyBroOfGirlRule: Rule = new SaturationRule(queryManager);
-
-        // Create Hypothesis: if boy is brother of girl
-        const boyBroOfGirlHypothesis: ConceptualGraph = new ConceptualGraph();
-        const someBoy: Concept = boyBroOfGirlHypothesis.createConcept("SomeBoy", "Boy", DesignatorType.LAMBDA);
-        const someGirl: Concept = boyBroOfGirlHypothesis.createConcept("SomeGirl", "Girl", DesignatorType.LAMBDA);
-        boyBroOfGirlHypothesis.createRelation("someboy-broof-somegirl", "BrotherOf", [someBoy, someGirl]);
-        ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.hypothesis = boyBroOfGirlHypothesis;
-
-        // Create Conclusion: then Ferb is brother of girl
-        const girlBroOfBoyConclusion: ConceptualGraph = new ConceptualGraph();
-        girlBroOfBoyConclusion.addConcept(someGirl);
-        girlBroOfBoyConclusion.addConcept(testScenarioProvider_PhineasAndFerb.ferb);
-        girlBroOfBoyConclusion.createRelation("ferb-broof-somegirl", "BrotherOf", [testScenarioProvider_PhineasAndFerb.ferb, someGirl]);
-        ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.conclusion = girlBroOfBoyConclusion;
-
-        // Create Phineas and Candace Conceptual Graph WITH Conclusion Already In Place
-        const phineasAndCandaceCG: ConceptualGraph = testScenarioProvider_PhineasAndFerb.getPhineasAndCandaceCG();
-        phineasAndCandaceCG.addConcept(testScenarioProvider_PhineasAndFerb.ferb);
-        phineasAndCandaceCG.createRelation("Ferb-BrotherOf-Candace", "BrotherOf", [testScenarioProvider_PhineasAndFerb.ferb, testScenarioProvider_PhineasAndFerb.candace])
-
-        // Apply Rule
-        const saturatedPhineasAndCandaceCG: ConceptualGraph = ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.applyRule(phineasAndCandaceCG);
-
-        // Expect there to be two brother relations
-        expect(saturatedPhineasAndCandaceCG.relations.length).toBe(2);
-        expect(saturatedPhineasAndCandaceCG.relations[0]).toEqual({
-            ...relationDao.getRelationByLabel("phineas-broOf-candace"),
-            id: undefined,
-        });
-        expect(saturatedPhineasAndCandaceCG.relations[1]).toEqual({
-            id: undefined,
-            label: "Ferb-BrotherOf-Candace",
-            relationTypeLabels: ["BrotherOf"],
-            conceptArgumentLabels: ["Ferb", "Candace"]
-        });
-
-        // Expect ferb to have been added
-        expect(saturatedPhineasAndCandaceCG.concepts.length).toBe(3);
-        expect(saturatedPhineasAndCandaceCG.concepts[0]).toEqual(testScenarioProvider_PhineasAndFerb.phineas);
-        expect(saturatedPhineasAndCandaceCG.concepts[1]).toEqual(testScenarioProvider_PhineasAndFerb.candace);
-        expect(saturatedPhineasAndCandaceCG.concepts[2]).toEqual(testScenarioProvider_PhineasAndFerb.ferb);
-    })
-
     it('Must create a copy and not adjust the original', () => {
         // Rule: If Phineas is brother of Candace, then Ferb is brother of Candace
         // Create rule: if boy is brother of girl then ferb is brother of girl
         const queryManager: ConceptualGraphQueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
-        const ifBoyBroOfGirlThenOtherBoyBroOfGirlRule: Rule = new SaturationRule(queryManager);
+        const ifBoyBroOfGirlThenOtherBoyBroOfGirlRule: Rule = new ExtractionRule(queryManager);
 
         // Create Hypothesis: if boy is brother of girl
         const boyBroOfGirlHypothesis: ConceptualGraph = new ConceptualGraph();
@@ -477,22 +415,22 @@ describe('Simple saturation', () => {
         const clonePhineasAndCandaceCG: ConceptualGraph = originalPhineasAndCandaceCG.clone();
 
         // Apply Rule
-        const saturatedPhineasAndCandaceCG: ConceptualGraph = ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.applyRule(originalPhineasAndCandaceCG);
+        const extractedPhineasAndCandaceCG: ConceptualGraph = ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.applyRule(originalPhineasAndCandaceCG);
 
         // Expect original to be the same
         expect(originalPhineasAndCandaceCG).toEqual(clonePhineasAndCandaceCG);
-        expect(originalPhineasAndCandaceCG).not.toEqual(saturatedPhineasAndCandaceCG);
+        expect(originalPhineasAndCandaceCG).not.toEqual(extractedPhineasAndCandaceCG);
 
-        // Expect addition of concept to saturated graph not to reflect in original graph
-        saturatedPhineasAndCandaceCG.createConcept("ShouldNotBeInOriginal", "Unwanted");
+        // Expect addition of concept to extracted graph not to reflect in original graph
+        extractedPhineasAndCandaceCG.createConcept("ShouldNotBeInOriginal", "Unwanted");
         expect(originalPhineasAndCandaceCG.getConceptByLabel("ShouldNotBeInOriginal")).toBeUndefined();
     })
 
-    it('When no matches for hypothesis, return a copy of the original graph', () => {
+    it('When no matches for hypothesis, return a an empty conceptual graph', () => {
         // Rule: If Phineas is brother of Candace, then Ferb is brother of Candace
         // Create rule: if boy is brother of girl then ferb is brother of girl
         const queryManager: ConceptualGraphQueryManager = new ConceptualGraphQueryManager(conceptTypeDao, relationTypeDao);
-        const ifBoyBroOfGirlThenOtherBoyBroOfGirlRule: Rule = new SaturationRule(queryManager);
+        const ifBoyBroOfGirlThenOtherBoyBroOfGirlRule: Rule = new ExtractionRule(queryManager);
 
         // Create Hypothesis: if boy is brother of girl
         const boyBroOfGirlHypothesis: ConceptualGraph = new ConceptualGraph();
@@ -512,10 +450,11 @@ describe('Simple saturation', () => {
         const jerryIsBrownCG: ConceptualGraph = testScenarioProvider_JerryTheMouse.getConcept_jerryTheMouseIsColourBrown(testId);
 
         // Apply Rule
-        const saturatedJerryIsBrownCG: ConceptualGraph = ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.applyRule(jerryIsBrownCG);
+        const extractedJerryIsBrownCG: ConceptualGraph = ifBoyBroOfGirlThenOtherBoyBroOfGirlRule.applyRule(jerryIsBrownCG);
 
-        // Expect original to be the same as saturated
-        expect(jerryIsBrownCG).toEqual(saturatedJerryIsBrownCG);
+        // Expect original to be the same as extracted
+        expect(extractedJerryIsBrownCG.concepts.length).toBe(0);
+        expect(extractedJerryIsBrownCG.relations.length).toBe(0);
         
     })
 
