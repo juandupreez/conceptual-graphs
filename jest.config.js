@@ -19,6 +19,9 @@ module.exports = {
 
         "**/test/rules/SaturationRule.test.ts",
         "**/test/rules/ExtractionRule.test.ts",
+
+        "**/test/operations/SaturationOperation.test.ts",
+        "**/test/operations/ExtractionOperation.test.ts",
         
     ],
     "transform": {

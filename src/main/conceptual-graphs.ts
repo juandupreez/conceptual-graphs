@@ -33,6 +33,11 @@ import { Rule, RuleType } from "./rules/Rule";
 import { SaturationRule } from "./rules/SaturationRule";
 import { ExtractionRule } from "./rules/ExtractionRule";
 
+// Operation
+import { Operation } from "./operations/Operation";
+import { SaturationOperation } from "./operations/SaturationOperation";
+import { ExtractionOperation } from "./operations/ExtractionOperation";
+
 export { ConceptType, SimpleConceptType };
 export { RelationType, SimpleRelationType };
 export { Concept, SimpleConcept, Referent, DesignatorType };
@@ -56,3 +61,6 @@ export { ConceptualGraphQueryManager };
 export { Rule, RuleType };
 export { SaturationRule };
 export { ExtractionRule };
+export { Operation };
+export { SaturationOperation };
+export { ExtractionOperation };
