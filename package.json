@@ -25,6 +25,10 @@
   ],
   "author": "juan.dupreez82@gmail.com",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/juandupreez/conceptual-graphs"
+  },
   "devDependencies": {
     "@types/jest": "^26.0.24",
     "jest": "^27.0.6",
