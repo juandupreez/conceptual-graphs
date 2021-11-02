@@ -37,6 +37,7 @@ import { ExtractionRule } from "./rules/ExtractionRule";
 import { Operation } from "./operations/Operation";
 import { SaturationOperation } from "./operations/SaturationOperation";
 import { ExtractionOperation } from "./operations/ExtractionOperation";
+import { KBQuerySaturationOperation } from "./operations/KBQuerySaturationOperation";
 
 export { ConceptType, SimpleConceptType };
 export { RelationType, SimpleRelationType };
@@ -64,3 +65,4 @@ export { ExtractionRule };
 export { Operation };
 export { SaturationOperation };
 export { ExtractionOperation };
+export { KBQuerySaturationOperation };

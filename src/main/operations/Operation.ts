@@ -1,4 +1,4 @@
-import { ConceptualGraph } from "../conceptual-graphs";
+import { ConceptualGraph } from "../domain/ConceptualGraph";
 
 export class Operation {
     id: string;

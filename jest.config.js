@@ -22,6 +22,7 @@ module.exports = {
 
         "**/test/operations/SaturationOperation.test.ts",
         "**/test/operations/ExtractionOperation.test.ts",
+        "**/test/operations/KBQuerySaturationOperation.test.ts",
         
     ],
     "transform": {

@@ -1,4 +1,5 @@
 import { ConceptTypeDao } from "../conceptual-graphs";
+import { MatchedConcept, MatchedRelation } from "../query/QueryManager";
 import { isSetOneASubsetOfSetTwo } from "../util/CommonUtil";
 import { cloneConcept, conceptToString, createConcept, isConcept } from "../util/ConceptUtil";
 import { cloneRelation, createRelation, relationToString } from "../util/RelationUtil";
@@ -114,13 +115,13 @@ export class ConceptualGraph {
 
     getConceptByLabel(conceptLabelToGet: string): Concept {
         return this.concepts.find((singleConcept) => {
-            return (singleConcept.label === conceptLabelToGet);
+            return (singleConcept?.label === conceptLabelToGet);
         })
     }
 
     getRelationByLabel(relationLabelToGet: string): Relation {
         return this.relations.find((singleRelation) => {
-            return (singleRelation.label === relationLabelToGet);
+            return (singleRelation?.label === relationLabelToGet);
         })
     }
 
@@ -137,7 +138,7 @@ export class ConceptualGraph {
 
     getConceptsUsedByRelation(relation: Relation, conceptsToExclude: (Concept | Relation)[]): Concept[] {
         return this.concepts.filter((singleConcept) => {
-            return (relation.conceptArgumentLabels.includes(singleConcept.label)
+            return (relation.conceptArgumentLabels.includes(singleConcept?.label)
                 && !conceptsToExclude?.includes(singleConcept));
         })
     }
@@ -245,5 +246,34 @@ export class ConceptualGraph {
 
     isEmpty() {
         return (this.concepts.length === 0 && this.relations.length === 0);
+    }
+    
+    replaceConceptByLabel(labelOfConceptToReplace: string, newConcept: Concept) {
+        this.relations.forEach((singleRelation) => {
+            singleRelation.conceptArgumentLabels = singleRelation.conceptArgumentLabels.map((singleRelationConceptArgumentLabel) => {
+                if (singleRelationConceptArgumentLabel === labelOfConceptToReplace) {
+                    return newConcept.label;
+                } else {
+                    return singleRelationConceptArgumentLabel;
+                }
+            })
+        })
+        this.concepts = this.concepts.map((singleConcept) => {
+            if (singleConcept.label === labelOfConceptToReplace) {
+                return newConcept;
+            } else {
+                return singleConcept;
+            }
+        })
+    }
+    
+    replaceRelationByLabel(labelOfRelationToReplace: string, newRelation: MatchedRelation) {
+        this.relations = this.relations.map((singleRelation) => {
+            if (singleRelation.label === labelOfRelationToReplace) {
+                return newRelation;
+            } else {
+                return singleRelation;
+            }
+        })
     }
 }
