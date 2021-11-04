@@ -1,8 +1,9 @@
-import { ConceptualGraph } from "../domain/ConceptualGraph";
+import { ConceptualGraph, ConceptualGraphSkeleton } from "../domain/ConceptualGraph";
 
 export interface FactDao {
-    createFact(fact: ConceptualGraph): ConceptualGraph;  
-    getFactById(id: string): ConceptualGraph; 
+    importFacts(factsToImport: ConceptualGraphSkeleton[]);
+    createFact(fact: ConceptualGraph): ConceptualGraph;
+    getFactById(id: string): ConceptualGraph;
     getFactByLabel(label: string): ConceptualGraph;
     updateFact(fact: ConceptualGraph): ConceptualGraph;
     deleteFact(idToDelete: string): boolean;

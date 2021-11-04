@@ -3,16 +3,14 @@ import { MatchedConcept, MatchedRelation } from "../query/QueryManager";
 import { isSetOneASubsetOfSetTwo } from "../util/CommonUtil";
 import { cloneConcept, conceptToString, createConcept, isConcept } from "../util/ConceptUtil";
 import { cloneRelation, createRelation, relationToString } from "../util/RelationUtil";
-import { Concept, DesignatorType, Referent } from "./Concept";
-import { Relation } from "./Relation";
+import { Concept, DesignatorType, Referent, SimpleConcept } from "./Concept";
+import { Relation, SimpleRelation } from "./Relation";
 
-export class SimpleConceptualGraph {
-    id?: string;
+export interface ConceptualGraphSkeleton {
     label: string;
-    conceptLabels: string[] = [];
-    relationLabels: string[] = [];
+    concepts: SimpleConcept[];
+    relations?: SimpleRelation[]
 }
-
 export class ConceptualGraph {
 
     concepts: Concept[] = [];
@@ -87,7 +85,7 @@ export class ConceptualGraph {
         return newConcept;
     }
 
-    createRelation(label: string, relationType: string, conceptArguments: Concept[]): Relation {
+    createRelation(label: string, relationType: string | string[], conceptArguments: Concept[]): Relation {
         const newRelation: Relation = createRelation(label, relationType, conceptArguments);
         this.relations.push(newRelation);
         return newRelation;

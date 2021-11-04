@@ -3,7 +3,7 @@ import { ConceptType, SimpleConceptType } from "./domain/ConceptType";;
 import { RelationType, SimpleRelationType } from "./domain/RelationType";
 import { Concept, SimpleConcept, Referent, DesignatorType } from "./domain/Concept";
 import { Relation, SimpleRelation } from "./domain/Relation";
-import { ConceptualGraph, SimpleConceptualGraph } from "./domain/ConceptualGraph";
+import { ConceptualGraph, ConceptualGraphSkeleton } from "./domain/ConceptualGraph";
 
 // Dao Interfaces
 import { ConceptTypeDao, NoSuchConceptTypeError, UniqueConceptTypeViolationError } from "./dao/ConceptTypeDao";
@@ -45,7 +45,7 @@ export { ConceptType, SimpleConceptType };
 export { RelationType, SimpleRelationType };
 export { Concept, SimpleConcept, Referent, DesignatorType };
 export { Relation, SimpleRelation };
-export { ConceptualGraph, SimpleConceptualGraph };
+export { ConceptualGraph, ConceptualGraphSkeleton };
 export { ConceptTypeDao, NoSuchConceptTypeError, UniqueConceptTypeViolationError };
 export { RelationTypeDao, NoSuchRelationTypeError, UniqueRelationTypeViolationError };
 export { ConceptDao };

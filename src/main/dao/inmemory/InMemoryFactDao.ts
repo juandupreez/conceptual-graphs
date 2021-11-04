@@ -1,16 +1,22 @@
-import { Concept } from "../../domain/Concept";
-import { ConceptualGraph, SimpleConceptualGraph } from "../../domain/ConceptualGraph";
-import { Relation } from "../../domain/Relation";
+import { Concept, SimpleConcept } from "../../domain/Concept";
+import { ConceptualGraph, ConceptualGraphSkeleton } from "../../domain/ConceptualGraph";
+import { Relation, SimpleRelation } from "../../domain/Relation";
 import { IdGenerator } from "../../util/IdGenerator";
 import { ConceptDao } from "../ConceptDao";
 import { FactDao } from "../FactDao";
 import { RelationDao } from "../RelationDao";
 import { Store } from "./store/Store";
 
+export class StoredConceptualGraph {
+    id?: string;
+    label: string;
+    conceptLabels: string[] = [];
+    relationLabels: string[] = [];
+}
 export class InMemoryFactDao implements FactDao {
     conceptDao: ConceptDao;
     relationDao: RelationDao;
-    simpleConceptualGraphs: SimpleConceptualGraph[] = Store.getInstance().state.simpleConceptualGarphs;
+    simpleConceptualGraphs: StoredConceptualGraph[] = Store.getInstance().state.simpleConceptualGarphs;
 
     constructor(conceptDao: ConceptDao, relationDao: RelationDao) {
         this.conceptDao = conceptDao;
@@ -19,7 +25,7 @@ export class InMemoryFactDao implements FactDao {
 
     createFact(fact: ConceptualGraph): ConceptualGraph {
         const createdFact = new ConceptualGraph();
-        const simpleConceptualGraph = new SimpleConceptualGraph();
+        const simpleConceptualGraph = new StoredConceptualGraph();
         const generatedId: string = IdGenerator.getInstance().getNextUniqueConceptualGraphId();
         fact.id = generatedId;
         createdFact.id = generatedId;
@@ -60,7 +66,7 @@ export class InMemoryFactDao implements FactDao {
     }
 
     getFactById(conceptualGraphId: string): ConceptualGraph {
-        const foundSimpleConceptualGraph: SimpleConceptualGraph = this.simpleConceptualGraphs.find((singleSimpleConceptualGraph) => {
+        const foundSimpleConceptualGraph: StoredConceptualGraph = this.simpleConceptualGraphs.find((singleSimpleConceptualGraph) => {
             return (singleSimpleConceptualGraph.id && singleSimpleConceptualGraph.id === conceptualGraphId);
         })
         if (!foundSimpleConceptualGraph) {
@@ -81,7 +87,7 @@ export class InMemoryFactDao implements FactDao {
     }
 
     getFactByLabel(label: string): ConceptualGraph {
-        const foundSimpleConceptualGraph: SimpleConceptualGraph = this.simpleConceptualGraphs.find((singleSimpleConceptualGraph) => {
+        const foundSimpleConceptualGraph: StoredConceptualGraph = this.simpleConceptualGraphs.find((singleSimpleConceptualGraph) => {
             return (singleSimpleConceptualGraph.label && singleSimpleConceptualGraph.label === label);
         })
         if (!foundSimpleConceptualGraph) {
@@ -117,7 +123,7 @@ export class InMemoryFactDao implements FactDao {
         })
         return conceptualGraphToUpdate;
     }
-    
+
     deleteFact(idToDelete: string): boolean {
         let isSuccessfulDelete: boolean = false;
         const lengthBeforeDelete: number = this.simpleConceptualGraphs.length;
@@ -128,6 +134,28 @@ export class InMemoryFactDao implements FactDao {
             isSuccessfulDelete = true;
         }
         return isSuccessfulDelete;
+    }
+
+    importFacts(factsToImport: ConceptualGraphSkeleton[]) {
+        factsToImport?.forEach((singleFactToImport) => {
+            const newConceptualGraph: ConceptualGraph = new ConceptualGraph();
+            newConceptualGraph.label = singleFactToImport.label;
+            singleFactToImport.concepts?.forEach((singleSimpleConcept: SimpleConcept) => {
+                newConceptualGraph.createConcept(singleSimpleConcept.label,
+                    singleSimpleConcept.conceptTypeLabels,
+                    singleSimpleConcept.referent);
+            })
+            singleFactToImport.relations?.forEach((singleSimpleRelation: SimpleRelation) => {
+                const conceptArguments: Concept[]
+                    = singleSimpleRelation.conceptArgumentLabels?.map((singleConceptArgumentLabel) => {
+                        return newConceptualGraph.getConceptByLabel(singleConceptArgumentLabel);
+                    })
+                newConceptualGraph.createRelation(singleSimpleRelation.label,
+                    singleSimpleRelation.relationTypeLabels,
+                    conceptArguments);
+            })
+            this.createFact(newConceptualGraph);
+        });
     }
 
 }

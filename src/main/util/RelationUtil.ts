@@ -26,10 +26,14 @@ export function matchedRelationToRelation(matchedRelation: MatchedRelation): Rel
     return matchedRelationClone;
 }
 
-export function createRelation(label: string, relationType: string, conceptArguments: Concept[]): Relation {
+export function createRelation(label: string, relationType: string | string[], conceptArguments: Concept[]): Relation {
     const newRelation: Relation = new Relation();
     newRelation.label = label;
-    newRelation.relationTypeLabels.push(relationType);
+    if (typeof relationType === 'string') {
+        newRelation.relationTypeLabels.push(relationType);
+    } else {
+        newRelation.relationTypeLabels.push(...relationType);
+    }
     newRelation.conceptArgumentLabels.push(...conceptArguments.map((singleConceptArgument: Concept) => {
         return singleConceptArgument.label;
     }));

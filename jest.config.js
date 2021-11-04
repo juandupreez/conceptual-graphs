@@ -9,7 +9,7 @@ module.exports = {
         "**/test/dao/RelationTypeDao.test.ts",
         "**/test/dao/ConceptDao.test.ts",
         "**/test/dao/RelationDao.test.ts",
-        "**/test/dao/ConceptualGraphDao.test.ts",
+        "**/test/dao/FactDao.test.ts",
 
         "**/test/domain/ConceptualGraph.test.ts",
         "**/test/examples/tutorial.test.ts",

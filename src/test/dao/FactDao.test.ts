@@ -6,7 +6,7 @@ import { InMemoryRelationTypeDao } from "../../main/dao/inmemory/InMemoryRelatio
 import { RelationTypeDao } from "../../main/dao/RelationTypeDao";
 import { RelationDao } from "../../main/dao/RelationDao";
 import { InMemoryRelationDao } from "../../main/dao/inmemory/InMemoryRelationDao";
-import { ConceptualGraph } from "../../main/domain/ConceptualGraph";
+import { ConceptualGraph, ConceptualGraphSkeleton } from "../../main/domain/ConceptualGraph";
 import { Concept, DesignatorType } from "../../main/domain/Concept";
 import { Relation } from "../../main/domain/Relation";
 import { IdGenerator } from "../../main/util/IdGenerator";
@@ -20,9 +20,9 @@ const conceptDao: ConceptDao = new InMemoryConceptDao(conceptTypeDao);
 const relationDao: RelationDao = new InMemoryRelationDao(conceptDao, conceptTypeDao, relationTypeDao);
 const factDao: FactDao = new InMemoryFactDao(conceptDao, relationDao);
 
-describe('FactDao', () => {
+describe('FactDao basic CRUD', () => {
 
-    beforeAll(() => {        
+    beforeAll(() => {
         const conceptTypeHierarchy: SimpleConceptType[] = [{
             label: "Entity",
             subConceptTypes: [
@@ -199,6 +199,140 @@ describe('FactDao', () => {
         expect(isSuccessfulDelete).toBe(true);
         const savedConceptualGraph: ConceptualGraph = factDao.getFactById(createdConceptualGraph.id);
         expect(savedConceptualGraph).toBeUndefined();
+    })
+
+})
+
+describe('FactDao import facts', () => {
+
+    it('should import a simple conceptual graph as a concept', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        conceptTypeDao.createConceptType("Number-" + testId);
+        const factsToImport: ConceptualGraphSkeleton[] = [{
+            label: "There exists a number " + testId,
+            concepts: [{
+                label: "Number-" + testId,
+                conceptTypeLabels: ["Number-" + testId],
+                referent: testId
+            }]
+        }];
+        factDao.importFacts(factsToImport);
+
+        const savedConceptualGraph: ConceptualGraph = factDao.getFactByLabel("There exists a number " + testId);
+        expect(savedConceptualGraph).not.toBeUndefined();
+        expect(savedConceptualGraph.getConceptByLabel("Number-" + testId)).toEqual({
+            id: savedConceptualGraph.getConceptByLabel("Number-" + testId)?.id,
+            label: "Number-" + testId,
+            conceptTypeLabels: ["Number-" + testId],
+            referent: {
+                designatorType: DesignatorType.LITERAL,
+                designatorValue: testId
+            }
+        } as Concept);
+    })
+
+    it('should import a single concept when specifying a detailed referent', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        conceptTypeDao.createConceptType("Number-" + testId);
+        const factsToImport: ConceptualGraphSkeleton[] = [{
+            label: "There exists a number " + testId,
+            concepts: [{
+                label: "Number-" + testId,
+                conceptTypeLabels: ["Number-" + testId],
+                referent: {
+                    designatorType: DesignatorType.BLANK
+                }
+            }]
+        }];
+        factDao.importFacts(factsToImport);
+
+        const savedConceptualGraph: ConceptualGraph = factDao.getFactByLabel("There exists a number " + testId);
+        expect(savedConceptualGraph).not.toBeUndefined();
+        expect(savedConceptualGraph.getConceptByLabel("Number-" + testId)).toEqual({
+            id: savedConceptualGraph.getConceptByLabel("Number-" + testId)?.id,
+            label: "Number-" + testId,
+            conceptTypeLabels: ["Number-" + testId],
+            referent: {
+                designatorType: DesignatorType.BLANK,
+            }
+        } as Concept);
+    })
+
+    it('should import a single concept when specifying a LAMBDA referent', () => {
+        const testId: string = IdGenerator.getInstance().getNextUniquTestId();
+        conceptTypeDao.createConceptType("Number-" + testId);
+        const factsToImport: ConceptualGraphSkeleton[] = [{
+            label: "There exists a number " + testId,
+            concepts: [{
+                label: "SomeNumber-" + testId,
+                conceptTypeLabels: ["Number-" + testId],
+                referent: "LAMBDA"
+            }]
+        }];
+        factDao.importFacts(factsToImport);
+
+        const savedConceptualGraph: ConceptualGraph = factDao.getFactByLabel("There exists a number " + testId);
+        expect(savedConceptualGraph).not.toBeUndefined();
+        expect(savedConceptualGraph.getConceptByLabel("SomeNumber-" + testId)).toEqual({
+            id: savedConceptualGraph.getConceptByLabel("SomeNumber-" + testId)?.id,
+            label: "SomeNumber-" + testId,
+            conceptTypeLabels: ["Number-" + testId],
+            referent: {
+                designatorType: DesignatorType.LAMBDA
+            }
+        } as Concept);
+    })
+
+    it('should import two concepts and a relation', () => {
+        const testId1: string = IdGenerator.getInstance().getNextUniquTestId();
+        const testId2: string = IdGenerator.getInstance().getNextUniquTestId();
+        conceptTypeDao.createConceptType("Number-" + testId1);
+        relationTypeDao.createRelationType("Plus", ["Number-" + testId1, "Number-" + testId1]);
+        const factsToImport: ConceptualGraphSkeleton[] = [{
+            label: "One Plus Two " + testId1,
+            concepts: [{
+                label: "Number-" + testId1,
+                conceptTypeLabels: ["Number-" + testId1],
+                referent: testId1
+            }, {
+                label: "Number-" + testId2,
+                conceptTypeLabels: ["Number-" + testId1],
+                referent: testId2
+            }],
+            relations: [{
+                label: "one-plus-two-" + testId1,
+                relationTypeLabels: ["Plus"],
+                conceptArgumentLabels: ["Number-" + testId1, "Number-" + testId2]
+            }]
+        }];
+        factDao.importFacts(factsToImport);
+
+        const savedConceptualGraph: ConceptualGraph = factDao.getFactByLabel("One Plus Two " + testId1);
+        expect(savedConceptualGraph).not.toBeUndefined();
+        expect(savedConceptualGraph.getConceptByLabel("Number-" + testId1)).toEqual({
+            id: savedConceptualGraph.getConceptByLabel("Number-" + testId1)?.id,
+            label: "Number-" + testId1,
+            conceptTypeLabels: ["Number-" + testId1],
+            referent: {
+                designatorType: DesignatorType.LITERAL,
+                designatorValue: testId1
+            }
+        } as Concept);
+        expect(savedConceptualGraph.getConceptByLabel("Number-" + testId2)).toEqual({
+            id: savedConceptualGraph.getConceptByLabel("Number-" + testId2)?.id,
+            label: "Number-" + testId2,
+            conceptTypeLabels: ["Number-" + testId1],
+            referent: {
+                designatorType: DesignatorType.LITERAL,
+                designatorValue: testId2
+            }
+        } as Concept);
+        expect(savedConceptualGraph.getRelationByLabel("one-plus-two-" + testId1)).toEqual({
+            id: savedConceptualGraph.getRelationByLabel("one-plus-two-" + testId1)?.id,
+            label: "one-plus-two-" + testId1,
+            relationTypeLabels: ["Plus"],
+            conceptArgumentLabels: ["Number-" + testId1, "Number-" + testId2]
+        } as Relation);
     })
 
 })
