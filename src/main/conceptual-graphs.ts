@@ -11,6 +11,7 @@ import { RelationTypeDao, NoSuchRelationTypeError, UniqueRelationTypeViolationEr
 import { ConceptDao } from "./dao/ConceptDao";
 import { RelationDao } from "./dao/RelationDao";
 import { FactDao } from "./dao/FactDao";
+import { KnowledgeBase } from "./dao/KnowlegeBase";
 
 // In-Memory Daos
 import { InMemoryConceptTypeDao } from "./dao/inmemory/InMemoryConceptTypeDao";
@@ -18,6 +19,7 @@ import { InMemoryRelationTypeDao } from "./dao/inmemory/InMemoryRelationTypeDao"
 import { InMemoryConceptDao } from "./dao/inmemory/InMemoryConceptDao";
 import { InMemoryRelationDao } from "./dao/inmemory/InMemoryRelationDao";
 import { InMemoryFactDao } from "./dao/inmemory/InMemoryFactDao";
+import { InMemoryKnowledgeBase } from "./dao/inmemory/InMemoryKnowledgeBase";
 
 // Utils
 import { isConcept, hasConceptType, hasAnyConceptTypes, conceptToString, cloneConcept, createConcept } from "./util/ConceptUtil";
@@ -48,12 +50,14 @@ export { ConceptTypeDao, NoSuchConceptTypeError, UniqueConceptTypeViolationError
 export { RelationTypeDao, NoSuchRelationTypeError, UniqueRelationTypeViolationError };
 export { ConceptDao };
 export { RelationDao };
-export { FactDao};
+export { FactDao };
+export { KnowledgeBase };
 export { InMemoryConceptTypeDao };
 export { InMemoryRelationTypeDao };
 export { InMemoryConceptDao };
 export { InMemoryRelationDao };
 export { InMemoryFactDao };
+export { InMemoryKnowledgeBase }
 export { isConcept, hasConceptType, hasAnyConceptTypes, conceptToString, cloneConcept, createConcept };
 export { relationToString, cloneRelation, createRelation };
 export { QueryManager };
