@@ -1,17 +1,16 @@
 import { ConceptTypeDao } from "../conceptual-graphs";
+import { MatchedConcept, MatchedRelation } from "../query/QueryManager";
 import { isSetOneASubsetOfSetTwo } from "../util/CommonUtil";
 import { cloneConcept, conceptToString, createConcept, isConcept } from "../util/ConceptUtil";
 import { cloneRelation, createRelation, relationToString } from "../util/RelationUtil";
-import { Concept, DesignatorType, Referent } from "./Concept";
-import { Relation } from "./Relation";
+import { Concept, DesignatorType, Referent, SimpleConcept } from "./Concept";
+import { Relation, SimpleRelation } from "./Relation";
 
-export class SimpleConceptualGraph {
-    id?: string;
+export interface ConceptualGraphSkeleton {
     label: string;
-    conceptLabels: string[] = [];
-    relationLabels: string[] = [];
+    concepts: SimpleConcept[];
+    relations?: SimpleRelation[]
 }
-
 export class ConceptualGraph {
 
     concepts: Concept[] = [];
@@ -86,7 +85,7 @@ export class ConceptualGraph {
         return newConcept;
     }
 
-    createRelation(label: string, relationType: string, conceptArguments: Concept[]): Relation {
+    createRelation(label: string, relationType: string | string[], conceptArguments: Concept[]): Relation {
         const newRelation: Relation = createRelation(label, relationType, conceptArguments);
         this.relations.push(newRelation);
         return newRelation;
@@ -114,13 +113,13 @@ export class ConceptualGraph {
 
     getConceptByLabel(conceptLabelToGet: string): Concept {
         return this.concepts.find((singleConcept) => {
-            return (singleConcept.label === conceptLabelToGet);
+            return (singleConcept?.label === conceptLabelToGet);
         })
     }
 
     getRelationByLabel(relationLabelToGet: string): Relation {
         return this.relations.find((singleRelation) => {
-            return (singleRelation.label === relationLabelToGet);
+            return (singleRelation?.label === relationLabelToGet);
         })
     }
 
@@ -137,7 +136,7 @@ export class ConceptualGraph {
 
     getConceptsUsedByRelation(relation: Relation, conceptsToExclude: (Concept | Relation)[]): Concept[] {
         return this.concepts.filter((singleConcept) => {
-            return (relation.conceptArgumentLabels.includes(singleConcept.label)
+            return (relation.conceptArgumentLabels.includes(singleConcept?.label)
                 && !conceptsToExclude?.includes(singleConcept));
         })
     }
@@ -245,5 +244,34 @@ export class ConceptualGraph {
 
     isEmpty() {
         return (this.concepts.length === 0 && this.relations.length === 0);
+    }
+    
+    replaceConceptByLabel(labelOfConceptToReplace: string, newConcept: Concept) {
+        this.relations.forEach((singleRelation) => {
+            singleRelation.conceptArgumentLabels = singleRelation.conceptArgumentLabels.map((singleRelationConceptArgumentLabel) => {
+                if (singleRelationConceptArgumentLabel === labelOfConceptToReplace) {
+                    return newConcept.label;
+                } else {
+                    return singleRelationConceptArgumentLabel;
+                }
+            })
+        })
+        this.concepts = this.concepts.map((singleConcept) => {
+            if (singleConcept.label === labelOfConceptToReplace) {
+                return newConcept;
+            } else {
+                return singleConcept;
+            }
+        })
+    }
+    
+    replaceRelationByLabel(labelOfRelationToReplace: string, newRelation: MatchedRelation) {
+        this.relations = this.relations.map((singleRelation) => {
+            if (singleRelation.label === labelOfRelationToReplace) {
+                return newRelation;
+            } else {
+                return singleRelation;
+            }
+        })
     }
 }

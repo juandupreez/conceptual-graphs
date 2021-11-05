@@ -1,6 +1,6 @@
 {
   "name": "conceptual-graphs",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Conceptual Graph common structure and functions as a subclass of Knowledge Graphs",
   "main": "./build/conceptual-graphs.js",
   "types": "./build/conceptual-graphs.d.ts",
@@ -25,6 +25,10 @@
   ],
   "author": "juan.dupreez82@gmail.com",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/juandupreez/conceptual-graphs"
+  },
   "devDependencies": {
     "@types/jest": "^26.0.24",
     "jest": "^27.0.6",
