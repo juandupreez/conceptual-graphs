@@ -8,7 +8,7 @@ import { IdGenerator } from "../util/IdGenerator";
 import { cloneRelation } from "../util/RelationUtil";
 import { Rule, RuleType } from "./Rule"
 
-export class SaturationRule extends Rule {
+export class InsertionRule extends Rule {
     queryManager: ConceptualGraphQueryManager;
 
     constructor(conceptualGraphQueryManager: ConceptualGraphQueryManager) {

@@ -1,5 +1,5 @@
 import { Concept, ConceptDao, ConceptTypeDao, ConceptualGraph, ConceptualGraphQueryManager, DatabaseQueryManager, DesignatorType, FactDao, InMemoryConceptDao, InMemoryConceptTypeDao, InMemoryFactDao, InMemoryRelationDao, InMemoryRelationTypeDao, RelationDao, RelationTypeDao } from '../../main/conceptual-graphs';
-import { KBQuerySaturationOperation } from '../../main/operations/KBQuerySaturationOperation';
+import { KBQueryInsertionOperation } from '../../main/operations/KBQueryInsertionOperation';
 import { IdGenerator } from '../../main/util/IdGenerator';
 import { TestScenarioProvider_PhineasAndFerb } from '../testutil/TestScenarioProvider_PhineasAndFerb';
 import { TestScenarioProvider_TomAndJerry } from '../testutil/TestScenarioProvider_TomAndJerry';
@@ -17,7 +17,7 @@ const dbQueryManager: DatabaseQueryManager = new DatabaseQueryManager(conceptDao
 
 let testId: string = "";
 
-describe('KBQuerySaturationOperation', () => {
+describe('KBQueryInsertionOperation', () => {
 
     beforeAll(() => {
         testScenarioProvider_PhineasAndFerb.createPhineasAndFerbStructure();
@@ -29,7 +29,7 @@ describe('KBQuerySaturationOperation', () => {
     })
 
     it('should use conclusion to query the knowledge base for a conceptual graph that matches the hypothesis', () => {
-        const queryDbOperation: KBQuerySaturationOperation = new KBQuerySaturationOperation(cgQueryManager, dbQueryManager);
+        const queryDbOperation: KBQueryInsertionOperation = new KBQueryInsertionOperation(cgQueryManager, dbQueryManager);
 
         // Hypothesis: Any boy
         const anyBoyHypothesis: ConceptualGraph = new ConceptualGraph();

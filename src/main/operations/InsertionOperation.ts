@@ -7,7 +7,7 @@ import { cloneConcept, isConcept } from "../util/ConceptUtil";
 import { cloneRelation } from "../util/RelationUtil";
 import { Operation } from "./Operation"
 
-export class SaturationOperation extends Operation {
+export class InsertionOperation extends Operation {
     queryManager: ConceptualGraphQueryManager;
 
     constructor(conceptualGraphQueryManager: ConceptualGraphQueryManager) {

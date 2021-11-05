@@ -2,7 +2,7 @@ import { cloneConcept, cloneRelation, Concept, ConceptualGraph, ConceptualGraphQ
 import { MatchedConceptualGraph } from "../query/QueryManager";
 import { Operation } from "./Operation";
 
-export class KBQuerySaturationOperation extends Operation {
+export class KBQueryInsertionOperation extends Operation {
 
     cgQueryManager: ConceptualGraphQueryManager;
     dbQueryManager: DatabaseQueryManager;

@@ -32,14 +32,14 @@ import { ConceptualGraphQueryManager } from "./query/ConceptualGraphQueryManager
 
 // Rule
 import { Rule, RuleType } from "./rules/Rule";
-import { SaturationRule } from "./rules/SaturationRule";
+import { InsertionRule } from "./rules/InsertionRule";
 import { ExtractionRule } from "./rules/ExtractionRule";
 
 // Operation
 import { Operation } from "./operations/Operation";
-import { SaturationOperation } from "./operations/SaturationOperation";
+import { InsertionOperation } from "./operations/InsertionOperation";
 import { ExtractionOperation } from "./operations/ExtractionOperation";
-import { KBQuerySaturationOperation } from "./operations/KBQuerySaturationOperation";
+import { KBQueryInsertionOperation } from "./operations/KBQueryInsertionOperation";
 
 export { ConceptType, SimpleConceptType };
 export { RelationType, SimpleRelationType };
@@ -64,9 +64,9 @@ export { QueryManager };
 export { DatabaseQueryManager };
 export { ConceptualGraphQueryManager };
 export { Rule, RuleType };
-export { SaturationRule };
+export { InsertionRule };
 export { ExtractionRule };
 export { Operation };
-export { SaturationOperation };
+export { InsertionOperation };
 export { ExtractionOperation };
-export { KBQuerySaturationOperation };
+export { KBQueryInsertionOperation };
