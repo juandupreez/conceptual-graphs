@@ -146,11 +146,11 @@ export class InMemoryRelationDao implements RelationDao {
             conceptArgumentLabelsToMatch?.forEach((singleConceptLabelToMatch, index) => {
                 const conceptToMatch: Concept = query.getConceptByLabel(singleConceptLabelToMatch);
                 const potentialConcept: Concept = this.conceptDao.getConceptByLabel(conceptArgumentLabels[index]);
-                const possibleConceptTypeLabels: string[] = this.conceptTypeDao.getLabelAndAllSubLabelsOfConceptType(conceptToMatch.conceptTypeLabels);
+                const possibleConceptTypeLabels: string[] = this.conceptTypeDao.getLabelAndAllSubLabelsOfConceptType(conceptToMatch?.conceptTypeLabels);
                 const potentialConceptTypeLabels: string[] = potentialConcept?.conceptTypeLabels ?? [];
                 const doConceptTypesMatch: boolean = doAllConceptsMatch && this._isSetOneASubsetOfSetTwo(potentialConceptTypeLabels, possibleConceptTypeLabels);
 
-                if (conceptToMatch.referent?.designatorType === DesignatorType.LAMBDA && doConceptTypesMatch) {
+                if (conceptToMatch?.referent?.designatorType === DesignatorType.LAMBDA && doConceptTypesMatch) {
                     doAllConceptsMatch = doAllConceptsMatch && true;
                 } else if (doConceptTypesMatch
                     && conceptToMatch.referent.designatorType === potentialConcept.referent.designatorType
@@ -167,9 +167,9 @@ export class InMemoryRelationDao implements RelationDao {
 
     private _isSetOneASubsetOfSetTwo(setA: string[], setB: string[]): boolean {
         let isASubset: boolean = true;
-        for (let i = 0; i < setA.length; i++) {
+        for (let i = 0; i < setA?.length; i++) {
             const singeElement = setA[i];
-            if (!setB.includes(singeElement)) {
+            if (!setB?.includes(singeElement)) {
                 isASubset = false;
                 break;
             }

@@ -2,23 +2,22 @@ import { Concept } from "../domain/Concept";
 import { ConceptualGraph } from "../domain/ConceptualGraph";
 import { Relation } from "../domain/Relation";
 import { ConceptualGraphQueryManager } from "../query/ConceptualGraphQueryManager";
-import { MatchedConceptualGraph } from "../query/QueryManager";
-import { cloneConcept, isConcept } from "../util/ConceptUtil";
-import { IdGenerator } from "../util/IdGenerator";
-import { cloneRelation } from "../util/RelationUtil";
-import { Rule, RuleType } from "./Rule"
+import { MatchedConcept, MatchedConceptualGraph, MatchedRelation } from "../query/QueryManager";
+import { cloneConcept, isConcept, matchedConceptToConcept } from "../util/ConceptUtil";
+import { cloneRelation, matchedRelationToRelation } from "../util/RelationUtil";
+import { Operation } from "./Operation";
 
-export class SaturationRule extends Rule {
+export class ExtractionOperation extends Operation {
+
     queryManager: ConceptualGraphQueryManager;
 
     constructor(conceptualGraphQueryManager: ConceptualGraphQueryManager) {
         super();
         this.queryManager = conceptualGraphQueryManager;
-        this.ruleType = RuleType.SATURATION_RULE
     }
 
-    applyRule(inputConceptualGraph: ConceptualGraph): ConceptualGraph {
-        const appliedConceptualGraph: ConceptualGraph = inputConceptualGraph.clone();
+    applyOperation(inputConceptualGraph: ConceptualGraph): ConceptualGraph {
+        const appliedConceptualGraph: ConceptualGraph = new ConceptualGraph();
         const matchedConceptualGraphs: MatchedConceptualGraph[] = this._getAllConceptualGraphsWhichMatchHypothesis(inputConceptualGraph);
         // console.log("\n\nMatched Conceptual Graphs (" + (matchedConceptualGraphs?.length ?? 0) + ")\n------------\n");
         // matchedConceptualGraphs?.forEach((singleMatchedCocneptualGraph, index) => {
@@ -68,11 +67,15 @@ export class SaturationRule extends Rule {
             this._addNewRelationToAppliedCGIfNotExists(appliedConceptualGraph, matchedConceptualGraph, curConclusionNode as Relation);
         }
     }
+
     private _addNewConceptToAppliedCGIfNotExists(appliedConceptualGraph: ConceptualGraph, matchedConceptualGraph: MatchedConceptualGraph,
         curConclusionConcept: Concept) {
         const matchedConcept: Concept = matchedConceptualGraph.getConceptByTemplateMatchedLabel(curConclusionConcept.label);
         if (!matchedConcept) {
             const newConcept: Concept = cloneConcept(curConclusionConcept);
+            appliedConceptualGraph.addConceptIfNotExist(newConcept);
+        } else {
+            const newConcept: Concept = matchedConceptToConcept(matchedConcept as MatchedConcept);
             appliedConceptualGraph.addConceptIfNotExist(newConcept);
         }
     }
@@ -86,6 +89,9 @@ export class SaturationRule extends Rule {
                 label: this._getNewRelationLabel(curConclusionRelation, matchedConceptualGraph),
                 conceptArgumentLabels: this._getNewRelationConceptArgumentLabels(curConclusionRelation, matchedConceptualGraph)
             };
+            appliedConceptualGraph.addRelationIfNotExist(newRelation);
+        } else {
+            const newRelation: Relation = matchedRelationToRelation(matchedRelation as MatchedRelation);
             appliedConceptualGraph.addRelationIfNotExist(newRelation);
         }
     }
