@@ -1,4 +1,4 @@
-import { ConceptualGraphQueryManager, DatabaseQueryManager } from "../conceptual-graphs";
+import { ConceptualGraphQueryManager, ConceptualGraphSkeleton, DatabaseQueryManager, SimpleConceptType, SimpleRelationType } from "../conceptual-graphs";
 import { ConceptDao } from "./ConceptDao";
 import { ConceptTypeDao } from "./ConceptTypeDao";
 import { FactDao } from "./FactDao";
@@ -15,5 +15,9 @@ export interface KnowledgeBase {
 
     databaseQueryManager: DatabaseQueryManager;
     conceptualGraphQueryManager: ConceptualGraphQueryManager;
+
+    importConceptTypeHierarchy(conceptTypeHierarchy: SimpleConceptType[]): void;
+    importRelationTypeHierarchy(relationTypeHierarchy: SimpleRelationType[]): void;
+    importFacts(conceptTypeHierarchy: ConceptualGraphSkeleton[]): void;
 
 }

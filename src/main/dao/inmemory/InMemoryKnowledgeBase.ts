@@ -1,4 +1,4 @@
-import { DatabaseQueryManager, ConceptualGraphQueryManager } from "../../conceptual-graphs";
+import { DatabaseQueryManager, ConceptualGraphQueryManager, ConceptualGraphSkeleton, SimpleConceptType, SimpleRelationType } from "../../conceptual-graphs";
 import { ConceptDao } from "../ConceptDao";
 import { ConceptTypeDao } from "../ConceptTypeDao";
 import { FactDao } from "../FactDao";
@@ -30,6 +30,18 @@ export class InMemoryKnowledgeBase implements KnowledgeBase {
 
         this.databaseQueryManager = new DatabaseQueryManager(this.conceptDao, this.relationDao);
         this.conceptualGraphQueryManager = new ConceptualGraphQueryManager(this.conceptTypeDao, this.relationTypeDao);
+    }
+
+    importConceptTypeHierarchy(conceptTypeHierarchy: SimpleConceptType[]): void {
+        this.conceptTypeDao.importHierarchyFromSimpleConceptTypes(conceptTypeHierarchy);
+    }
+
+    importRelationTypeHierarchy(relationTypeHierarchy: SimpleRelationType[]): void {
+        this.relationTypeDao.importHierarchyFromSimpleRelationTypes(relationTypeHierarchy);
+    }
+
+    importFacts(facts: ConceptualGraphSkeleton[]): void {
+        this.factDao.importFacts(facts);
     }
 
 }
