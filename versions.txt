@@ -1,5 +1,20 @@
 --------------
 -
+-    0.1.8
+-
+--------------
+- Add public git repo to package.json
+- Introduce the concept of Operations
+- Make 3 Operations
+    - InsertionOperation (Copy of InsertionRule)
+    - ExtractionOperation (Copy of ExtractionRule)
+    - KBQueryInsertionOperation
+- Rename everything "Saturation" to "Insertino"
+- Create a Knowledge Base class as a Facade for all the DAOs and Query Managers
+- Make facts importable from a new ConceptualGraphSkeleton data structure
+
+--------------
+-
 -    0.1.7
 -
 --------------
